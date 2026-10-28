@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Traboule gold question",
+  "type": "object",
+  "required": ["id", "dataset_version", "category", "expected_route", "question", "as_of", "source_versions", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^(FAC|DOC|MIX|ABS)-[0-9]{3}$" },
+    "dataset_version": { "type": "string" },
+    "category": { "enum": ["factual", "documentary", "mixed", "unanswerable"] },
+    "subtype": {
+      "type": "string",
+      "description": "Pour unanswerable : near_miss_level, nonexistent_entity, out_of_version, masked_by_diffusion, out_of_corpus, future_value. Pour les autres : libre (count, filter, spatial, rule_lookup...)."
+    },
+    "expected_route": { "enum": ["SQL", "RAG", "HYBRID", "ABSTAIN"] },
+    "question": { "type": "string", "minLength": 10 },
+    "as_of": { "type": "string", "format": "date", "description": "Date d'ancrage de la question" },
+    "source_versions": {
+      "type": "object",
+      "description": "source_id -> version ou date du fichier utilisé (ex. SRC-001a: 2026-10-01, SRC-005: identifiant de version GPU)",
+      "additionalProperties": { "type": "string" }
+    },
+    "expected_answer": { "type": ["string", "null"] },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Critères vérifiables : valeur exacte, tolérance, éléments obligatoires, abstention attendue"
+    },
+    "expected_sql": { "type": ["string", "null"], "description": "Requête de référence relue par l'humain" },
+    "expected_result": { "description": "Résultat d'exécution de la requête de référence (comparaison par résultat, pas par texte)" },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_id"],
+        "properties": {
+          "source_id": { "type": "string" },
+          "doc_id": { "type": "string" },
+          "page": { "type": "integer" },
+          "passage_id": { "type": "string" },
+          "zone_code": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "abstention_reason": { "type": ["string", "null"], "description": "Pour unanswerable : pourquoi aucune réponse fiable n'est possible, et quelle information proche existe" },
+    "difficulty": { "enum": ["easy", "medium", "hard"] },
+    "status": { "enum": ["draft", "validated", "rejected"] },
+    "validated_by": { "type": ["string", "null"] },
+    "validated_at": { "type": ["string", "null"], "format": "date" },
+    "notes": { "type": "string" }
+  }
+}

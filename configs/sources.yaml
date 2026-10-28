@@ -1,0 +1,129 @@
+# Version machine du registre des sources (docs/sources/registre.md).
+# Règle : aucune URL de ressource inventée. "A_CONFIRMER" = à résoudre via l'API
+# data.gouv.fr (https://www.data.gouv.fr/api/1/datasets/<id-ou-slug>/) ou la page
+# officielle de l'INSEE, puis à remplacer ici avant tout téléchargement.
+
+metadata:
+  version: "0.2"
+  checked_at: "2026-10-27"
+  territory:
+    name: "Métropole de Lyon"
+    epci_code: "200046977"
+    communes_count_cog_2026: 58
+    lyon_commune_code: "69123"
+    lyon_arrondissements: ["69381", "69382", "69383", "69384", "69385", "69386", "69387", "69388", "69389"]
+    crs_lambert93: "EPSG:2154"
+
+sources:
+  - id: SRC-001a
+    name: sirene_stock_etablissements
+    publisher: INSEE
+    role: primary
+    dataset_url: "A_CONFIRMER"   # fiche data.gouv « Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) »
+    resource_preference: ["parquet", "csv"]
+    license: "A_CONFIRMER"
+    update_frequency: monthly
+    size_hint: "plusieurs Go (national) — filtrer en streaming"
+    status: to_download
+    v1: true
+
+  - id: SRC-001b
+    name: sirene_geolocalisation_etudes_statistiques
+    publisher: INSEE
+    role: primary
+    dataset_url: "https://www.data.gouv.fr/datasets/61d5e2d372a52d9f9411ff88"
+    api_url: "https://www.data.gouv.fr/api/1/datasets/61d5e2d372a52d9f9411ff88/"
+    license: "A_CONFIRMER"
+    update_frequency: monthly
+    expected_fields_hint: ["siret", "x", "y", "qualite", "code_commune", "iris", "qpv"]  # noms exacts à lire dans la documentation
+    status: to_download
+    v1: true
+
+  - id: SRC-002
+    name: pluh_zonage
+    publisher: "Métropole de Lyon"
+    role: primary
+    dataset_url: "A_CONFIRMER"   # rechercher « zone PLU-H Métropole de Lyon » sur data.gouv / data.grandlyon
+    license: "Licence Ouverte 2.0"
+    formats: ["geojson", "shapefile", "csv"]
+    observed_update: "2026-10-13"
+    status: to_download
+    v1: true
+
+  - id: SRC-003
+    name: pluh_catalogue_documents
+    publisher: "Métropole de Lyon"
+    role: discovery
+    dataset_url: "A_CONFIRMER"
+    license: "Licence Ouverte 2.0 (catalogue uniquement — documents cibles à vérifier)"
+    observed_update: "2026-10-26"
+    status: to_download
+    v1: true
+
+  - id: SRC-004a
+    name: cog_2026
+    publisher: INSEE
+    role: reference
+    dataset_url: "A_CONFIRMER"   # page INSEE « Code officiel géographique au 1er janvier 2026 »
+    license: "A_CONFIRMER"
+    status: to_download
+    v1: true
+
+  - id: SRC-004b
+    name: appartenance_geographique_communes_2026
+    publisher: INSEE
+    role: reference
+    dataset_url: "A_CONFIRMER"
+    license: "A_CONFIRMER"
+    status: to_download
+    v1: true
+
+  - id: SRC-004c
+    name: table_passage_millesimes
+    publisher: INSEE
+    role: reference
+    dataset_url: "A_CONFIRMER"
+    license: "A_CONFIRMER"
+    status: to_download
+    v1: true
+
+  - id: SRC-005
+    name: geoportail_urbanisme_pluh
+    publisher: "IGN / Ministère (alimenté par la Métropole)"
+    role: legal_reference
+    portal_url: "https://www.geoportail-urbanisme.gouv.fr/"
+    access: "A_CONFIRMER"   # téléchargement du document ou API Carto module GPU
+    license: "A_CONFIRMER"
+    status: to_investigate
+    v1: true
+
+  - id: SRC-006
+    name: bpe
+    publisher: INSEE
+    role: optional
+    dataset_url: "A_CONFIRMER"
+    status: deferred
+    v1: false
+
+  - id: SRC-007
+    name: sirene_metropole_lyon
+    publisher: "Métropole de Lyon"
+    role: cross_check
+    dataset_url: "https://www.data.gouv.fr/datasets/base-sirene-de-la-metropole-de-lyon"
+    license: "Licence Ouverte 2.0"
+    observed_update: "2026-08-04"
+    limitations: "établissements actifs géolocalisés uniquement"
+    status: to_download
+    v1: true
+
+  - id: REF-COMMUNES-ML-2024
+    name: communes_metropole_depuis_2024
+    publisher: "Métropole de Lyon"
+    role: cross_check
+    dataset_url: "https://www.data.gouv.fr/datasets/communes-de-la-metropole-de-lyon-a-partir-de-2024/"
+    status: to_download
+    v1: true
+
+excluded:
+  - name: sirene_geocodee_etalab_ban
+    reason: "décommissionné en avril 2026 au profit du fichier INSEE"
