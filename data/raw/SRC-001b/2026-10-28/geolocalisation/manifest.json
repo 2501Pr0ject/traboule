@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-001b",
+  "source_title": "Sirene : Fichier géolocalisation établissements - octobre 2026 (format parquet)",
+  "publisher": "INSEE",
+  "source_url": "https://static.data.gouv.fr/resources/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/20261021-064721/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)",
+  "retrieved_at": "2026-10-28T10:10:04.088347Z",
+  "published_at": "2026-10-21",
+  "reference_date": null,
+  "geographic_vintage": "communes et IRIS : géographie au 1er janvier 2024 (documentation v8)",
+  "format": "parquet",
+  "file_size_bytes": 814389380,
+  "sha256": "db5d9ca4eac819112c139145c2a6078d635ec1d7f96ddd25ac67fc2291d5bdb9",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Fichier en ligne un mois seulement, sans archive (documentation v8). Pas de coordonnées pour les établissements à diffusion partielle.",
+  "crs": "EPSG:2154 (X, Y) ; colonnes y_latitude / x_longitude en WGS84"
+}

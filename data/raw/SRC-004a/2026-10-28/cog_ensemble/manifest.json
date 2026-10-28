@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-004a",
+  "source_title": "cog_ensemble_2026_csv.zip",
+  "publisher": "INSEE",
+  "source_url": "https://www.insee.fr/fr/statistiques/fichier/8740222/cog_ensemble_2026_csv.zip",
+  "license": "Licence Ouverte 2.0 selon les mentions légales insee.fr ; la fiche data.gouv indique fr-lo (Licence Ouverte 1.0)",
+  "retrieved_at": "2026-10-28T10:05:39.338244Z",
+  "published_at": null,
+  "reference_date": "2026-01-01",
+  "geographic_vintage": "COG 2026",
+  "format": "zip (csv)",
+  "file_size_bytes": 1961824,
+  "sha256": "5c037e2977c9d476cfe2e7b7f923bbe09a87cbe448c59e492a71ef6a917aa53f",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Date de publication non affichée sur la page INSEE ; fichiers de l'archive datés du 2026-02-13.",
+  "crs": null
+}

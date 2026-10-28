@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-001a",
+  "source_title": "Sirene : Fichier StockEtablissement - 01 octobre 2026 (format parquet)",
+  "publisher": "INSEE",
+  "source_url": "https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20261001-073823/stock-stocketablissement-parquet.parquet",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)",
+  "retrieved_at": "2026-10-28T10:14:58.621609Z",
+  "published_at": "2026-10-01",
+  "reference_date": "2026-10-01",
+  "geographic_vintage": null,
+  "format": "parquet",
+  "file_size_bytes": 2220887978,
+  "sha256": "fb02cfad68e6b42459dbc06e44cfcbca42c9fea11e553a5477dbdda5260e6843",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Stock national (~2,2 Go) : filtrer en streaming avec DuckDB. Établissements à diffusion partielle : adresse et coordonnées masquées. Millésime des codes commune à mesurer au Test 1.",
+  "crs": null
+}

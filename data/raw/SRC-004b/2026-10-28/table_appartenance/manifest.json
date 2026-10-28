@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-004b",
+  "source_title": "table-appartenance-geo-communes-2026.zip",
+  "publisher": "INSEE",
+  "source_url": "https://www.insee.fr/fr/statistiques/fichier/7671844/table-appartenance-geo-communes-2026.zip",
+  "license": "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)",
+  "retrieved_at": "2026-10-28T10:05:40.187675Z",
+  "published_at": "2026-03-19",
+  "reference_date": "2026-01-01",
+  "geographic_vintage": "COG 2026",
+  "format": "zip (xlsx)",
+  "file_size_bytes": 2047330,
+  "sha256": "9e26e89a580bf787c610913080aee50f28c678a82dfa36db864ddbad228a07b8",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Classeur xlsx (onglets COM, ARM…) ; en-tête de données en ligne 6.",
+  "crs": null
+}

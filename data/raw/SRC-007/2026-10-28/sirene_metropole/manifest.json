@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-007",
+  "source_title": "WFS metropole-de-lyon:insee.sirene (CSV)",
+  "publisher": "Métropole de Lyon",
+  "source_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:insee.sirene&outputFormat=CSV&SRSNAME=EPSG:4326",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv)",
+  "retrieved_at": "2026-10-28T10:06:06.694612Z",
+  "published_at": null,
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "csv",
+  "file_size_bytes": 100569272,
+  "sha256": "6667d68f509f27ad9c23dbfd57998078195cd7ce36cd519671406803a29b56f7",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Établissements actifs géolocalisés uniquement ; mise à jour observée au 2026-08-04 ; géocodage propre à la Métropole.",
+  "crs": "EPSG:4326 (demandé dans la requête)"
+}

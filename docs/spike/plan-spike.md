@@ -25,13 +25,18 @@ Chaque test a un critère mesurable **fixé avant** de l'exécuter. Ne pas assou
 2. Construire `ref_arrondissements` (69381–69389, parent 69123).
 3. Construire la correspondance 59 → 58 (regroupement Oullins + Pierre-Bénite) depuis la table de passage. Lire le code et la date d'effet dans les données, ne pas les supposer.
 4. Filtrer le stock Sirene en streaming (DuckDB) sur ces codes ; écrire `data/interim/sirene_ml.parquet`.
-5. Joindre le fichier de géolocalisation sur SIRET.
+5. Joindre le fichier de géolocalisation sur SIRET, en ne retenant que `epsg = '2154'` (le fichier mélange des CRS d'outre-mer ; compter les lignes écartées).
 6. Mesurer :
    - nb d'établissements (actifs / fermés) par commune et par arrondissement ;
    - niveau géographique effectivement utilisé par Sirene pour Lyon (commune ou arrondissement) ;
    - taux de jointure stock ↔ géolocalisation ;
    - part des actifs **sans** coordonnées, ventilée par `statutDiffusionEtablissement` ;
-   - distribution de la qualité de géolocalisation.
+   - distribution de la qualité de géolocalisation ;
+   - correspondance des codes commune de la géolocalisation (`plg_code_commune`, géographie 2024) avec le COG 2026 pour la Métropole : codes absents du COG 2026, codes différents du `codeCommuneEtablissement` du stock ;
+   - dates de création hors de la plage attendue, en **deux comptages séparés**, **quantifiés et non filtrés en silence** (tout filtre éventuel est décidé et consigné) :
+     - postérieures à la date du stock de moins d'un an : anticipation probable (création déclarée à l'avance) ;
+     - postérieures à la date du stock de plus d'un an, ou antérieures à 1900 : erreurs ;
+   - comparaison des coordonnées du stock (`coordonneeLambert*Etablissement`) avec celles du fichier de géolocalisation : couverture de chaque source (présent dans l'une, l'autre, les deux), et sur les établissements présents dans les deux, écart en mètres (distribution, quantiles, part > 50 m). Attention : le fichier de géolocalisation stocke X/Y en `FLOAT` 32 bits (précision ≈ 0,5 m).
 7. Contrôle croisé : comparer les actifs géolocalisés avec SRC-007 (jeu Métropole) par commune.
 
 **GO si :**
@@ -51,8 +56,10 @@ Chaque test a un critère mesurable **fixé avant** de l'exécuter. Ne pas assou
 3. Reprojeter dans un CRS commun (EPSG:2154) avec `always_xy := true`.
 4. Sur **un seul arrondissement de Lyon d'abord** (ex. 69387), puis toute la Métropole : `ST_Contains(zone, point)`.
 5. Mesurer : % d'établissements géolocalisés sans zone, % dans plusieurs zones, temps de calcul, pic mémoire.
-6. Vérifier manuellement 10 établissements tirés au hasard (zone attendue vs zone trouvée, sur une carte).
-7. Lister les codes de zone et vérifier qu'ils correspondent à des chapitres du règlement écrit.
+6. Mesurer la distance de chaque établissement à la limite de zone la plus proche (`ST_Distance` au contour, EPSG:2154) : distribution, part à moins de 10 m et à moins de 25 m. Ces établissements ont une zone sensible à l'imprécision de la géolocalisation.
+7. Inventorier les attributs réglementaires du zonage (`ces*`, `cpt*`, `hauteur_*`, `plafond`, `stecal`…) : liste, taux de remplissage, distribution des valeurs par famille de zone.
+8. Vérifier manuellement 10 établissements tirés au hasard (zone attendue vs zone trouvée, sur une carte).
+9. Lister les codes de zone et vérifier qu'ils correspondent à des chapitres du règlement écrit.
 
 **GO si :**
 - ≥ 98 % des établissements géolocalisés tombent dans exactement une zone (le reste expliqué : bord, voirie, hors territoire) ;

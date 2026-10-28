@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_reglement_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_reglement_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-10-28T10:05:52.188498Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 11059057,
+  "sha256": "2aee20bf0dc394e1a23bab0a3f2906498bfaacefc50bd773d1e6d50fd3655920",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Règlement écrit de la version opposable publiée au GPU ; un seul PDF pour toutes les zones.",
+  "crs": null
+}

@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "Détails du document GPU (liste des 617 pièces écrites)",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/details",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-10-28T10:05:52.287274Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "json",
+  "file_size_bytes": 153306,
+  "sha256": "762a7f0d7cb501e2ebe896d867bcb2dd194972241747f46f33bac262180cb138",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": null,
+  "crs": null
+}

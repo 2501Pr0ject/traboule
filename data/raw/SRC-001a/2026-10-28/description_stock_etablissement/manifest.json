@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-001a",
+  "source_title": "description-fichier-stocketablissement-311.pdf",
+  "publisher": "INSEE",
+  "source_url": "https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20260129-104840/stocketablissement-311-description-fichier-29-01-2026.pdf",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)",
+  "retrieved_at": "2026-10-28T10:14:58.808706Z",
+  "published_at": "2026-01-29",
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 127863,
+  "sha256": "8f087087baad3061aef8ef2cd51854f6b81576cb0fbbecf1a8ce82a5f520f8ff",
+  "schema_version": "3.11",
+  "ingestion_version": "0.1.0",
+  "limitations": "sha1 déclaré par data.gouv (46039a974cbaf1cdb62c28cd21791a4b547dc545) différent du fichier servi ; conforme au sha1 de l'analyse data.gouv (analysis:checksum), fichier modifié le 2026-07-02T15:00:12+00:00 selon cette analyse.",
+  "crs": null
+}

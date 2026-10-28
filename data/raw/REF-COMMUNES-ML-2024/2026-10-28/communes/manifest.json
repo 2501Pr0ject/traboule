@@ -1,0 +1,18 @@
+{
+  "source_id": "REF-COMMUNES-ML-2024",
+  "source_title": "WFS metropole-de-lyon:adr_voie_lieu.adrcomgl_2024 (GeoJSON)",
+  "publisher": "Métropole de Lyon",
+  "source_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrcomgl_2024&outputFormat=application/json&SRSNAME=EPSG:4326",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv)",
+  "retrieved_at": "2026-10-28T10:05:47.144071Z",
+  "published_at": null,
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "geojson",
+  "file_size_bytes": 1251747,
+  "sha256": "151a86dd87d9605eecf11f81e30e356ad9c88d311eaa1d91ce2afc81c942730e",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": null,
+  "crs": "urn:ogc:def:crs:EPSG::4326"
+}

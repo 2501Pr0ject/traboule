@@ -34,7 +34,8 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 5. **Lyon et ses arrondissements.** La commune 69123 et ses 9 arrondissements municipaux (69381–69389) ne sont jamais additionnés ni confondus. Chaque table déclare son niveau géographique.
 6. **Millésimes géographiques.** La Métropole compte 58 communes depuis le 1er janvier 2024 (regroupement Oullins + Pierre-Bénite) ; le PLU-H a été conçu sur 59 communes. Chaque table porte son millésime COG ; le passage entre millésimes se fait par une table de correspondance documentée et testée.
 7. **Diffusion partielle Sirene.** Les établissements à diffusion partielle n'ont pas de géolocalisation publique. Un comptage spatial n'est jamais présenté comme exhaustif ; la part non géolocalisée est quantifiée.
-8. **Gros fichiers hors Git.** `data/` est ignoré ; seuls les manifestes et de petits échantillons de test sont versionnés.
+8. **Gros fichiers hors Git.** `data/` est ignoré ; seuls les manifestes et de petits échantillons de test sont versionnés (jamais extraits de Sirene, voir règle 9).
+9. **Les données Sirene brutes ne sont jamais republiées**, ni en totalité ni en extrait au niveau établissement : obligations liées aux données personnelles (entrepreneurs individuels) et oppositions à la diffusion survenues après l'instantané téléchargé. Le dépôt publie les scripts, les manifestes et des agrégats.
 
 ## 4. Coordonnées et DuckDB spatial
 
@@ -62,6 +63,7 @@ Dès le premier prototype de routeur :
 - Pas de réponse forcée : l'abstention est un comportement attendu et évalué.
 - La réponse distingue faits vérifiés, interprétations du modèle et limites des données.
 - Un résultat spatial est une analyse de localisation, jamais un constat réglementaire.
+- Un attribut de zonage peut servir à filtrer, sélectionner ou compter ; toute affirmation sur le contenu d'une règle cite le règlement écrit, qui fait foi en cas d'écart.
 
 ## 7. Jeu de référence
 

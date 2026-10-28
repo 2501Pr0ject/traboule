@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-004c",
+  "source_title": "table_passage_geo2003_geo2026.zip",
+  "publisher": "INSEE",
+  "source_url": "https://www.insee.fr/fr/statistiques/fichier/7671867/table_passage_geo2003_geo2026.zip",
+  "license": "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)",
+  "retrieved_at": "2026-10-28T10:05:41.078022Z",
+  "published_at": "2026-03-19",
+  "reference_date": "2026-01-01",
+  "geographic_vintage": "communes ayant existé depuis 2003 → COG 2026",
+  "format": "zip (xlsx)",
+  "file_size_bytes": 710298,
+  "sha256": "0b2d502c1339e981b568a978f85b1a0d5dd5e7e3f68b4c94adef7eed77ebf546",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Classeur xlsx ; onglets « Table de passage » et « Liste des fusions » ; en-tête en ligne 6.",
+  "crs": null
+}

@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-001b",
+  "source_title": "documentation-geolocalisationetablissements-sirene-pouretudesstatistiques-v8.pdf",
+  "publisher": "INSEE",
+  "source_url": "https://static.data.gouv.fr/resources/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/20260123-143212/documentation-geolocalisationetablissements-sirene-pouretudesstatistiques-v8.pdf",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)",
+  "retrieved_at": "2026-10-28T10:10:04.238916Z",
+  "published_at": "2026-01-23",
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 189985,
+  "sha256": "541bec41c2359ad9fe310bf0493ba450bde3c5ff2be538cc5b0ca6114d08a3cf",
+  "schema_version": "v8",
+  "ingestion_version": "0.1.0",
+  "limitations": "sha1 déclaré par data.gouv (14205b7dc275391e914852a8f7f728645b1cf622) différent du fichier servi ; conforme au sha1 de l'analyse data.gouv (analysis:checksum), fichier modifié le 2026-07-02T16:52:49+00:00 selon cette analyse.",
+  "crs": null
+}

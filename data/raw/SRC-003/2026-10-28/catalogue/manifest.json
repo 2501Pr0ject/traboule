@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-003",
+  "source_title": "WFS metropole-de-lyon:plu_h_opposable.pludocumentcommune (GeoJSON)",
+  "publisher": "Métropole de Lyon",
+  "source_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:plu_h_opposable.pludocumentcommune&outputFormat=application/json&SRSNAME=EPSG:4326",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; catalogue uniquement, documents cibles non couverts)",
+  "retrieved_at": "2026-10-28T10:05:47.755559Z",
+  "published_at": null,
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "geojson",
+  "file_size_bytes": 1304308,
+  "sha256": "bba60c9776afe792480f3e746ca740ca72776888595f4bb7f0831cce4fdcd126",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Catalogue de liens, pas le corpus. Extraction WFS dynamique.",
+  "crs": "urn:ogc:def:crs:EPSG::4326"
+}

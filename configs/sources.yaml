@@ -2,10 +2,17 @@
 # Règle : aucune URL de ressource inventée. "A_CONFIRMER" = à résoudre via l'API
 # data.gouv.fr (https://www.data.gouv.fr/api/1/datasets/<id-ou-slug>/) ou la page
 # officielle de l'INSEE, puis à remplacer ici avant tout téléchargement.
+#
+# Chaque ressource est téléchargée par spikes/download.py dans
+# data/raw/<source_id>/<AAAA-MM-JJ>/<resource.name>/ avec son manifest.json.
+#   kind: http  -> téléchargement direct ; si `datagouv` est renseigné, le sha1 publié
+#                  par data.gouv est vérifié.
+#   kind: wfs   -> requête WFS GeoServer ; le nombre d'objets reçus est comparé au
+#                  numberMatched du serveur. `urls` est essayé dans l'ordre.
 
 metadata:
-  version: "0.2"
-  checked_at: "2026-10-27"
+  version: "0.3"
+  checked_at: "2026-10-28"
   territory:
     name: "Métropole de Lyon"
     epci_code: "200046977"
@@ -17,85 +24,203 @@ metadata:
 sources:
   - id: SRC-001a
     name: sirene_stock_etablissements
+    title: "Base Sirene des entreprises et de leurs établissements (SIREN, SIRET)"
     publisher: INSEE
     role: primary
-    dataset_url: "A_CONFIRMER"   # fiche data.gouv « Base Sirene des entreprises et de leurs établissements (SIREN, SIRET) »
-    resource_preference: ["parquet", "csv"]
-    license: "A_CONFIRMER"
+    dataset_url: "https://www.data.gouv.fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret"
+    datagouv_dataset_id: "5b7ffc618b4c4169d30727e0"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)"
     update_frequency: monthly
-    size_hint: "plusieurs Go (national) — filtrer en streaming"
     status: to_download
     v1: true
+    resources:
+      - name: stock_etablissement
+        title: "Sirene : Fichier StockEtablissement - 01 octobre 2026 (format parquet)"
+        kind: http
+        url: "https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20261001-073823/stock-stocketablissement-parquet.parquet"
+        datagouv: {dataset: "5b7ffc618b4c4169d30727e0", resource: "a29c1297-1f92-4e2a-8f6b-8c902ce96c5f"}
+        format: parquet
+        published_at: "2026-10-01"
+        reference_date: "2026-10-01"
+        limitations: "Stock national (~2,2 Go) : filtrer en streaming avec DuckDB. Établissements à diffusion partielle : adresse et coordonnées masquées. Millésime des codes commune à mesurer au Test 1."
+      - name: description_stock_etablissement
+        title: "description-fichier-stocketablissement-311.pdf"
+        kind: http
+        url: "https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20260129-104840/stocketablissement-311-description-fichier-29-01-2026.pdf"
+        datagouv: {dataset: "5b7ffc618b4c4169d30727e0", resource: "65946639-3150-4492-a988-944e2633531e"}
+        format: pdf
+        published_at: "2026-01-29"
+        schema_version: "3.11"
 
   - id: SRC-001b
     name: sirene_geolocalisation_etudes_statistiques
+    title: "Géolocalisation des établissements du répertoire SIRENE pour les études statistiques"
     publisher: INSEE
     role: primary
     dataset_url: "https://www.data.gouv.fr/datasets/61d5e2d372a52d9f9411ff88"
     api_url: "https://www.data.gouv.fr/api/1/datasets/61d5e2d372a52d9f9411ff88/"
-    license: "A_CONFIRMER"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)"
     update_frequency: monthly
-    expected_fields_hint: ["siret", "x", "y", "qualite", "code_commune", "iris", "qpv"]  # noms exacts à lire dans la documentation
+    pairing: "Couplé au stock SRC-001a du 2026-10-01 (seule paire en ligne ; la documentation v8 ne précise pas le stock source — voir registre)."
     status: to_download
     v1: true
+    resources:
+      - name: geolocalisation
+        title: "Sirene : Fichier géolocalisation établissements - octobre 2026 (format parquet)"
+        kind: http
+        url: "https://static.data.gouv.fr/resources/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/20261021-064721/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet"
+        datagouv: {dataset: "61d5e2d372a52d9f9411ff88", resource: "672007af-0146-491f-835c-8314d63fa44e"}
+        format: parquet
+        published_at: "2026-10-21"
+        geographic_vintage: "communes et IRIS : géographie au 1er janvier 2024 (documentation v8)"
+        crs: "EPSG:2154 (X, Y) ; colonnes y_latitude / x_longitude en WGS84"
+        limitations: "Fichier en ligne un mois seulement, sans archive (documentation v8). Pas de coordonnées pour les établissements à diffusion partielle."
+      - name: documentation
+        title: "documentation-geolocalisationetablissements-sirene-pouretudesstatistiques-v8.pdf"
+        kind: http
+        url: "https://static.data.gouv.fr/resources/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/20260123-143212/documentation-geolocalisationetablissements-sirene-pouretudesstatistiques-v8.pdf"
+        datagouv: {dataset: "61d5e2d372a52d9f9411ff88", resource: "9f6c2157-3c89-4e8d-8473-9894348c84cb"}
+        format: pdf
+        published_at: "2026-01-23"
+        schema_version: "v8"
 
   - id: SRC-002
     name: pluh_zonage
+    title: "Zone du PLU-H de la Métropole de Lyon"
     publisher: "Métropole de Lyon"
     role: primary
-    dataset_url: "A_CONFIRMER"   # rechercher « zone PLU-H Métropole de Lyon » sur data.gouv / data.grandlyon
-    license: "Licence Ouverte 2.0"
-    formats: ["geojson", "shapefile", "csv"]
-    observed_update: "2026-10-13"
+    dataset_url: "https://www.data.gouv.fr/datasets/zone-du-plu-h-de-la-metropole-de-lyon"
+    datagouv_dataset_id: "5e3aecb18b4c413b98daa42c"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     status: to_download
     v1: true
+    resources:
+      - name: zonage
+        title: "WFS metropole-de-lyon:plu_h_opposable.pluzone (GeoJSON)"
+        kind: wfs
+        urls:
+          # 1. GeoJSON en Lambert 93 (même requête que la ressource officielle, srsName changé)
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:plu_h_opposable.pluzone&outputFormat=application/json&SRSNAME=EPSG:2154"
+          # 2. Repli : ressource officielle data.gouv (GeoJSON EPSG:4326)
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:plu_h_opposable.pluzone&outputFormat=application/json&SRSNAME=EPSG:4326"
+        format: geojson
+        limitations: "Extraction WFS dynamique : la version des données est celle du serveur au moment du téléchargement. Concordance avec la version GPU du 2026-03-26 à vérifier."
 
   - id: SRC-003
     name: pluh_catalogue_documents
+    title: "Accès direct aux documents constitutifs du dossier PLU-H, par commune"
     publisher: "Métropole de Lyon"
     role: discovery
-    dataset_url: "A_CONFIRMER"
-    license: "Licence Ouverte 2.0 (catalogue uniquement — documents cibles à vérifier)"
-    observed_update: "2026-10-26"
+    dataset_url: "https://www.data.gouv.fr/datasets/acces-direct-aux-documents-constitutifs-du-dossier-plu-h-par-commune-via-le-site-internet-du-plu-h-de-la-metropole-de-lyon"
+    datagouv_dataset_id: "5e3aec728b4c4137ce5aa0bf"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; catalogue uniquement, documents cibles non couverts)"
     status: to_download
     v1: true
+    resources:
+      - name: catalogue
+        title: "WFS metropole-de-lyon:plu_h_opposable.pludocumentcommune (GeoJSON)"
+        kind: wfs
+        urls:
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:plu_h_opposable.pludocumentcommune&outputFormat=application/json&SRSNAME=EPSG:4326"
+        format: geojson
+        limitations: "Catalogue de liens, pas le corpus. Extraction WFS dynamique."
 
   - id: SRC-004a
     name: cog_2026
+    title: "Code officiel géographique au 1er janvier 2026 (ensemble des fichiers CSV)"
     publisher: INSEE
     role: reference
-    dataset_url: "A_CONFIRMER"   # page INSEE « Code officiel géographique au 1er janvier 2026 »
-    license: "A_CONFIRMER"
+    dataset_url: "https://www.insee.fr/fr/information/8740222"
+    datagouv_dataset_id: "58c984b088ee386cdb1261f3"
+    license: "Licence Ouverte 2.0 selon les mentions légales insee.fr ; la fiche data.gouv indique fr-lo (Licence Ouverte 1.0)"
     status: to_download
     v1: true
+    resources:
+      - name: cog_ensemble
+        title: "cog_ensemble_2026_csv.zip"
+        kind: http
+        url: "https://www.insee.fr/fr/statistiques/fichier/8740222/cog_ensemble_2026_csv.zip"
+        format: zip (csv)
+        reference_date: "2026-01-01"
+        geographic_vintage: "COG 2026"
+        limitations: "Date de publication non affichée sur la page INSEE ; fichiers de l'archive datés du 2026-02-13."
 
   - id: SRC-004b
     name: appartenance_geographique_communes_2026
+    title: "Table d'appartenance géographique des communes au 1er janvier 2026"
     publisher: INSEE
     role: reference
-    dataset_url: "A_CONFIRMER"
-    license: "A_CONFIRMER"
+    dataset_url: "https://www.insee.fr/fr/information/7671844"
+    license: "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)"
     status: to_download
     v1: true
+    resources:
+      - name: table_appartenance
+        title: "table-appartenance-geo-communes-2026.zip"
+        kind: http
+        url: "https://www.insee.fr/fr/statistiques/fichier/7671844/table-appartenance-geo-communes-2026.zip"
+        format: zip (xlsx)
+        published_at: "2026-03-19"
+        reference_date: "2026-01-01"
+        geographic_vintage: "COG 2026"
+        limitations: "Classeur xlsx (onglets COM, ARM…) ; en-tête de données en ligne 6."
 
   - id: SRC-004c
     name: table_passage_millesimes
+    title: "Table de passage des communes, géographie 2003 → 2026"
     publisher: INSEE
     role: reference
-    dataset_url: "A_CONFIRMER"
-    license: "A_CONFIRMER"
+    dataset_url: "https://www.insee.fr/fr/information/7671867"
+    license: "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)"
     status: to_download
     v1: true
+    resources:
+      - name: table_passage_2003_2026
+        title: "table_passage_geo2003_geo2026.zip"
+        kind: http
+        url: "https://www.insee.fr/fr/statistiques/fichier/7671867/table_passage_geo2003_geo2026.zip"
+        format: zip (xlsx)
+        published_at: "2026-03-19"
+        reference_date: "2026-01-01"
+        geographic_vintage: "communes ayant existé depuis 2003 → COG 2026"
+        limitations: "Classeur xlsx ; onglets « Table de passage » et « Liste des fusions » ; en-tête en ligne 6."
 
   - id: SRC-005
     name: geoportail_urbanisme_pluh
-    publisher: "IGN / Ministère (alimenté par la Métropole)"
+    title: "Plan Local d'Urbanisme intercommunal (PLUi) GRAND LYON LA METROPOLE — Géoportail de l'Urbanisme"
+    publisher: "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)"
     role: legal_reference
     portal_url: "https://www.geoportail-urbanisme.gouv.fr/"
-    access: "A_CONFIRMER"   # téléchargement du document ou API Carto module GPU
-    license: "A_CONFIRMER"
-    status: to_investigate
+    access: "API Carto module GPU (https://apicarto.ign.fr/api/gpu, OpenAPI : https://apicarto.ign.fr/api/doc/gpu.yml) + API du site GPU (api/document/<id>/details, /files/<nom>)"
+    gpu:
+      partition: "DU_200046977"
+      document_name: "200046977_PLUi_20260326"
+      gpu_doc_id: "4f3ddc27a9611b4bc94fa161443b8e86"
+      legal_status: "APPROVED / EN_VIGUEUR"
+      approval_date: "2026-03-26"   # lue dans le nom du document (convention CNIG <SIREN>_<TYPE>_<DATAPPRO>)
+      publication_date: "2026-04-23"
+      projection: "EPSG:2154"
+      pieces_count: 617
+      archive_url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/download/200046977_PLUi_20260326.zip"   # 3,1 Go — non téléchargée
+    license: "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë"
+    status: investigated
     v1: true
+    resources:
+      - name: reglement_ecrit
+        title: "200046977_reglement_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_reglement_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Règlement écrit de la version opposable publiée au GPU ; un seul PDF pour toutes les zones."
+      - name: liste_pieces
+        title: "Détails du document GPU (liste des 617 pièces écrites)"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/details"
+        format: json
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
 
   - id: SRC-006
     name: bpe
@@ -107,22 +232,41 @@ sources:
 
   - id: SRC-007
     name: sirene_metropole_lyon
+    title: "Base Sirene de la Métropole de Lyon"
     publisher: "Métropole de Lyon"
     role: cross_check
     dataset_url: "https://www.data.gouv.fr/datasets/base-sirene-de-la-metropole-de-lyon"
-    license: "Licence Ouverte 2.0"
+    datagouv_dataset_id: "62dfe1518bcb48c2eb805b6d"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     observed_update: "2026-08-04"
-    limitations: "établissements actifs géolocalisés uniquement"
     status: to_download
     v1: true
+    resources:
+      - name: sirene_metropole
+        title: "WFS metropole-de-lyon:insee.sirene (CSV)"
+        kind: wfs
+        urls:
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:insee.sirene&outputFormat=CSV&SRSNAME=EPSG:4326"
+        format: csv
+        limitations: "Établissements actifs géolocalisés uniquement ; mise à jour observée au 2026-08-04 ; géocodage propre à la Métropole."
 
   - id: REF-COMMUNES-ML-2024
     name: communes_metropole_depuis_2024
+    title: "Communes de la Métropole de Lyon (à partir de 2024)"
     publisher: "Métropole de Lyon"
     role: cross_check
-    dataset_url: "https://www.data.gouv.fr/datasets/communes-de-la-metropole-de-lyon-a-partir-de-2024/"
+    dataset_url: "https://www.data.gouv.fr/datasets/communes-de-la-metropole-de-lyon-a-partir-de-2024"
+    datagouv_dataset_id: "65cfe9aa969c7ab093a48414"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     status: to_download
     v1: true
+    resources:
+      - name: communes
+        title: "WFS metropole-de-lyon:adr_voie_lieu.adrcomgl_2024 (GeoJSON)"
+        kind: wfs
+        urls:
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrcomgl_2024&outputFormat=application/json&SRSNAME=EPSG:4326"
+        format: geojson
 
 excluded:
   - name: sirene_geocodee_etalab_ban

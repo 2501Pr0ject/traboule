@@ -32,4 +32,10 @@ uv sync --extra spike   # dépendances du spike
 
 ## Sources de données
 
-Données publiques sous Licence Ouverte (Sirene / INSEE, Métropole de Lyon, Géoportail de l'Urbanisme). Les fichiers ne sont pas versionnés : ils se reconstruisent à partir des manifestes. Voir le [registre](docs/sources/registre.md).
+Données publiques sous Licence Ouverte (Sirene / INSEE, Métropole de Lyon, Géoportail de l'Urbanisme). Les fichiers ne sont pas versionnés : les scripts et les manifestes permettent de les retélécharger. Les données Sirene brutes ne sont jamais republiées ; le dépôt ne publie que des agrégats. Voir le [registre](docs/sources/registre.md).
+
+## Limites
+
+- **Reproductibilité des chiffres Sirene.** Le fichier INSEE de géolocalisation des établissements n'est en ligne qu'un mois, sans archive. Une reconstruction ultérieure utilisera un fichier plus récent et donnera des chiffres différents de ceux publiés ; les manifestes (date, sha256) identifient la version utilisée.
+- **Diffusion partielle.** Les établissements ayant fait opposition n'ont pas de géolocalisation publique : les comptages spatiaux sont des minorants.
+- **Résultats spatiaux.** Situer un établissement dans une zone du PLU-H est une analyse de localisation, pas un constat réglementaire.
