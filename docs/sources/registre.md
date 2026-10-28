@@ -95,11 +95,13 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 - **Attributs :** `zone`, `zonage`, `stecal`, `plafond`, `ces`, `ces_bande_principale`, `ces_bande_secondaire`, `cpt`, `cpt_bande_principale`, `cpt_bande_secondaire`, `hauteur_bande_principale`, `hauteur_bande_secondaire`, `last_update`, `last_update_fme`, `gid`. Certaines règles chiffrées sont portées directement par les objets.
 - **Statut des attributs chiffrés :** `ces*`, `cpt*`, `hauteur_*` et `plafond` sont une **synthèse** produite par la Métropole. **Le règlement écrit (SRC-005) fait foi en cas d'écart.** Un attribut peut servir à filtrer, sélectionner ou compter ; toute affirmation sur le contenu d'une règle cite le règlement écrit (SRC-005).
 
+- **Constaté au Test 2 (2026-10-28) :** 4 487 multipolygones tous valides ; 92 codes PLU-H + **1 objet `SECTSAUV`** (secteur sauvegardé, 31,2 ha, `zonage` nul, régi par son propre plan de sauvegarde et non par le règlement du PLU-H) ; 16 chevauchements (49 m² au total) ; couverture du territoire quasi complète (0,16 ha non zonés, 0,03 ha hors territoire). Le règlement écrit est structuré par zone mère : sous-secteurs et zones `AU*` à relier par une table de correspondance.
+
 **Contrôles :**
-1. ~~CRS déclaré~~ : EPSG:2154 obtenu directement. Cohérence avec les coordonnées Sirene à vérifier au Test 2.
+1. ~~CRS déclaré~~ : EPSG:2154 obtenu directement ; cohérent avec les coordonnées Sirene (Test 2).
 2. Validité des géométries (`ST_IsValid`), chevauchements, trous.
 3. Champ du code de zone et correspondance avec les intitulés du règlement écrit.
-4. Version représentée et concordance avec la version GPU du 2026-03-26 (SRC-005).
+4. Version représentée et concordance avec la version GPU du 2026-03-26 (SRC-005) : **concordance constatée** sur 21 points (Bellecour + 20 contrôles du Test 2), zone GPU `zone-urba` = code data.grandlyon. Échantillon, pas une preuve exhaustive.
 5. Couverture : la somme des zones couvre-t-elle tout le territoire des 58 communes ?
 
 **Limite connue :** le zonage ne suffit pas à déterminer toutes les règles applicables (prescriptions surfaciques/linéaires, servitudes, OAP).
