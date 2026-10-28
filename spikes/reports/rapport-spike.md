@@ -7,7 +7,7 @@
 | Test 0 — Préparation | Fait (registre v0.3, manifestes) |
 | Test 1 — Référentiel et Sirene | **GO avec réserves** (voir ci-dessous) |
 | Test 2 — Jointure spatiale | **GO avec réserves** (critères atteints, règles de contrôle fixées en cours de route) |
-| Test 3 — PDF | à faire |
+| Test 3 — PDF | **GO avec réserves** (critères atteints sur le règlement ; cahiers et choix d'extracteur à traiter) |
 | Test 4 — BGE-M3 | à faire |
 
 ## Environnement
@@ -420,7 +420,132 @@ Réserves à porter :
 - **Secteur sauvegardé (`SECTSAUV`)** : candidat à une question sans réponse (`out_of_corpus` ou `near_miss_level`) : un établissement du Vieux-Lyon est dans le secteur sauvegardé, régi par son propre plan de sauvegarde, non ingéré ; la bonne réponse nomme ce plan sans appliquer le règlement du PLU-H.
 - Les établissements en confiance faible font de bons cas de quasi-réponse sur « dans quelle zone se trouve… ».
 
-## Test 3 — PDF : à faire
+## Test 3 — PDF : GO avec réserves
+
+Scripts : `spikes/test3_extraction.py` (extraction, échantillon, revue, structure, passages), `spikes/test3_tableaux.py` (tableaux du règlement), `spikes/test3_grille.py` (pré-remplissage de la grille). Sorties dans `spikes/output/pdf/` (non versionné) : `revue.html`, `grille.csv`, `passages.jsonl`, `tableaux/revue_tableaux.html`, `metrics.json`.
+
+### Corpus pilote (pièces du document GPU `200046977_PLUi_20260326`)
+
+| Doc | Pièce (SRC-005) | Pages PDF | Version lue dans la pièce |
+|---|---|---|---|
+| A — règlement, zones économiques + zones à urbaniser | `reglement_ecrit` | 581–680, 729–748 (120 p.) | « Modification n° 4 – Approbation 2024 » (pied de page) |
+| B — OAP d'Oullins (8 OAP, dont l'OAP 7 « ZA de la Saulaie », vocation économique) | `cahier_communal_oullins` (SECT45) | 56–73 (18 p.) | « Mise en compatibilité n°10 – Approbation 2025 » |
+| C — cahier communal de Pierre-Bénite (diagnostic, PADD, POAH, OAP, surfaces) | `cahier_communal_pierre_benite` (SECT46) | 1–67 | « Modification n°4 – Approbation 2024 » |
+
+Les OAP ne sont pas des pièces séparées au GPU : elles forment la partie 4 de chaque cahier communal. Le cahier contient aussi le rapport de présentation communal (type couvert sans pièce supplémentaire). **Chaque pièce porte sa propre procédure**, distincte de la date de publication GPU (2026-04-23) : une citation doit donner la version de la pièce (conventions §6).
+
+Nouvelles ressources téléchargées dans `data/raw/SRC-005/2026-10-28/<ressource>/` (immuabilité par ressource, conventions §3.1) : `cahier_communal_oullins` (30,5 Mo, sha256 `67a23086`), `cahier_communal_pierre_benite` (14,7 Mo, `63d7187f`), `plan_de_secteurs` (0,6 Mo, `e5f625cf`).
+
+### Performances
+
+| Étape | 1er passage (froid) | 2e passage | Pic RSS (2e) |
+|---|---:|---:|---:|
+| PyMuPDF A (120 p.) | 58,0 s | 11,2 s (10,7 p/s) | 387 Mo |
+| PyMuPDF B (18 p.) | 10,1 s | 3,1 s | 403 Mo |
+| PyMuPDF C (67 p.) | 36,8 s | 9,6 s | 505 Mo |
+| Docling : import + chauffe (**exclu**) | 51,7 s | 9,9 s | 881 Mo |
+| Docling A | 131,9 s | 50,8 s (2,4 p/s) | 1 318 Mo |
+| Docling B | 25,8 s | 8,8 s | 726 Mo |
+| Docling C | 121,8 s | 51,3 s (1,3 p/s) | 965 Mo |
+
+Le temps PyMuPDF comprend la détection de tableaux et le comptage des tracés (le texte seul est bien plus rapide). Le premier passage cumule téléchargement des modèles Docling (**1 590 Mo** dans le cache Hugging Face), premiers chargements et disque froid ; les deux passages sont consignés. Mémoire : < 1,4 Go, compatible avec la machine. OCR désactivé (PDF natifs).
+
+### Pages graphiques
+
+Règle fixée avant le tirage : < 300 caractères extractibles **et** (≥ 50 % de la page en images **ou** > 2 000 tracés). Résultat : A 0 page, B 2, C 5, classées « graphique, hors périmètre sans OCR ». **La règle manque deux cartes de l'échantillon** (B p. 59 et p. 63 : 49,9 % et 45,3 % d'image, juste sous le seuil) : classées graphiques à l'œil dans la grille, règle non modifiée après coup ; à revoir (seuil d'image ou critère « texte majoritairement de légende »).
+
+### Grille (10 pages par document, 2 extracteurs)
+
+Tirage `md5(doc_id | page | graine)`, une graine par document (3101, 3102, 3103). Revue : `revue.html` (rendu PNG, texte PyMuPDF, texte Docling côte à côte). Grille issue d'un **pré-remplissage automatisé** (rendus PNG et textes), puis **relue par le porteur le 2026-10-28** : 60 lignes sur 60 déclarées conformes, sans correction. Le porteur n'ayant pas modifié les fichiers, `relu_par_humain = oui` a été reporté automatiquement dans la grille, sur cette déclaration ; la relecture couvre aussi `revue.html` et `tableaux/revue_tableaux.html`.
+
+| Document | PyMuPDF : lisible et dans l'ordre | Docling : lisible et dans l'ordre | Pages graphiques |
+|---|---:|---:|---:|
+| A — règlement | 10/10 | 10/10 | 0 |
+| B — OAP | 0/10 | 7/10 | 3 |
+| C — cahier | 2/10 | 5/10 | 0 |
+
+- **Règlement (une colonne)** : les deux extracteurs donnent un texte lisible et ordonné ; Docling écarte en-têtes et pieds de page, PyMuPDF les garde (retirés au découpage).
+- **Cahiers (deux colonnes, encadrés, cartes)** : `PyMuPDF get_text(sort=True)` **entrelace les colonnes ligne à ligne** (inutilisable) ; Docling restitue l'ordre des colonnes et les titres.
+- **Défaut de Docling** : sur les pages de graphiques (C p. 32, 34), **duplication massive** du texte (une même ligne jusqu'à 5 fois, étiquettes de camemberts répétées) ; puces mal décodées (« ͳ ») dans les OAP.
+
+### Tableaux du règlement
+
+Les chapitres du corpus (zones économiques et AU) **ne contiennent aucun tableau de règles** : les deux « tableaux » détectés par Docling sont les sommaires des pages de garde de section. Le critère a donc été évalué sur le règlement complet : PyMuPDF trouve des tableaux sur **43 pages** (partie I : stationnement, définitions ; quelques zones mixtes). Tirage de 5 pages (graine 3104 : p. 101, 103, 277, 362, 436) :
+- les deux extracteurs détectent les mêmes tableaux (8 au total) ;
+- **Docling** : en-têtes et cellules propres, cellules fusionnées correctement restituées (ex. p. 101, normes de stationnement par secteur ; p. 362, coefficients de pleine terre par sous-secteur URm2) ;
+- **PyMuPDF** : mots collés dans les en-têtes (« Secteursde », « Coefficientdepleineterre »), colonnes fantômes (« Col1 ») sur les cellules fusionnées ; exploitable sur les tableaux simples seulement.
+- Revue visuelle : `tableaux/revue_tableaux.html` (relue par le porteur, conforme).
+
+### Structure zone → article (règlement)
+
+Repères tirés du texte réel : en-tête courant « … PARTIE II  Zone <code> » (zone de chaque page), « CHAPITRE n - … », sections « n.n - … », sous-sections « n.n.n - … » ; seconde ligne d'un titre rattachée au titre (courte, sans ponctuation finale, en capitales ou commençant par une minuscule). Résultat sur les 120 pages, mesuré **en caractères** : **94,6 % du texte rattaché à zone > chapitre > article**, 5,3 % aux préambules de zone (caractère, rappels), 0,1 % aux pages de garde de section ; 8 zones (UEa, UEc, UEi1, UEi2, UEl, UEp, AUs.co, AU).
+
+Défauts du premier découpage trouvés et corrigés : (1) préambule d'une zone rattaché au dernier article de la zone précédente (chemin non réinitialisé au changement de zone) ; (2) seconde ligne des titres devenue un passage à part (21 fragments du type « soumis à conditions », « publiques ou privées ») et titres tronqués. Limite restante : un titre de sous-section emporte le début de sa première phrase (« 1.2.1 - Sont autorisés, les constructions… suivants à »). L'en-tête du PDF porte la coquille « Aus.co » (normalisée en « AUs.co »).
+
+Cahiers : découpage par la table des matières et par OAP (« OAP n Nom », numéro parfois placé après le nom par le tri spatial) ; **texte des passages pris dans Docling** (ordre des colonnes), doublons exacts d'une même page supprimés.
+
+### Corpus figé du Test 4
+
+`spikes/output/pdf/passages.jsonl` — **360 passages** (A 262, B 17, C 81), **90 634 tokens BGE-M3** (tokenizer seul), sha256 `fda1d07b9ca9299e207877dac53110641838095862b479328c57bd1c48eaffdb`. Passages de plus de 2 000 caractères découpés aux limites de phrase (`partie` / `parties`). Champs : `passage_id`, `doc_id`, `source_id`, `version_gpu`, `version_piece`, `page_debut`, `page_fin`, `zone`, `chemin`, `texte`, `extracteur`, `partie`, `parties`. Extracteur : PyMuPDF pour A, Docling pour B et C.
+
+**Version au niveau du passage.** Distribution des mentions de version lues page par page : A « Modification n° 4 – Approbation 2024 » sur 120 / 120 pages ; B « Mise en compatibilité n°10 – Approbation 2025 » sur 18 / 18 ; C « Modification n°4 – Approbation 2024 » sur 66 / 67 (page de couverture sans en-tête). La version ne varie pas à l'intérieur d'une pièce ; elle est néanmoins portée par chaque passage (`version_piece`, lue sur sa page de début) pour rester juste si une pièce mêlait des versions.
+
+**Doublons** (texte normalisé : minuscules, sans accents ni ponctuation ; quasi-doublons : `difflib` ratio > 0,9) :
+- dans un même document, une même zone et un même chemin : **0** après correction des titres (les 21 fragments de titres en étaient la seule source) ; rien n'a été retiré par le dédoublonnage ;
+- **entre zones** : 44 groupes de textes identiques (112 passages en surnombre) et 210 paires quasi identiques — le règlement réécrit le même article dans chaque zone (implantation, distances, renvois à la partie I). **Conservés** : chaque passage porte sa zone, et une question sur une zone doit retrouver l'article de cette zone ;
+- dans une même zone : 24 paires quasi identiques — phrases de renvoi formulaires (« Les dispositions règlementaires relatives aux voies et aux accès se situent au chapitre 5 de la partie I… ») dont seul l'objet change : contenus distincts, conservés.
+- Conséquence pour le Test 4 : un résultat de recherche peut renvoyer le même texte pour plusieurs zones ; regrouper ou filtrer par zone est à mesurer.
+
+### Codes AU* et codes résiduels (question du Test 2)
+
+Règle lue dans le règlement : zone **AUs.co** (p. PDF 731) — « Dès lors que les conditions d'ouverture à l'urbanisation sont réunies, le règlement de la zone U correspondante s'applique (par exemple dans une zone AURm2 s'appliquera le règlement de la zone URm2) » ; chapitres 2 à 5 (p. 734–737) : « les règles applicables […] sont celles prévues par le règlement de la zone "U" de référence […] indiquée […] après le sigle AU ». Zone **AU** (p. 739) : AU1 mixte, AU2 à dominante d'habitat, AU3 à dominante d'activité, ouverture différée.
+
+| Codes | Chapitre AU | Zone U de référence (chapitre, page PDF) |
+|---|---|---|
+| AU1, AU2, AU3 | Zone AU (p. 739) | — (ouverture différée) |
+| AUCe4a, AUCe4b | Zone AUs.co (p. 731) | UCe4 (p. 199) |
+| AUEc · AUEi1 · AUEi2 · AUEl | Zone AUs.co | UEc (595) · UEi1 (611) · UEi2 (633) · UEl (655) |
+| AUL · AUPr · AUSP | Zone AUs.co | UL (683) · UPr (379) · USP (713) |
+| AURc2, AURc2b, AURc2c | Zone AUs.co | URc2 (249) |
+| AURi1a–c · AURi2a–c | Zone AUs.co | URi1 (271) · URi2 (293) |
+| AURm1, AURm1a–d · AURm2a–d | Zone AUs.co | URm1 (315) · URm2 (347) |
+
+- **UPpa** : secteur de la zone UPp — « La zone comprend un secteur UPpa de protection forte liée à la présence de sites archéologiques majeurs » (chapitre Zone UPp, p. 697).
+- **UCe3-p** : **introuvable dans le règlement écrit** (ni titre, ni texte). Non rattaché ; à instruire (pièce graphique, prescription, cahier communal ?), sans supposition.
+- Bilan : 31 des 32 codes sans correspondance automatique sont rattachés avec citation ; **le critère « table manuelle de quelques dizaines de lignes » du Test 2 est confirmé** (13 lignes de correspondance AU → U, plus UPpa).
+
+### Écart 67 / 58 (question du Test 2) : résolu, il n'y a pas d'écart
+
+`plan_de_secteurs` (« Révision n°2 – Approbation 2019 ») numérote 67 secteurs : 58 communes du découpage à 59 sans Lyon (dont Oullins = 45 et Pierre-Bénite = 46, séparées) et les 9 arrondissements de Lyon (secteurs 31–39).
+
+| | Secteurs 01–30, 40–67 | Secteurs 31–39 (Lyon) | Total |
+|---|---:|---:|---:|
+| Plan de secteurs | 58 communes | 9 arrondissements | 67 |
+| Cahiers « communal » | 58 | 9 | 67 |
+| Cahiers « arrondissement » | — | 9 | 9 |
+| SRC-003 | 58 entrées communales | 9 arrondissements (`uid` 69381–69389) | 67 |
+
+Les 9 cahiers « communaux » des secteurs 31–39 portent tous la page de titre « Lyon — Cahier communal » mais ont des contenus distincts (sha256 tous différents, lus en mémoire, non stockés). Le « 58 » du Test 2 ne comptait que les entrées non lyonnaises de SRC-003.
+
+### Pour le jeu de référence
+
+- **Oullins et Pierre-Bénite ont des cahiers communaux séparés** (SECT45, SECT46) malgré la fusion du 1er janvier 2024, avec des procédures différentes (« Mise en compatibilité n°10 – 2025 » / « Modification n°4 – 2024 ») : question piège sur la commune 69149 et sur la version citée.
+- Une citation d'OAP ou de règlement doit donner la version de la pièce, pas seulement la date de publication GPU.
+
+### Verdict Test 3 : GO avec réserves
+
+| Critère | État |
+|---|---|
+| ≥ 90 % des pages du règlement lisibles et dans l'ordre | **Atteint** : 10/10 (100 %) pour PyMuPDF comme pour Docling, sur les lignes relues. |
+| Structure zone → article reconstructible automatiquement | **Atteint** : 94,6 % du texte (en caractères) rattaché à zone > chapitre > article, 5,3 % aux préambules de zone ; titres reconstruits automatiquement. |
+| Au moins un extracteur traite les tableaux du règlement de façon exploitable | **Atteint, hors corpus pilote** : le corpus ne contient aucun tableau de règles ; sur 5 pages à tableaux tirées dans le règlement complet, Docling restitue les 8 tableaux de façon exploitable (relu). |
+
+**Pourquoi « avec réserves ».** Les trois critères, qui portent sur le règlement, sont atteints. Mais :
+1. le critère des tableaux a été évalué **hors du corpus pilote** (5 pages tirées dans le règlement complet), le corpus prévu n'en contenant aucun : changement de périmètre consigné ;
+2. **les cahiers communaux** (OAP, rapport de présentation) sont nettement moins bien extraits : PyMuPDF inutilisable sur les colonnes (0/10 et 2/10), Docling 7/10 et 5/10, avec duplications massives sur les pages de graphiques et puces mal décodées ;
+3. la règle « graphique » a manqué deux cartes (seuil d'image à revoir) ;
+4. `UCe3-p` reste sans rattachement au règlement ;
+5. **aucun extracteur ne suffit seul** : PyMuPDF pour le règlement (rapide, une colonne), Docling pour les cahiers et les tableaux ; choix à consigner en ADR.
 
 ## Test 4 — BGE-M3 : à faire
 
@@ -439,6 +564,7 @@ Réserves à porter :
 - Indice de confiance de zone (règle, seuils révisés après le Test 2) et son usage dans les réponses.
 - Correspondance code de zone → chapitre du règlement (règle de suffixe + table manuelle `AU*` ; les zones à urbaniser renvoient souvent aux règles d'une autre zone ou à une OAP — à confirmer au Test 3).
 - **Après le GO :** rattachement établissement → parcelle cadastrale ou bâtiment (RNB) → zone, au lieu du point d'adresse (voir Test 2, distance à une autre zone) ; chiffrer la part résiduelle à position aléatoire.
+- **Choix de l'extracteur pour la v1** (après relecture de la grille du Test 3) : Docling partout, ou Docling seulement pour les pages à tableaux et les cahiers (PyMuPDF pour le texte du règlement). Mesure à l'appui : sur 5 pages à tableaux du règlement (p. 101, 103, 277, 362, 436, graine 3104), les deux extracteurs détectent les mêmes 8 tableaux ; Docling restitue en-têtes et cellules fusionnées, PyMuPDF colle les mots et crée des colonnes fantômes ; coût Docling ≈ 2 s par page contre ≈ 0,1 s pour PyMuPDF, modèles 1,6 Go. À trancher aussi : nettoyage des duplications de Docling sur les pages de graphiques.
 - Protocole de contrôle par échantillon : tirages futurs par `md5(siret || graine)`, une graine par échantillon, règles de statut / remplacement / fin fixées avant le tirage.
 
 ## Impact sur le planning

@@ -2,9 +2,10 @@
 
 Script jetable du spike. Chaque ressource d'une source (configs/sources.yaml) est
 écrite dans son sous-dossier <resource.name>/ avec un manifest.json validé par
-`Manifest`. Le téléchargement se fait dans un dossier de travail renommé à la fin :
-un dossier daté existant n'est jamais écrasé, et il passe en lecture seule
-(chmod -R a-w) une fois tous les manifestes écrits.
+`Manifest`. Immuabilité par ressource : chaque ressource est téléchargée dans un
+dossier de travail renommé à la fin, puis passée en lecture seule (chmod -R a-w) ;
+une ressource existante n'est jamais réécrite. Le dossier daté reste inscriptible
+pour accueillir de nouvelles ressources (option --resource).
 
 Contrôles :
 - kind http + datagouv : sha1 et taille comparés à ceux publiés par l'API data.gouv ;
@@ -256,32 +257,62 @@ def make_read_only(path: Path) -> None:
         p.chmod(p.stat().st_mode & ~write_bits)
 
 
+def select_resources(source: dict, names: list[str] | None) -> list[dict]:
+    if not names:
+        return source["resources"]
+    known = {r["name"]: r for r in source["resources"]}
+    unknown = [n for n in names if n not in known]
+    if unknown:
+        raise DownloadError(f"ressource(s) inconnue(s) pour {source['id']} : {unknown}")
+    return [known[n] for n in names]
+
+
+def download_source(
+    client: httpx.Client, source: dict, date_dir: Path, names: list[str] | None = None
+) -> list[Manifest]:
+    """Télécharge les ressources demandées dans date_dir, une par une, en lecture seule.
+
+    Refuse avant tout téléchargement si l'une des ressources existe déjà.
+    """
+    resources = select_resources(source, names)
+    existing = [r["name"] for r in resources if (date_dir / r["name"]).exists()]
+    if existing:
+        raise DownloadError(f"ressource(s) déjà présente(s) dans {date_dir} : {existing}")
+    date_dir.mkdir(parents=True, exist_ok=True)
+    manifests = []
+    for resource in resources:
+        work_dir = date_dir / f".{resource['name']}.partial"
+        if work_dir.exists():
+            shutil.rmtree(work_dir)  # reste d'un essai interrompu, jamais validé
+        manifests.append(download_resource(client, source, resource, work_dir))
+        final_dir = date_dir / resource["name"]
+        work_dir.rename(final_dir)
+        make_read_only(final_dir)
+        typer.echo(f"    ressource en lecture seule : {final_dir}")
+    return manifests
+
+
 @app.command()
 def main(
     source_id: Annotated[str, typer.Argument(help="Identifiant de source, ex. SRC-002")],
     retrieved_on: Annotated[str | None, typer.Option("--date", help="Dossier daté")] = None,
     config: Annotated[Path, typer.Option(help="Fichier sources.yaml")] = CONFIG_PATH,
     raw_dir: Annotated[Path, typer.Option(help="Racine des données brutes")] = RAW_DIR,
+    resource: Annotated[
+        list[str] | None, typer.Option("--resource", help="Ressource(s) à télécharger")
+    ] = None,
 ) -> None:
-    """Télécharge toutes les ressources d'une source et écrit leurs manifestes."""
+    """Télécharge les ressources d'une source (toutes, ou celles de --resource)."""
     retrieved_on = retrieved_on or date.today().isoformat()
     try:
         source = load_source(source_id, config)
-        final_dir = raw_dir / source_id / retrieved_on
-        work_dir = raw_dir / source_id / f".{retrieved_on}.partial"
-        if final_dir.exists():
-            raise DownloadError(f"{final_dir} existe déjà : refus d'écraser")
-        if work_dir.exists():
-            shutil.rmtree(work_dir)  # reste d'un essai interrompu, jamais validé
-        typer.echo(f"{source_id} → {final_dir}")
+        date_dir = raw_dir / source_id / retrieved_on
+        typer.echo(f"{source_id} → {date_dir}")
         with httpx.Client(
             timeout=TIMEOUT, follow_redirects=True, headers={"User-Agent": USER_AGENT}
         ) as client:
-            for resource in source["resources"]:
-                download_resource(client, source, resource, work_dir / resource["name"])
-        work_dir.rename(final_dir)
-        make_read_only(final_dir)
-        typer.echo(f"OK, dossier en lecture seule : {final_dir}")
+            download_source(client, source, date_dir, resource)
+        typer.echo("OK")
     except (DownloadError, httpx.HTTPError) as exc:
         typer.echo(f"ERREUR {source_id} : {exc}", err=True)
         sys.exit(1)

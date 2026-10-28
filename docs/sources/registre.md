@@ -115,7 +115,7 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 **Contrôles :**
 1. Tester les liens ; catégoriser les documents (règlement, OAP, rapport de présentation, plans).
 2. Conditions de réutilisation **des documents cibles** (la licence du catalogue ne les couvre pas automatiquement).
-3. ~~Découpage~~ (Test 1) : 67 objets = 9 arrondissements + 58 entrées communales (57 communes 2026 hors Lyon + Pierre-Bénite 69152 séparée de 69149) — découpage à 59 communes du PLU-H. Les 76 cahiers GPU = 9 d'arrondissement + 67 communaux : l'écart 67 / 58 reste à expliquer (Test 3).
+3. ~~Découpage~~ (Test 1, Test 3) : 67 objets = 9 arrondissements + 58 entrées communales (57 communes 2026 hors Lyon + Pierre-Bénite 69152 séparée de 69149) — découpage à 59 communes du PLU-H, identique aux 67 secteurs du plan de secteurs GPU (pas d'écart : 67 cahiers communaux dont 9 pour les secteurs lyonnais 31–39).
 
 **Limite connue :** c'est un catalogue, pas le corpus.
 
@@ -158,7 +158,9 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 | Pièces écrites | 617 PDF, dont `200046977_reglement_20260326.pdf` (règlement écrit, un seul fichier), 76 cahiers communaux, 4 parties du rapport de présentation, PADD |
 | Archive complète | 3,1 Go — **non téléchargée** |
 
-- **Téléchargé :** le règlement écrit (11,1 Mo) et la liste JSON des 617 pièces.
+- **Téléchargé :** le règlement écrit (11,1 Mo) et la liste JSON des 617 pièces ; pour le Test 3 (même dossier daté, immuabilité par ressource) : cahier communal d'Oullins (SECT45, 30,5 Mo), cahier communal de Pierre-Bénite (SECT46, 14,7 Mo), plan de secteurs (0,6 Mo).
+- **Versions des pièces (constaté au Test 3)** : chaque pièce porte sa propre procédure, lue dans la pièce — règlement « Modification n° 4 – Approbation 2024 », cahier d'Oullins « Mise en compatibilité n°10 – Approbation 2025 », cahier de Pierre-Bénite « Modification n°4 – Approbation 2024 », plan de secteurs « Révision n°2 – Approbation 2019 ». Une citation donne la version de la pièce (conventions §6).
+- **Organisation des pièces** : les OAP sont la partie 4 de chaque cahier communal (pas de pièce OAP séparée) ; 67 secteurs (58 communes du découpage à 59 + 9 arrondissements de Lyon), 67 cahiers communaux + 9 cahiers d'arrondissement ; Oullins et Pierre-Bénite ont des cahiers séparés.
 - **Licence constatée :** les [CGU du GPU](https://www.geoportail-urbanisme.gouv.fr/cgu/) soumettent les données d'urbanisme à « la licence ouverte », avec un lien vers le texte Etalab de 2014 (version 1). **Version applicable ambiguë** (1.0 ou 2.0) ; le contenu propre du site relève d'un régime distinct.
 
 **Contrôles :**

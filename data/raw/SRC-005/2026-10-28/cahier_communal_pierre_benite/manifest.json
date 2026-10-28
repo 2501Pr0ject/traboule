@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT46_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT46_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-10-28T14:17:38.433893Z",
+  "published_at": "2026-04-23",
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 14673871,
+  "sha256": "63d7187fb8049d4284d65e6d9deed98b88e52c46b56a0a77852709199b17ef9e",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Cahier communal de Pierre-Bénite (secteur 46), distinct de celui d'Oullins malgré la fusion de 2024 ; procédure lue dans la pièce : « Modification n°4 – Approbation 2024 ».",
+  "crs": null
+}

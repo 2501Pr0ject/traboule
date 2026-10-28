@@ -27,7 +27,7 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 
 ## 3. Règles de données
 
-1. **Données brutes immuables.** `data/raw/<source_id>/<AAAA-MM-JJ>/` n'est jamais modifié ni écrasé ; une nouvelle version est un nouveau dossier daté. Une fois le manifeste écrit, le script de téléchargement passe le dossier en lecture seule (`chmod -R a-w`) ; le rendre de nouveau inscriptible est une action manuelle et délibérée. Toute transformation écrit dans `data/interim/` ou `data/processed/`.
+1. **Données brutes immuables, par ressource.** Chaque ressource est stockée dans `data/raw/<source_id>/<AAAA-MM-JJ>/<ressource>/` avec son manifeste ; une fois le manifeste écrit, le script de téléchargement passe ce dossier de ressource en lecture seule (`chmod -R a-w`), et une ressource existante n'est jamais modifiée ni réécrite. Le dossier daté reste inscriptible pour accueillir de nouvelles ressources ; une nouvelle version d'une ressource va dans un nouveau dossier daté. Rendre une ressource de nouveau inscriptible est une action manuelle et délibérée. Toute transformation écrit dans `data/interim/` ou `data/processed/`.
 2. **Un manifeste par téléchargement** (`manifest.json` à côté du fichier). Ses champs sont définis par le modèle Pydantic `Manifest` (`spikes/download.py` pendant le spike, puis `packages/`), qui fait foi.
 3. **Aucune URL inventée.** Les URLs de ressources se résolvent via l'API data.gouv.fr (`https://www.data.gouv.fr/api/1/datasets/<id-ou-slug>/`) ou la page officielle de l'INSEE. Une URL non confirmée reste `A_CONFIRMER` dans `configs/sources.yaml`.
 4. **Codes officiels comme clés de jointure**, jamais des noms : code commune INSEE, SIRET, code IRIS, code de zone.
@@ -61,6 +61,7 @@ Dès le premier prototype de routeur :
 ## 6. Règles de réponse du système
 
 - Pas de chiffre sans source identifiable ; pas de citation sans passage réel correspondant.
+- Une citation donne la **version de la pièce** citée (procédure lue dans la pièce, ex. « Modification n°4, approbation 2024 » pour un cahier communal), pas seulement la version de publication du document au GPU.
 - Pas de réponse forcée : l'abstention est un comportement attendu et évalué.
 - La réponse distingue faits vérifiés, interprétations du modèle et limites des données.
 - Un résultat spatial est une analyse de localisation, jamais un constat réglementaire.

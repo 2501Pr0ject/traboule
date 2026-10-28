@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_plan_de_secteurs_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_plan_de_secteurs_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-10-28T14:17:38.622992Z",
+  "published_at": "2026-04-23",
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 597738,
+  "sha256": "e5f625cfb656159e33915e6044b89dec39af2f4ca232221968f9b54273f2a7e1",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Correspondance secteur (01–67) → commune ou arrondissement, découpage à 59 communes (en-tête « Révision n°2 – Approbation 2019 »).",
+  "crs": null
+}

@@ -221,6 +221,28 @@ sources:
         format: json
         published_at: "2026-04-23"
         reference_date: "2026-03-26"
+      # Corpus pilote du Test 3 (ajouté le 2026-10-28, même document GPU)
+      - name: cahier_communal_oullins
+        title: "200046977_cahier_communal_SECT45_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT45_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        limitations: "Cahier communal d'Oullins (secteur 45) ; procédure lue dans la pièce : « Mise en compatibilité n°10 – Approbation 2025 ». Contient les OAP de la commune (partie 4), dont l'OAP 7 « ZA de la Saulaie »."
+      - name: cahier_communal_pierre_benite
+        title: "200046977_cahier_communal_SECT46_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT46_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        limitations: "Cahier communal de Pierre-Bénite (secteur 46), distinct de celui d'Oullins malgré la fusion de 2024 ; procédure lue dans la pièce : « Modification n°4 – Approbation 2024 »."
+      - name: plan_de_secteurs
+        title: "200046977_plan_de_secteurs_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_plan_de_secteurs_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        limitations: "Correspondance secteur (01–67) → commune ou arrondissement, découpage à 59 communes (en-tête « Révision n°2 – Approbation 2019 »)."
 
   - id: SRC-006
     name: bpe

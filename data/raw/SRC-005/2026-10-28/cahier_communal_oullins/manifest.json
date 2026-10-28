@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT45_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT45_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-10-28T14:17:37.761026Z",
+  "published_at": "2026-04-23",
+  "reference_date": null,
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 30530150,
+  "sha256": "67a2308695f07223678825ae16b3f0dbc82bead73f040c2c66f7778035d88878",
+  "schema_version": null,
+  "ingestion_version": "0.1.0",
+  "limitations": "Cahier communal d'Oullins (secteur 45) ; procédure lue dans la pièce : « Mise en compatibilité n°10 – Approbation 2025 ». Contient les OAP de la commune (partie 4), dont l'OAP 7 « ZA de la Saulaie ».",
+  "crs": null
+}
