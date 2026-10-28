@@ -36,6 +36,7 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 7. **Diffusion partielle Sirene.** Les établissements à diffusion partielle n'ont pas de géolocalisation publique. Un comptage spatial n'est jamais présenté comme exhaustif ; la part non géolocalisée est quantifiée.
 8. **Gros fichiers hors Git.** `data/` est ignoré ; seuls les manifestes et de petits échantillons de test sont versionnés (jamais extraits de Sirene, voir règle 9).
 9. **Les données Sirene brutes ne sont jamais republiées**, ni en totalité ni en extrait au niveau établissement : obligations liées aux données personnelles (entrepreneurs individuels) et oppositions à la diffusion survenues après l'instantané téléchargé. Le dépôt publie les scripts, les manifestes et des agrégats.
+10. **Le statut de diffusion du stock INSEE le plus récent prévaut.** Un établissement en statut `P` dans SRC-001a n'a pas de coordonnées publiques : les coordonnées d'une autre source (notamment SRC-007, qui en publie pour certains établissements à diffusion partielle) ne sont jamais utilisées pour lui.
 
 ## 4. Coordonnées et DuckDB spatial
 
@@ -71,6 +72,7 @@ Règles détaillées : [`benchmarks/datasets/gold/guide-annotation.md`](../bench
 
 - le jeu est écrit et validé par un humain ; une réponse de référence ne provient jamais du système évalué ;
 - chaque question porte une date d'ancrage `as_of` et les versions des sources utilisées ;
+- `as_of` ≥ 2015-01-01 (création de la Métropole) ; périmètre : 59 communes de 2015 à 2023, 58 depuis le 1er janvier 2024 ;
 - les questions SQL sont comparées par résultat d'exécution, pas par texte de requête ;
 - une question `validated` porte `validated_by`, `validated_at` et aucun gabarit (`A_RENSEIGNER`, `A_ECRIRE`, `AAAA`) ; `make validate-gold` le vérifie.
 

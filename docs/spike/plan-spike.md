@@ -58,12 +58,22 @@ Chaque test a un critère mesurable **fixé avant** de l'exécuter. Ne pas assou
 5. Mesurer : % d'établissements géolocalisés sans zone, % dans plusieurs zones, temps de calcul, pic mémoire.
 6. Mesurer la distance de chaque établissement à la limite de zone la plus proche (`ST_Distance` au contour, EPSG:2154) : distribution, part à moins de 10 m et à moins de 25 m. Ces établissements ont une zone sensible à l'imprécision de la géolocalisation.
 7. Inventorier les attributs réglementaires du zonage (`ces*`, `cpt*`, `hauteur_*`, `plafond`, `stecal`…) : liste, taux de remplissage, distribution des valeurs par famille de zone.
-8. Vérifier manuellement 10 établissements tirés au hasard (zone attendue vs zone trouvée, sur une carte).
-9. Lister les codes de zone et vérifier qu'ils correspondent à des chapitres du règlement écrit.
+8. **Sensibilité à la source de coordonnées.** Source principale : fichier de géolocalisation (SRC-001b) ; coordonnées du stock (SRC-001a) en sensibilité. Faire la jointure avec les deux sources et mesurer la part des établissements qui changent de zone (globalement, par `qualite_xy`, par famille de zone).
+9. **Contrôles manuels, deux échantillons distincts** (vérification humaine sur vue aérienne ; carte HTML légère avec les deux positions) :
+    - **validation** : 10 établissements tirés au hasard ; zone trouvée avec la source principale comparée à la zone attendue (critère GO ci-dessous) ;
+    - **arbitrage** : 10 établissements tirés parmi les écarts stock / géolocalisation de plus de 50 m ; pour chacun, zone selon chaque source et source jugée juste. **Aucun effet sur le GO.** Si la source de sensibilité (stock) est juste dans au moins 7 cas sur 10, l'ADR sur la source de coordonnées est réexaminé.
+10. **Indice de confiance de zone** (haute / moyenne / faible), règle fixée avant exécution à partir de `qualite_xy`, de la distance à la limite de zone (étape 6) et de l'accord entre les deux sources (étape 8). **Désaccord** = les deux sources donnent des zones différentes (pas une distance entre les positions).
+    - haute : `qualite_xy = '11'`, distance à la limite ≥ 25 m, et même zone avec les deux sources ;
+    - faible : `qualite_xy` différente de `'11'`, ou distance < 10 m, ou désaccord ;
+    - moyenne : les autres cas ;
+    - sans coordonnées dans le stock (accord non vérifiable) : au mieux « moyenne ».
+    Seuils de 10 m et 25 m **à réviser après la distribution observée au Test 2** (toute révision consignée).
+    Distribution de l'indice dans le rapport (globale, par famille de zone, par commune).
+11. Lister les codes de zone et vérifier qu'ils correspondent à des chapitres du règlement écrit.
 
 **GO si :**
 - ≥ 98 % des établissements géolocalisés tombent dans exactement une zone (le reste expliqué : bord, voirie, hors territoire) ;
-- 10/10 contrôles manuels cohérents ;
+- échantillon de validation : **10/10** zones correctes avec la source principale (l'échantillon d'arbitrage n'entre pas dans le GO) ;
 - les codes de zone se relient au règlement sans table de correspondance manuelle de plus de quelques dizaines de lignes.
 
 ## Test 3 — Extraction des PDF du PLU-H

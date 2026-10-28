@@ -67,7 +67,9 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 - Colonne `epsg` par ligne : 2154 (36 947 800 lignes) et des CRS d'outre-mer (5490, 2975, 2972). Filtrer sur `epsg = '2154'` avant toute jointure spatiale.
 - `plg_code_commune` et `plg_iris` sont en **géographie au 1er janvier 2024** (documentation v8), pas en COG 2026.
 - Statut de diffusion dans le stock : `O` 38 508 105, `P` 5 774 259 (13 %).
-- Dates de création aberrantes dans le stock (jusqu'en 5015) : à filtrer et à quantifier au Test 1.
+- Dates de création aberrantes dans le stock (jusqu'en 5015) : aucune dans la Métropole (Test 1) ; 279 postérieures au stock de moins d'un an ; 77 827 dates nulles, toutes sur des établissements fermés.
+- Lyon est codée **par arrondissement** dans le stock et la géolocalisation (un seul établissement en 69123) ; 18 établissements portent encore l'ancien code 69152 (Pierre-Bénite), dont 15 actifs.
+- Coordonnées du stock : `[ND]` pour les établissements non diffusés. Elles divergent souvent de celles du fichier de géolocalisation (Métropole : médiane 0,28 m mais 15,2 % à plus de 50 m) : deux géocodages distincts.
 - Aucun doublon de SIRET dans la géolocalisation.
 - **Le fichier de géolocalisation ne reste en ligne qu'un mois, sans archive** (documentation v8) : la copie de `data/raw/` est la seule trace.
 - Les deux PDF de documentation ont été remplacés sur place le 2026-07-02 sans mise à jour du sha1 déclaré sur data.gouv ; le fichier téléchargé correspond au sha1 de l'analyse data.gouv (`analysis:checksum`). Consigné dans leurs manifestes.
@@ -111,7 +113,7 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 **Contrôles :**
 1. Tester les liens ; catégoriser les documents (règlement, OAP, rapport de présentation, plans).
 2. Conditions de réutilisation **des documents cibles** (la licence du catalogue ne les couvre pas automatiquement).
-3. Découpage : 67 objets = 58 communes + 9 arrondissements ? Ou 59 communes (Oullins et Pierre-Bénite séparés) + autre chose ? À vérifier ; à rapprocher des 76 cahiers communaux du GPU.
+3. ~~Découpage~~ (Test 1) : 67 objets = 9 arrondissements + 58 entrées communales (57 communes 2026 hors Lyon + Pierre-Bénite 69152 séparée de 69149) — découpage à 59 communes du PLU-H. Les 76 cahiers GPU = 9 d'arrondissement + 67 communaux : l'écart 67 / 58 reste à expliquer (Test 3).
 
 **Limite connue :** c'est un catalogue, pas le corpus.
 
@@ -172,7 +174,8 @@ Candidate uniquement si un cas d'usage la justifie. Contrôles : licence, millé
 - **Producteur :** Métropole de Lyon à partir de Sirene. **Fiche :** [data.gouv](https://www.data.gouv.fr/datasets/base-sirene-de-la-metropole-de-lyon) (jeu `62dfe1518bcb48c2eb805b6d`), mise à jour observée au 2026-08-04.
 - **Téléchargé :** WFS `insee.sirene`, CSV EPSG:4326, **329 197 objets**, 100,6 Mo. Colonnes : `siret`, `siren`, `denomination`, `datecreation`, `adresse`, `commune`, `insee`, `siege`, `enseigne`, `trancheeffectifs`, `activitenaf`, `employeur`, `datemaj`, `the_geom`…
 - **Licence constatée :** Licence Ouverte 2.0 (`lov2`).
-- **Limites :** établissements **actifs** géolocalisés uniquement ; retard de mise à jour ; géocodage propre à la Métropole.
+- **Limites :** établissements **actifs** géolocalisés uniquement ; retard de mise à jour (`datemaj` max 2026-07-31 pour une fiche mise à jour le 2026-08-04 ; 3 570 établissements fermés côté INSEE encore présents).
+- **Constaté au Test 1 (2026-10-28) :** les coordonnées sont celles du fichier de géolocalisation INSEE (écart médian 0,14 m, p99 0,47 m sur 320 719 SIRET communs) — **pas de géocodage propre** contrairement à ce qu'indiquait la v0.2. SRC-007 publie aussi des coordonnées pour des établissements **à diffusion partielle** (301 actifs) et contient 2 établissements codés 69133 (Millery, hors Métropole).
 - **Utilisation :** comparer les comptages et les coordonnées avec SRC-001 ; documenter les écarts. Pas source de vérité.
 
 ## REF-COMMUNES-ML-2024 — Communes de la Métropole (contrôle croisé)

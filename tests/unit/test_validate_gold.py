@@ -75,6 +75,29 @@ def test_example_still_checks_structure(validators):
     assert errors(item, validators, example=True)
 
 
+# Borne as_of ≥ 2015-01-01
+
+
+def test_as_of_after_2015_passes(validators):
+    assert errors(make_item(as_of="2015-01-01"), validators) == []
+
+
+def test_as_of_before_2015_fails(validators):
+    msgs = errors(make_item(as_of="2014-12-31"), validators)
+    assert any("as_of" in m for m in msgs)
+
+
+def test_as_of_before_2015_allowed_for_out_of_version(validators):
+    item = make_item(
+        id="ABS-001",
+        category="unanswerable",
+        subtype="out_of_version",
+        expected_route="ABSTAIN",
+        as_of="2010-06-30",
+    )
+    assert errors(item, validators) == []
+
+
 # Questions validées : validated_by et validated_at
 
 

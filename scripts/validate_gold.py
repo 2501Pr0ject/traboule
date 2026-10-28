@@ -1,12 +1,14 @@
 """Valide les fichiers JSONL du jeu de référence contre schema.json et détecte les doublons.
 
 - questions.example.jsonl : structure seulement (pas de contrôle des formats ni des valeurs).
-- autres fichiers : formats contrôlés (dates…), doublons détectés, et pour toute question
-  `validated` : validated_by et validated_at obligatoires, aucun gabarit restant.
+- autres fichiers : formats contrôlés (dates…), doublons détectés, as_of ≥ 2015-01-01 (sauf
+  unanswerable / out_of_version), et pour toute question `validated` : validated_by et
+  validated_at obligatoires, aucun gabarit restant.
 """
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +17,7 @@ from jsonschema import Draft202012Validator
 GOLD_DIR = Path(__file__).resolve().parents[1] / "benchmarks" / "datasets" / "gold"
 EXAMPLE_FILE = "questions.example.jsonl"
 PLACEHOLDERS = ("A_RENSEIGNER", "A_ECRIRE", "AAAA")
+MIN_AS_OF = date(2015, 1, 1)  # création de la Métropole de Lyon (guide d'annotation, règle 7)
 
 
 def load_validators(schema: dict) -> tuple[Draft202012Validator, Draft202012Validator]:
@@ -55,10 +58,24 @@ def check_validated(item: dict) -> list[str]:
     return errors
 
 
+def check_as_of(item: dict) -> list[str]:
+    """as_of ≥ 2015-01-01, sauf pour les questions sans réponse de sous-type out_of_version."""
+    if item.get("category") == "unanswerable" and item.get("subtype") == "out_of_version":
+        return []
+    try:
+        as_of = date.fromisoformat(item.get("as_of", ""))
+    except (TypeError, ValueError):
+        return []  # format invalide : déjà signalé par le contrôle de schéma
+    if as_of < MIN_AS_OF:
+        return [f"as_of {as_of} antérieur à {MIN_AS_OF} (hors unanswerable / out_of_version)"]
+    return []
+
+
 def check_item(item: dict, validator: Draft202012Validator, *, example: bool) -> list[str]:
     errors = [err.message for err in validator.iter_errors(item)]
     if not example:
         errors.extend(check_validated(item))
+        errors.extend(check_as_of(item))
     return errors
 
 

@@ -10,6 +10,7 @@ Le jeu de référence est le livrable le plus important du projet : il condition
 4. **Chaque preuve documentaire pointe un passage réel** (doc, page, zone, version).
 5. **Statut `draft` par défaut.** Passage en `validated` uniquement après relecture humaine, avec date.
 6. Fichiers : `questions.jsonl` (une question par ligne), versionné dans Git. Le champ `dataset_version` suit un versionnement sémantique.
+7. **`as_of` ≥ 2015-01-01** (création de la Métropole de Lyon). Périmètre de référence : **59 communes de 2015 à 2023**, **58 communes depuis le 1er janvier 2024** (regroupement Oullins + Pierre-Bénite). Une question antérieure à 2015 est hors périmètre : la rédiger, au besoin, comme une question sans réponse (`out_of_version`).
 
 ## Répartition cible
 

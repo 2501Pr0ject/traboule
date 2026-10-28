@@ -248,7 +248,7 @@ sources:
         urls:
           - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:insee.sirene&outputFormat=CSV&SRSNAME=EPSG:4326"
         format: csv
-        limitations: "Établissements actifs géolocalisés uniquement ; mise à jour observée au 2026-08-04 ; géocodage propre à la Métropole."
+        limitations: "Établissements actifs géolocalisés uniquement ; datemaj max 2026-07-31 (fiche du 2026-08-04) ; coordonnées reprises du fichier INSEE ; inclut des établissements à diffusion partielle."
 
   - id: REF-COMMUNES-ML-2024
     name: communes_metropole_depuis_2024
