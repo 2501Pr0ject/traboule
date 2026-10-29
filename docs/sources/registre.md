@@ -71,6 +71,7 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 - Lyon est codée **par arrondissement** dans le stock et la géolocalisation (un seul établissement en 69123) ; 18 établissements portent encore l'ancien code 69152 (Pierre-Bénite), dont 15 actifs.
 - Coordonnées du stock : `[ND]` pour les établissements non diffusés. Elles divergent souvent de celles du fichier de géolocalisation (Métropole : médiane 0,28 m mais 15,2 % à plus de 50 m) : deux géocodages distincts.
 - Aucun doublon de SIRET dans la géolocalisation.
+- **Établissements en statut `P` dans le stock mais présents avec des coordonnées dans la géolocalisation** (constaté le 2026-10-29, Métropole) : 669 établissements, dont 313 actifs (qualité 11 : 299 ; 12 : 13 ; 21 : 1) ; à Vénissieux, 17 actifs. Inversement, 326 établissements actifs en statut `O` n'ont pas de coordonnées (Vénissieux : 5). Les deux effets se compensent en partie : à Vénissieux, 2 206 actifs sont en statut `P` et 2 194 n'ont pas de coordonnées, soit l'écart de 12 relevé en préparant le jeu de référence. **Hypothèse non vérifiée :** un décalage de dates entre le stock et la géolocalisation (changement de statut de diffusion entre les deux extractions). La date du dernier traitement ne l'étaye pas clairement : pour les 669, elle va du 2024-03-22 au 2026-09-30, médiane 2025-12-05, et seuls 62 ont été traités depuis le 2026-09-01 ; elle ne date pas forcément le changement de statut. **Règle appliquée :** le statut du stock prévaut (conventions §3, règle 10) ; ces établissements n'ont aucune position dans Traboule. Métropole, établissements actifs sans position publique (statut `P` ou sans coordonnées) : 72 615.
 - **Le fichier de géolocalisation ne reste en ligne qu'un mois, sans archive** (documentation v8) : la copie de `data/raw/` est la seule trace.
 - Les deux PDF de documentation ont été remplacés sur place le 2026-07-02 sans mise à jour du sha1 déclaré sur data.gouv ; le fichier téléchargé correspond au sha1 de l'analyse data.gouv (`analysis:checksum`). Consigné dans leurs manifestes.
 
@@ -83,7 +84,7 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 6. Comparaison des coordonnées du stock et de la géolocalisation (couverture, écart en mètres).
 
 **Limites connues :**
-- Les établissements à diffusion partielle n'ont ni adresse précise ni géolocalisation publique. Comptages spatiaux structurellement sous-estimés, surtout pour les entrepreneurs individuels.
+- Les établissements à diffusion partielle n'ont ni adresse précise ni géolocalisation publique dans le stock (des coordonnées subsistent pour 669 d'entre eux dans la géolocalisation : elles ne sont pas utilisées, voir ci-dessus). Comptages spatiaux structurellement sous-estimés, surtout pour les entrepreneurs individuels.
 - Une coordonnée d'établissement est une adresse, pas l'emprise réelle de l'activité.
 
 ## SRC-002 — Zonage du PLU-H

@@ -59,6 +59,16 @@ Pour chacune, renseigner `abstention_reason` : ce qui manque **et** ce qui exist
 - Semaine 2 : 30 questions.
 - Semaines 5–6 : extension vers la cible.
 
+## Reproductibilité des valeurs de référence
+
+- **`expected_result` est la référence**, pas la requête : il a été calculé sur les données figées décrites par `source_versions` (date et sha256). Une reconstruction ultérieure peut donner une autre valeur, notamment parce que le fichier INSEE de géolocalisation n'est pas archivé ; on compare alors au `expected_result` consigné.
+- **Une preuve documentaire se lit par document, page, zone et chemin** (`doc_id`, `page`, `zone_code`, `note`), pas par `passage_id` : les identifiants de passage dépendent d'un découpage et changent quand le corpus est ré-ingéré.
+- Toute question d'activité indique sa nomenclature dans son texte (« NAF rév. 2 »).
+
+## Pistes de questions
+
+- **Quasi-réponse sur la nomenclature NAF** : le stock Sirene porte un code NAF rév. 2 et un code NAF 2025, qui divergent souvent (ex. division 47 en zone UEi2 : 857 en rév. 2, 1 148 en NAF 2025). Une question qui ne précise pas la nomenclature appelle une réponse qui signale l'ambiguïté et donne la nomenclature utilisée.
+
 ## Ce qui peut être automatisé
 
 Tout outil automatisé peut : proposer des brouillons (`status: draft`), calculer une valeur attendue par une requête que l'humain relit, valider le format contre `schema.json` (`make validate-gold`), détecter les doublons.

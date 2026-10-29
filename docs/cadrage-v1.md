@@ -135,7 +135,7 @@ Résultats métier et benchmark public présentés séparément, sans extrapolat
 | Semaine | Contenu | Livrable |
 |---|---|---|
 | 0 (spike) | Test 0 + 4 tests de faisabilité (`docs/spike/plan-spike.md`) | **Fait** : GO avec réserves (`spikes/reports/rapport-spike.md`) |
-| 1 | Structure `packages/`, contrats Pydantic ; réécriture testée du code utile des spikes (téléchargement, référentiel, jointure) ; protocole d'évaluation (ADR-0012) ; 15 questions | Socle d'ingestion, 15 questions |
+| 1 | Structure `packages/`, contrats Pydantic ; réécriture testée du code utile des spikes (téléchargement, référentiel, jointure) ; exclusion des établissements en statut `P` de toute jointure spatiale, codée et testée dans `packages/` (conventions §3, règle 10) ; contours des arrondissements de Lyon chargés (nouvelle source au registre) ; protocole d'évaluation (ADR-0012) ; 15 questions | Socle d'ingestion, 15 questions |
 | 2 | Tables DuckDB, jointure spatiale, indice de confiance (ADR-0006), correspondance des codes de zone ; 30 questions | Pipeline d'ingestion reproductible |
 | 3 | Extraction partie I + partie II + cahiers (ADR-0008, ADR-0011), passages avec en-tête et payload (ADR-0009), indexation Qdrant, baselines retrieval (avec et sans filtre par zone), benchmark FR public | Benchmark retrieval initial |
 | 4–5 | Routeur, garde-fous SQL, reranking, génération locale, citations avec version de la pièce, abstention multi-signal (ADR-0010), intégration RAGnarok | Système de bout en bout |
