@@ -1,6 +1,6 @@
 # ADR-0009 — Représentation des passages : en-tête contextuel, payload, filtre par zone
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte
@@ -10,9 +10,9 @@ Autres constats : Q15 (l'OAP 5 « La Saulaie » devant l'OAP 7 « ZA de la Saula
 
 ## Décision
 - **En-tête contextuel préfixé au texte avant encodage** (pas au texte cité) : zone, libellé de zone, chapitre, article ; pour les cahiers : commune, partie, nom d'OAP.
-- **Payload** de chaque passage : `doc_id`, `source_id`, `zone`, libellé de zone, `commune` (cahiers, OAP), nom d'OAP, `version_piece`, `version_gpu`, `page_debut`, `page_fin`, `chemin`, extracteur.
+- **Payload** de chaque passage : `doc_id`, `source_id`, `zone`, libellé de zone, nom d'OAP, `version_piece`, `version_gpu`, `page_debut`, `page_fin`, `chemin`, extracteur ; pour les cahiers communaux, établis sur le découpage à 59 communes : **secteur PLU-H** (01–67), **code commune COG 2026** et **commune historique** (ex. secteur 46 : 69152 Pierre-Bénite, rattaché à 69149 Oullins-Pierre-Bénite au COG 2026).
 - **Filtre de payload par zone** quand la zone est connue (question ou jointure spatiale) ; sans zone connue, recherche non filtrée.
-- **Préambules de zone** : passages de contexte, pas de règle (signalés comme tels dans le payload).
+- **Préambules de zone** : signalés comme tels dans le payload, mais **conservés dans la recherche** (Q08 a été réussie grâce au préambule de la zone AU).
 - Articles identiques d'une zone à l'autre : conservés, un passage par zone.
 - L'en-tête et le filtre sont **mesurés séparément puis ensemble** sur les requêtes ciblant une zone.
 

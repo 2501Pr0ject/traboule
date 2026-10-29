@@ -1,6 +1,6 @@
 # ADR-0010 — Abstention multi-signal
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte
@@ -8,9 +8,11 @@ L'abstention est un comportement attendu et évalué (cadrage §2, conventions �
 
 ## Décision
 Décider l'abstention à partir de plusieurs signaux, combinés et mesurés en v1 sur les questions sans réponse du jeu de référence :
-- **signaux structurels** (prioritaires, sans seuil) : zone inexistante dans le zonage indexé ; document ou pièce non ingéré ; niveau géographique non chargé ; date `as_of` hors de la version indexée ; établissement à diffusion partielle (pas de position publique) ; **confiance de zone faible** (ADR-0006) ;
+- **signaux structurels** (prioritaires, sans seuil) : zone inexistante dans le zonage indexé ; document ou pièce non ingéré ; niveau géographique non chargé ; date `as_of` hors de la version indexée ; établissement à diffusion partielle (pas de position publique) ; **zone régie par un autre document** (secteur sauvegardé `SECTSAUV`, plan de sauvegarde et de mise en valeur non ingéré) ; **confiance de zone faible** (ADR-0006), selon la règle ci-dessous ;
 - **signaux de retrieval** : score du premier résultat dense, écart entre premier et second résultats, **score du reranker** (le reranking reste en v1, ADR-0001) ;
 - **vérification à la génération** : la réponse doit citer un passage qui contient l'information demandée.
+
+**Confiance de zone faible** : elle déclenche l'abstention **uniquement pour une affirmation réglementaire sur un établissement donné** (« quelle règle s'applique à tel établissement »). Pour un **agrégat** (comptage, répartition par zone), le système répond avec la **ventilation par niveau de confiance** (haute, moyenne, faible) et la mention que le comptage est un **minorant** (établissements à diffusion partielle sans position publique).
 
 ## Options considérées
 | Option | Pour | Contre |

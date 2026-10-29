@@ -1,6 +1,6 @@
 # ADR-0008 — Extracteur PDF : PyMuPDF pour le règlement, Docling pour les tableaux et les cahiers
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte
@@ -13,6 +13,7 @@ Test 3 (`spikes/reports/rapport-spike.md`) :
 ## Décision
 - **PyMuPDF** pour le texte du règlement écrit (repérage des titres zone / chapitre / article sur son texte).
 - **Docling** pour les cahiers communaux (dont les OAP) et pour toute page où PyMuPDF détecte un tableau.
+- **Combinaison dans un même document** : la structure (zone, chapitre, article) reste celle tirée de PyMuPDF ; seul le contenu des tableaux est remplacé par la sortie Docling ; chaque passage indique son extracteur.
 - Nettoyage systématique des sorties Docling : suppression des lignes dupliquées à l'identique sur une même page, normalisation des puces.
 - Pages graphiques (plans, cartes) : hors périmètre sans OCR ; règle de détection à revoir (deux cartes manquées au seuil de 50 % d'image).
 

@@ -1,6 +1,6 @@
 # ADR-0006 — Source de coordonnées et indice de confiance de zone
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte
@@ -19,6 +19,7 @@ Libellés de `qualite_xy` (documentation v8, p. 4) : `11` voie sûre, numéro tr
   - moyenne sinon.
 - Les seuils de 10 m et 25 m restent provisoires ; la distance depuis le point sera remplacée par une distance depuis le bâtiment si l'ADR-0007 est adopté.
 - Un établissement en statut de diffusion `P` n'a pas de coordonnées publiques ; aucune autre source n'en fournit (conventions §3.10).
+- **Usage de l'indice** (ADR-0010) : une confiance faible déclenche l'abstention uniquement pour une affirmation réglementaire sur un établissement donné ; pour un agrégat, la réponse donne la ventilation par niveau de confiance et la mention de minorant (diffusion partielle).
 
 ## Options considérées
 | Option | Pour | Contre |
@@ -32,4 +33,4 @@ Libellés de `qualite_xy` (documentation v8, p. 4) : `11` voie sûre, numéro tr
 - L'arbitrage entre sources n'a pas pu être tranché au spike : la vérification automatisée (BAN → cadastre → GPU) favorise mécaniquement le stock, dont les coordonnées dérivent de la BAN.
 
 ## Critère de réexamen
-Arbitrage humain sur au moins 10 écarts de plus de 50 m : si les coordonnées du stock sont jugées justes dans au moins 7 cas, réexaminer la source principale. Adoption de l'ADR-0007.
+Réexamen de la source principale d'après la mesure point / bâtiment de l'ADR-0007. (Un arbitrage sur les écarts de plus de 50 m fondé sur l'adresse serait biaisé vers le stock, dont les coordonnées dérivent de la BAN.) Adoption de l'ADR-0007.

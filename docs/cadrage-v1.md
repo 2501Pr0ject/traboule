@@ -1,12 +1,25 @@
 # Traboule — Cadrage de la v1
 
-**Version :** 0.2 (intègre la revue du 27/10/2026)
-**Statut :** validé sous réserve du spike de faisabilité
-**Objectif de livraison :** 4 à 6 semaines après GO du spike (objectif, pas promesse)
+**Version :** 0.3 (intègre les conclusions du spike, 29/10/2026)
+**Statut :** validé ; spike conclu **GO avec réserves** (`spikes/reports/rapport-spike.md`)
+**Objectif de livraison :** 6 à 8 semaines après le GO du spike, à temps plein, à ajuster selon la disponibilité réelle (objectif, pas promesse)
 **Environnement :** MacBook Air M2, 16 Go de RAM
 **Évaluation :** RAGnarok-AI
 
-## Changements par rapport à la v0.1
+## Changements par rapport à la v0.2 (conclusions du spike)
+
+| Point | v0.2 | v0.3 |
+|---|---|---|
+| Délai | 4 à 6 semaines | **6 à 8 semaines** à temps plein (charges ajoutées par le spike ≈ 2 à 3 semaines, ≈ 1 semaine économisée) |
+| Corpus réglementaire | Règlement (zones) | **Partie I** (dispositions communes) + partie II + cahiers communaux (ADR-0011) |
+| Extraction PDF | Décision ouverte | **PyMuPDF** pour le texte du règlement, **Docling** pour les tableaux et les cahiers (ADR-0008) |
+| Passages | doc, page, zone | **En-tête contextuel** préfixé, **payload** complet (zone, secteur PLU-H, commune COG 2026 et historique, OAP, version de la pièce, pages), **filtre par zone** (ADR-0009) |
+| Zone d'un établissement | Jointure point-dans-polygone | Jointure + **indice de confiance de zone exposé** (ADR-0006) ; rattachement au bâtiment en v1.1 (ADR-0007, à mesurer) |
+| Abstention | Comportement attendu | **Multi-signal** : signaux structurels, signaux de retrieval dont le reranker, vérification à la génération (ADR-0010) |
+| Contrôles et évaluation | — | Tirages `md5`, une graine par échantillon, protocole fixé avant tirage, revue humaine réellement faite (ADR-0012) |
+| Encodeur | Décision ouverte | **BGE-M3** dense + sparse confirmé (test 4 : 30 s pour le corpus pilote, 2,3 Go sur MPS) |
+
+## Changements de la v0.2 par rapport à la v0.1
 
 | Point | v0.1 | v0.2 |
 |---|---|---|
@@ -43,13 +56,13 @@ Permettre à un utilisateur d'interroger la Métropole de Lyon — ses établiss
 1. Pipeline d'ingestion reproductible avec manifestes.
 2. Registre des sources et versions (`docs/sources/registre.md`, `configs/sources.yaml`).
 3. DuckDB + extension spatiale ; tables documentées avec niveau géographique et millésime.
-4. Jointure spatiale établissements ↔ zonage PLU-H, avec taux de géolocalisation et qualité documentés.
-5. Extraction et découpage du règlement du PLU-H, chaque passage relié à son document, sa page, sa zone.
-6. Qdrant : dense, sparse, hybride, hybride + reranking.
+4. Jointure spatiale établissements ↔ zonage PLU-H, avec taux de géolocalisation et qualité documentés ; source de coordonnées et **indice de confiance de zone exposé dans les réponses** (ADR-0006) ; correspondance code de zone → chapitre du règlement (suffixe + table des zones `AU*`).
+5. Extraction et découpage du règlement du PLU-H (**partie I et partie II**, ADR-0011) et des cahiers communaux ; PyMuPDF pour le texte du règlement, Docling pour les tableaux et les cahiers (ADR-0008) ; chaque passage relié à son document, sa page, sa zone, la version de sa pièce, avec un en-tête contextuel et un payload complet (ADR-0009).
+6. Qdrant : dense, sparse, hybride, hybride + reranking ; **filtre par zone** quand la zone est connue (ADR-0009).
 7. Routeur `SQL | RAG | HYBRID | ABSTAIN` avec garde-fous SQL.
 8. Construction de contexte contrôlée (budget, déduplication, provenance).
-9. Génération locale de réponses sourcées et abstention.
-10. Jeu de référence versionné (~150 questions validées manuellement).
+9. Génération locale de réponses sourcées (version de la pièce citée) et **abstention multi-signal** (ADR-0010).
+10. Jeu de référence versionné (~150 questions validées manuellement ; **chemin critique**) ; tirages et revues selon l'ADR-0012.
 11. Évaluation RAGnarok-AI, étendue pour le routage et l'exactitude SQL.
 12. Benchmark public français de retrieval (candidats : tâches françaises de MTEB).
 13. Interface web minimale : question, route choisie, réponse, sources consultables.
@@ -57,7 +70,7 @@ Permettre à un utilisateur d'interroger la Métropole de Lyon — ses établiss
 
 ### 3.2 v1.1
 
-Multivecteurs (BGE-M3 ColBERT), quantification (TurboQuant, Turbo4 — à revérifier dans la documentation Qdrant au moment de s'y mettre), benchmark anglais pour se comparer aux résultats publiés.
+Multivecteurs (BGE-M3 ColBERT : 12 à 25 Go en fp32 avec les cahiers, mesuré au test 4), quantification (TurboQuant, Turbo4 — à revérifier dans la documentation Qdrant au moment de s'y mettre), benchmark anglais pour se comparer aux résultats publiés ; **rattachement de l'établissement au bâtiment ou à la parcelle** (ADR-0007, après mesure sur 1 000 établissements) ; OCR des pages graphiques ; optimisation du calcul de distance à la limite de zone.
 
 ### 3.3 Exclus
 
@@ -121,12 +134,12 @@ Résultats métier et benchmark public présentés séparément, sans extrapolat
 
 | Semaine | Contenu | Livrable |
 |---|---|---|
-| 0 (spike) | 3 tests de faisabilité (`docs/spike/plan-spike.md`) | Rapport de spike GO / NO-GO |
-| 1 | Téléchargements figés, référentiel géographique, 15 questions | Corpus pilote, registre v0.3, 15 questions |
-| 2 | Normalisation, tables DuckDB, jointure spatiale complète, tests de cohérence, 30 questions | Pipeline d'ingestion reproductible |
-| 3 | Extraction du règlement, indexation Qdrant, baselines retrieval, benchmark FR public | Benchmark retrieval initial |
-| 4 | Routeur, garde-fous SQL, génération locale, citations, abstention, intégration RAGnarok | Système de bout en bout |
-| 5–6 | Jeu de référence étendu, mesures, interface, rapport, vidéo | Version publique |
+| 0 (spike) | Test 0 + 4 tests de faisabilité (`docs/spike/plan-spike.md`) | **Fait** : GO avec réserves (`spikes/reports/rapport-spike.md`) |
+| 1 | Structure `packages/`, contrats Pydantic ; réécriture testée du code utile des spikes (téléchargement, référentiel, jointure) ; protocole d'évaluation (ADR-0012) ; 15 questions | Socle d'ingestion, 15 questions |
+| 2 | Tables DuckDB, jointure spatiale, indice de confiance (ADR-0006), correspondance des codes de zone ; 30 questions | Pipeline d'ingestion reproductible |
+| 3 | Extraction partie I + partie II + cahiers (ADR-0008, ADR-0011), passages avec en-tête et payload (ADR-0009), indexation Qdrant, baselines retrieval (avec et sans filtre par zone), benchmark FR public | Benchmark retrieval initial |
+| 4–5 | Routeur, garde-fous SQL, reranking, génération locale, citations avec version de la pièce, abstention multi-signal (ADR-0010), intégration RAGnarok | Système de bout en bout |
+| 6–8 | Jeu de référence étendu à ~150 questions écrites et validées par le porteur (**chemin critique** : 5 à 6 jours de travail humain, à répartir dès la semaine 1), mesures, interface, rapport, vidéo | Version publique |
 
 Si l'extraction ou les données prennent plus de temps que prévu : réduire le périmètre (moins de zones, moins de documents) avant de réduire la qualité de l'évaluation.
 
@@ -157,9 +170,10 @@ Aucun seuil de qualité ou de latence fixé avant les premières baselines.
 
 ## 10. Décisions ouvertes (tranchées par le spike ou en semaine 1)
 
-- Choix des documents du règlement inclus dans le corpus pilote.
-- Extracteur PDF (PyMuPDF vs Docling).
-- Encodeur (BGE-M3 ou alternative plus légère).
+- ~~Choix des documents du règlement inclus dans le corpus pilote~~ : tranché au spike (règlement, zones économiques et AU ; OAP et cahiers d'Oullins et de Pierre-Bénite) ; corpus v1 : ADR-0011.
+- ~~Extracteur PDF (PyMuPDF vs Docling)~~ : tranché, ADR-0008.
+- ~~Encodeur (BGE-M3 ou alternative plus légère)~~ : BGE-M3 dense + sparse confirmé par le test 4.
+- Rattachement au bâtiment ou à la parcelle : ADR-0007, proposé, à mesurer (v1.1).
 - Modèle de génération local.
 - Benchmark public français retenu.
 - Extensions à apporter à RAGnarok-AI (routage, exactitude SQL).

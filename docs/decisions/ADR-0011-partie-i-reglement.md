@@ -1,6 +1,6 @@
 # ADR-0011 — Ingestion de la partie I du règlement (dispositions communes)
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte

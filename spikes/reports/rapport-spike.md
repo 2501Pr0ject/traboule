@@ -676,7 +676,7 @@ Pour chaque écart : ce qui était prévu, ce qui a été fait réellement, et s
 
 ## Décisions à consigner en ADR
 
-Brouillons rédigés le 2026-10-29 dans `docs/decisions/` (statut « proposé ») : ADR-0006 (source de coordonnées et indice de confiance de zone), ADR-0007 (rattachement au bâtiment ou à la parcelle, à mesurer), ADR-0008 (extracteur PDF), ADR-0009 (représentation des passages), ADR-0010 (abstention multi-signal), ADR-0011 (partie I du règlement), ADR-0012 (tirages reproductibles et protocole de revue). Mises à jour : ADR-0002 confirmé par le test 2 ; ADR-0004 reste proposé (licence ambiguë). Détail des constats à l'origine de chaque ADR :
+Rédigés le 2026-10-29 dans `docs/decisions/` ; **ADR-0006 et 0008 à 0012 acceptés**, ADR-0007 « proposé, à mesurer » : ADR-0006 (source de coordonnées et indice de confiance de zone), ADR-0007 (rattachement au bâtiment ou à la parcelle, à mesurer), ADR-0008 (extracteur PDF), ADR-0009 (représentation des passages), ADR-0010 (abstention multi-signal), ADR-0011 (partie I du règlement), ADR-0012 (tirages reproductibles et protocole de revue). Mises à jour : ADR-0002 confirmé par le test 2 ; ADR-0004 reste proposé (licence ambiguë). Détail des constats à l'origine de chaque ADR :
 
 
 - Source de coordonnées pour la jointure spatiale : fichier de géolocalisation en principal, coordonnées du stock en sensibilité (décidé le 2026-10-28) — ADR à rédiger avec les mesures du Test 2.
@@ -698,7 +698,7 @@ Brouillons rédigés le 2026-10-29 dans `docs/decisions/` (statut « proposé »
 
 | Décision | Classement | Justification (mesure) |
 |---|---|---|
-| Filtre de payload par zone (ADR-0009) | **v1 obligatoire** | Les 3 échecs Q02, Q04, Q06 remontent au rang 2–3 avec filtre (indication automatisée). |
+| Filtre de payload par zone (ADR-0009) | **v1 obligatoire** | Échecs Q02, Q04, Q06 vérifiés ; gain du filtre indiqué par une mesure automatisée (article au rang 2–3), à confirmer en v1. |
 | En-tête contextuel préfixé (ADR-0009) | **v1 obligatoire** | Cause mesurée des échecs : nom de zone absent du texte, articles identiques entre zones. |
 | Payload complet : zone, commune, nom d'OAP, version de la pièce, pages (ADR-0009) | **v1 obligatoire** | Q15, Q16 ; citation de la version de la pièce (conventions §6). |
 | Partie I du règlement (ADR-0011) | **v1 obligatoire** | Q10 servie par un simple renvoi ; ancienne Q11 sans aucun passage. |
@@ -722,6 +722,6 @@ Position sur l'avis de départ du porteur : **conforme aux mesures** (filtre, en
 
 ### Délai
 
-Le cadrage prévoyait 4 à 6 semaines après le GO. Charges ajoutées par le spike, estimées : partie I du règlement (2 à 3 jours, tableaux compris) ; chaîne Docling et nettoyage (2 jours) ; en-tête, payload, filtre et leur mesure (2 à 3 jours) ; indice de confiance exposé (1 jour) ; abstention structurelle et mesure des signaux (2 à 3 jours) ; correspondance des codes de zone (0,5 jour) ; revue humaine réellement faite sur le jeu de référence et les contrôles (2 à 3 jours répartis). Total ≈ 2 à 3 semaines. Gain : une partie de la semaine 1 et de la semaine 2 du cadrage est déjà faite (sources figées, référentiel, jointure, extraction pilote), à réécrire proprement (≈ 1 semaine économisée).
+Le cadrage prévoyait 4 à 6 semaines après le GO. Charges ajoutées par le spike, estimées : partie I du règlement (2 à 3 jours, tableaux compris) ; chaîne Docling et nettoyage (2 jours) ; en-tête, payload, filtre et leur mesure (2 à 3 jours) ; indice de confiance exposé (1 jour) ; abstention structurelle et mesure des signaux (2 à 3 jours) ; correspondance des codes de zone (0,5 jour) ; revue humaine réellement faite sur le jeu de référence et les contrôles (2 à 3 jours répartis). Total ≈ 2 à 3 semaines. **Chemin critique : jeu de référence, 150 questions écrites et validées par le porteur, 5 à 6 jours de travail humain** (déjà prévu au cadrage, mais non délégable et non parallélisable avec sa propre relecture). Gain : une partie de la semaine 1 et de la semaine 2 du cadrage est déjà faite (sources figées, référentiel, jointure, extraction pilote), à réécrire proprement (≈ 1 semaine économisée).
 
-**Estimation révisée : 6 à 8 semaines** après le GO (au lieu de 4 à 6). Si le délai dérape, appliquer la règle du cadrage : réduire le périmètre (moins de cahiers communaux, moins de zones) avant de réduire la qualité de l'évaluation. La mise à jour de `docs/cadrage-v1.md` (v0.3) est à faire après validation de ces classements.
+**Estimation révisée : 6 à 8 semaines** après le GO (au lieu de 4 à 6), **à temps plein, à ajuster selon la disponibilité réelle**. Si le délai dérape, appliquer la règle du cadrage : réduire le périmètre (moins de cahiers communaux, moins de zones) avant de réduire la qualité de l'évaluation. `docs/cadrage-v1.md` est passé en v0.3 le 2026-10-29, après validation de ces classements.

@@ -1,6 +1,6 @@
 # ADR-0012 — Tirages reproductibles et protocole de revue humaine
 
-- **Statut :** proposé
+- **Statut :** accepté
 - **Date :** 2026-10-29
 
 ## Contexte
