@@ -83,7 +83,7 @@ Règles détaillées : [`benchmarks/datasets/gold/guide-annotation.md`](../bench
 
 ## 8. Conventions de code
 
-- Code et identifiants en anglais ; documentation, ADR et messages de commit en français.
+- Code et identifiants en anglais ; documentation, ADR et description des messages de commit en français (§9).
 - Fonctions typées ; Pydantic pour les contrats de données ; pas de logique dans les notebooks.
 - Un script = une responsabilité ; options par Typer ; chemins via `pathlib`.
 - Toute métrique est écrite dans un fichier (JSON ou CSV) avec la configuration et les versions des dépendances.
@@ -91,5 +91,10 @@ Règles détaillées : [`benchmarks/datasets/gold/guide-annotation.md`](../bench
 
 ## 9. Git
 
-- Messages de commit en français, au présent, petits et atomiques : `ajoute le manifeste COG 2026`, `corrige le filtre des arrondissements`.
+- Messages au format **Conventional Commits** : `type(portée): description`.
+  - **Type et portée en anglais** : types `feat`, `fix`, `docs`, `test`, `refactor`, `chore` ; portée = sous-paquet ou domaine (`ingestion`, `geo`, `contracts`, `gold`, `spike`, `adr`, `conventions`…), facultative.
+  - **Description en français**, nominale et factuelle (ce que contient le commit), sans consigne : `feat(geo): jointure spatiale avec exclusion des statuts P`, `fix(ingestion): filtre epsg de la géolocalisation`.
+  - **Titre de 72 caractères au plus** ; les précisions vont dans le corps, séparé du titre par une ligne vide.
+- Commits petits et atomiques.
+- Jalons marqués par des tags annotés (`spike-test1` … `spike-synthese`, `cadrage-v0.3`) ; un document cite un tag, jamais une empreinte de commit.
 - Pas de push sans décision explicite.
