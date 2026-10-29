@@ -1,6 +1,6 @@
 # ADR-0004 — Géoportail de l'Urbanisme comme référence de version du PLU-H
 
-- **Statut :** proposé (accès et licence à confirmer)
+- **Statut :** proposé (2026-10-29 : accès confirmé — API Carto module GPU et API du site, version opposable `200046977_PLUi_20260326` identifiée, concordance du zonage avec data.grandlyon sur un échantillon de 21 points ; licence ambiguë : les CGU renvoient à la Licence Ouverte avec un lien vers le texte de 2014, v1 ou v2.0 à confirmer)
 - **Date :** 2026-10-27
 
 ## Contexte

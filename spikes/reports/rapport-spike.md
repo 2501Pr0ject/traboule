@@ -1,10 +1,12 @@
 # Rapport de spike — 2026-10-28
 
-## Verdict global : à établir (session 6)
+## Verdict global : GO avec réserves (2026-10-29)
+
+**Fondement : les mesures seulement.** Les quatre tests atteignent leurs critères GO, tels qu'appliqués ; aucun critère n'a été assoupli au moment de rendre un verdict, mais plusieurs règles de contrôle ont été fixées en cours de route, et la vérification humaine a été partiellement remplacée par des vérifications automatisées pour les tests 2 et 3 ; pour le test 4, chaque réussite et chaque échec reposent sur une lecture humaine (section « Écarts au protocole »). La faisabilité technique est établie sur le M2 (temps et mémoire largement dans les limites). Ce qui n'est **pas** démontré : la fiabilité de la recherche pour une question ciblant l'article d'une zone sans filtre (6/9), un mécanisme d'abstention (le score seul ne suffit pas), l'extraction de qualité des cahiers communaux, l'arbitrage entre sources de coordonnées.
 
 | Test | Verdict |
 |---|---|
-| Test 0 — Préparation | Fait (registre v0.3, manifestes) |
+| Test 0 — Préparation | Fait (registre v0.3, manifestes, immuabilité par ressource) |
 | Test 1 — Référentiel et Sirene | **GO avec réserves** (voir ci-dessous) |
 | Test 2 — Jointure spatiale | **GO avec réserves** (critères atteints, règles de contrôle fixées en cours de route) |
 | Test 3 — PDF | **GO avec réserves** (critères atteints sur le règlement ; cahiers et choix d'extracteur à traiter) |
@@ -211,7 +213,7 @@ Réserves à porter :
 
 ---
 
-## Test 2 — Jointure spatiale : en attente du contrôle manuel
+## Test 2 — Jointure spatiale : GO avec réserves
 
 Script : `spikes/test2_jointure.py`. Mesures brutes : `spikes/output/test2/metrics.json` ; liste des zones : `zones.csv` ; contrôles : `controles.csv` et `carte_controles.html` (locaux, jamais versionnés). Sortie : `data/interim/etablissements_zones.parquet`. Source de coordonnées principale : fichier de géolocalisation (SRC-001b) ; coordonnées du stock en sensibilité. **Un résultat de ce test est une analyse de localisation, jamais un constat réglementaire.**
 
@@ -456,7 +458,7 @@ Règle fixée avant le tirage : < 300 caractères extractibles **et** (≥ 50 % 
 
 ### Grille (10 pages par document, 2 extracteurs)
 
-Tirage `md5(doc_id | page | graine)`, une graine par document (3101, 3102, 3103). Revue : `revue.html` (rendu PNG, texte PyMuPDF, texte Docling côte à côte). Grille issue d'un **pré-remplissage automatisé** (rendus PNG et textes), puis **relue par le porteur le 2026-10-28** : 60 lignes sur 60 déclarées conformes, sans correction. Le porteur n'ayant pas modifié les fichiers, `relu_par_humain = oui` a été reporté automatiquement dans la grille, sur cette déclaration ; la relecture couvre aussi `revue.html` et `tableaux/revue_tableaux.html`.
+Tirage `md5(doc_id | page | graine)`, une graine par document (3101, 3102, 3103). Revue : `revue.html` (rendu PNG, texte PyMuPDF, texte Docling côte à côte). Grille issue d'un **pré-remplissage automatisé** (rendus PNG et textes), puis **relue par le porteur le 2026-10-28** : 60 lignes sur 60 déclarées conformes, sans correction. Le porteur n'ayant pas modifié les fichiers, `relu_par_humain = oui` a été reporté dans la grille par un report automatisé, sur cette déclaration ; la relecture couvre aussi `revue.html` et `tableaux/revue_tableaux.html`.
 
 | Document | PyMuPDF : lisible et dans l'ordre | Docling : lisible et dans l'ordre | Pages graphiques |
 |---|---:|---:|---:|
@@ -598,7 +600,7 @@ Q21 (« logement de gardien », sujet absent du corpus) : score du premier résu
 
 ### Jugement (porteur, 2026-10-29)
 
-Méthode (étape 1, suffisante pour le critère) : pour chaque requête, lecture du top 10 hybride dans l'ordre jusqu'au premier passage pertinent ; lecture complète des 10 pour les requêtes en échec. **Pré-lecture automatisée, puis lecture humaine** : le porteur a vérifié les échecs (Q02, Q04, Q06, Q19) et les cas limites (Q03, Q08, Q16) dans `etape1.html` ; les autres requêtes réussies sont acceptées par le porteur sur la base de cette pré-lecture. Report automatisé dans `jugements.csv` (80 lignes, `relu_par_humain = oui` : rangs lus jusqu'au premier oui, 10 rangs pour les échecs ; colonne `methode` : `pre_lecture_automatisee_verifiee_porteur` ou `pre_lecture_automatisee_acceptee_porteur`), avec vérification de la correspondance rang → passage (une divergence de description sans effet : pour Q04, le #1 est UEc 2.2 et non le préambule de UEa). L'étape 2 (reste du pool : dense, sparse, hybride filtré) n'est pas faite ; elle est facultative.
+Méthode (étape 1, suffisante pour le critère) : pour chaque requête, lecture du top 10 hybride dans l'ordre jusqu'au premier passage pertinent ; lecture complète des 10 pour les requêtes en échec. **Pré-lecture automatisée, puis lecture humaine** : le porteur a vérifié les échecs (Q02, Q04, Q06, Q19) et les cas limites (Q03, Q08, Q16) dans `etape1.html`, puis, le 2026-10-29, **relu et confirmé les 17 passages pertinents retenus** (premier pertinent des 16 réussites, plus Q03 #8). Les rangs jugés « non » avant le premier pertinent des 9 autres réussites n'ont pas été relus (pré-lecture automatisée seule). Report automatisé dans `jugements.csv` (80 lignes ; colonne `methode` : `verifie_porteur` pour les 17 passages pertinents relus, `relu_par_humain = oui` ; `pre_lecture_automatisee_verifiee_porteur` pour les 44 lignes des échecs et cas limites, `relu_par_humain = oui` ; `pre_lecture_automatisee_acceptee_porteur` pour les 19 rangs « non » non relus, `relu_par_humain = non`), avec vérification de la correspondance rang → passage (une divergence de description sans effet : pour Q04, le #1 est UEc 2.2 et non le préambule de UEa). L'étape 2 (reste du pool : dense, sparse, hybride filtré) n'est pas faite ; elle est facultative.
 
 | Requête | Type | 1er pertinent (rang hybride) | Passage |
 |---|---|---|---|
@@ -633,7 +635,7 @@ Méthode (étape 1, suffisante pour le critère) : pour chaque requête, lecture
 |---|---|
 | Corpus pilote indexé en < 1 h ; extrapolation au corpus complet < 4 h | **Atteint** : 30 s ; 2 à 34 min selon le périmètre (règlement seul à règlement + 76 cahiers). |
 | Pic mémoire < 10 Go | **Atteint** : 2,23 Go pour le processus + 2,27 Go sur MPS. |
-| Bon passage dans le top 10 pour une majorité nette (≥ 14 / 20, hybride sans filtre) | **Atteint** : 16 / 20. |
+| Bon passage dans le top 10 pour une majorité nette (≥ 14 / 20, hybride sans filtre) | **Atteint** : 16 / 20 ; les 17 passages retenus (16 réussites) ont été relus et confirmés par le porteur le 2026-10-29 ; échecs et cas limites vérifiés par le porteur. |
 
 Réserves :
 1. **Requêtes ciblant un article d'une zone** : 6/9 sans filtre ; le préambule de zone concurrence l'article. C'est le cas d'usage central (question mixte zone → règle) : la v1 doit filtrer ou pondérer par la zone connue (la jointure spatiale fournit la zone) ; gain indiqué automatiquement, à mesurer par jugement.
@@ -650,7 +652,32 @@ Réserves :
 - Le zonage contient un secteur sauvegardé (31,2 ha, 0,84 % des établissements) hors règlement du PLU-H.
 - Le règlement est découpé par zone mère : les sous-secteurs (a, b, c…) et les zones `AU*` exigent une correspondance explicite.
 
+## Écarts au protocole
+
+Pour chaque écart : ce qui était prévu, ce qui a été fait réellement, et s'il a pu changer un verdict.
+
+| Test | Prévu | Fait réellement | A pu changer un verdict ? |
+|---|---|---|---|
+| 1 | Critère « tout établissement filtré rattaché au COG 2026 » | Reformulé en « perte inverse » (géolocalisé dans la Métropole, codé ailleurs) à la demande du porteur, **avant** les mesures | **Non** : fixé avant d'avoir les résultats ; plus exigeant que le critère tautologique initial. |
+| 2 | Contrôle visuel humain de 10 établissements tirés au hasard (10/10) | Grille remplie par une **vérification automatisée** (BAN → cadastre → GPU), puis 4 cas revus par une **vérification automatisée par les données** (BD TOPO, tronçons de voie) avec une observation visuelle ; **vérification visuelle humaine** du porteur sur #2, #21 et #22 seulement | **Oui, en principe** : #1, #3 à #10 n'ont pas été vus par un humain ; un contrôle visuel aurait pu en déclarer un en échec. Le porteur a validé la lecture des données de #8, #9, #10. |
+| 2 | Critère 10/10 sur les 10 premiers tirages | Règles de statut (limite, adresse sans numéro), de remplacement et de fin **fixées après** les premiers résultats ; 2 remplacements (rangs 11 et 12) | **Oui** : sur les 10 premiers tirages, 8 réussis et 2 indéterminables — le critère tel que formulé n'était pas atteint ; c'est la règle de fin (10 cas déterminables) qui donne 10/10. Aucun cas déterminable n'a échoué. |
+| 2 | Échantillons de validation et d'arbitrage indépendants | Même graine et même hachage : recoupement #21 = #13 | **Non** : chaque échantillon reste un tirage sans biais de sa population (contrôle sur 1 000 rangs et 3 autres graines). |
+| 2 | Arbitrage stock / géolocalisation sur 10 écarts > 50 m | Vérification automatisée biaisée vers le stock (coordonnées dérivées de la BAN) ; 2 cas déterminables sur 10 | **Non** pour le verdict (l'arbitrage n'entre pas dans le critère) ; la décision de source (ADR-0006) reste non éprouvée. |
+| 3 | Grille de 30 pages relue par le porteur | **Pré-remplissage automatisé**, relecture déclarée par le porteur sans modification des fichiers, report automatisé de `relu_par_humain` | **Peu probable** : le critère repose sur une déclaration ; sur le règlement, les 10 pages sont lisibles et ordonnées pour les deux extracteurs, sans ambiguïté sur les rendus. |
+| 3 | Tableaux du règlement évalués sur le corpus pilote | Le corpus n'en contenait aucun : évaluation sur 5 pages tirées dans le règlement complet | **Oui** : sur le corpus prévu, ce critère était non évaluable et le verdict n'aurait pas pu être GO sur ce point. |
+| 3 | Découpage zone → article | Deux défauts trouvés et corrigés après le premier passage (préambules rattachés à la zone précédente, fragments de titres) | **Non** : corrections de défauts, mesure refaite sur le texte corrigé (94,6 %). |
+| 4 | 20 requêtes du porteur, telles que fournies | Q11 remplacée **avant** le gel et l'encodage (aucun passage ne traitait le sujet) ; l'ancienne Q11 devient la sonde Q21, hors critère | **Non** : décidé avant tout classement. |
+| 4 | Jugement humain du pool | **Pré-lecture automatisée** ; vérification humaine du porteur sur les échecs et cas limites (7 requêtes sur 20), puis, le 2026-10-29, **relecture par le porteur des 17 passages retenus** (le premier pertinent des 16 requêtes réussies, plus Q03 #8) : jugements confirmés. Les passages jugés « non » avant le premier pertinent des 9 autres réussites n'ont pas été relus (`relu_par_humain = non`) | **Non** : chaque réussite repose sur un passage relu et confirmé par un humain ; les rangs non relus ne peuvent qu'ajouter des passages pertinents, pas retirer une réussite. |
+| 4 | Comparaison des modes (étape 2 du jugement) | Non faite | **Non** pour le verdict (hors critère) ; le gain du filtre par zone reste une indication automatisée. |
+
+**Effet global.** Aucun écart n'a transformé un échec constaté en réussite. Le verdict du test 2 repose sur des règles et des vérifications qui n'étaient pas celles prévues (règles fixées après les premiers résultats, vérification humaine partielle), et celui du test 3 sur une relecture déclarée et un critère des tableaux évalué hors du corpus prévu. Pour le test 4, seuls des rangs non pertinents restent non relus, sans effet possible sur le verdict. Les verdicts restent des GO **avec réserves**, pas des GO francs.
+
+**Recommandation pour la v1** (ADR-0012) : une revue humaine plus courte mais réellement faite, dans les fichiers de grille ; protocole, règles de statut, de remplacement et de fin fixés **avant** tout tirage ; une graine par échantillon (`md5`) ; distinction humain / automatisé ligne par ligne.
+
 ## Décisions à consigner en ADR
+
+Brouillons rédigés le 2026-10-29 dans `docs/decisions/` (statut « proposé ») : ADR-0006 (source de coordonnées et indice de confiance de zone), ADR-0007 (rattachement au bâtiment ou à la parcelle, à mesurer), ADR-0008 (extracteur PDF), ADR-0009 (représentation des passages), ADR-0010 (abstention multi-signal), ADR-0011 (partie I du règlement), ADR-0012 (tirages reproductibles et protocole de revue). Mises à jour : ADR-0002 confirmé par le test 2 ; ADR-0004 reste proposé (licence ambiguë). Détail des constats à l'origine de chaque ADR :
+
 
 - Source de coordonnées pour la jointure spatiale : fichier de géolocalisation en principal, coordonnées du stock en sensibilité (décidé le 2026-10-28) — ADR à rédiger avec les mesures du Test 2.
 - Statut de diffusion : le stock INSEE le plus récent prévaut ; jamais de coordonnées SRC-007 pour un établissement `P` (conventions §3.10).
@@ -667,4 +694,34 @@ Réserves :
 
 ## Impact sur le planning
 
-À établir en session 6.
+### Classement des décisions
+
+| Décision | Classement | Justification (mesure) |
+|---|---|---|
+| Filtre de payload par zone (ADR-0009) | **v1 obligatoire** | Les 3 échecs Q02, Q04, Q06 remontent au rang 2–3 avec filtre (indication automatisée). |
+| En-tête contextuel préfixé (ADR-0009) | **v1 obligatoire** | Cause mesurée des échecs : nom de zone absent du texte, articles identiques entre zones. |
+| Payload complet : zone, commune, nom d'OAP, version de la pièce, pages (ADR-0009) | **v1 obligatoire** | Q15, Q16 ; citation de la version de la pièce (conventions §6). |
+| Partie I du règlement (ADR-0011) | **v1 obligatoire** | Q10 servie par un simple renvoi ; ancienne Q11 sans aucun passage. |
+| Indice de confiance de zone exposé, règle révisée (ADR-0006) | **v1 obligatoire** | 20 % en confiance faible, 13 % à moins de 10 m d'une autre zone. |
+| Abstention structurelle + signaux mesurés (ADR-0010) | **v1 obligatoire** | Q21 non séparable par le score ; abstention exigée par le cadrage. |
+| Reranking (ADR-0001, accepté) | **v1 obligatoire** | Prévu par l'ADR-0001 ; signal d'abstention à mesurer (ADR-0010) ; non mesuré au spike. |
+| Extracteur mixte PyMuPDF / Docling et nettoyage (ADR-0008) | **v1 obligatoire** | PyMuPDF inutilisable sur les cahiers ; tableaux exploitables avec Docling seulement. |
+| Correspondance code de zone → chapitre (suffixe + table `AU*`) | **v1 obligatoire** | Condition de la chaîne zone → règle ; 31 codes sur 32 rattachés avec citation. |
+| Protocole de tirage et de revue (ADR-0012) | **v1 obligatoire** | Écarts au protocole du spike ; reproductibilité de l'évaluation. |
+| Rattachement au bâtiment / à la parcelle (ADR-0007) | **v1.1** | Critère du test 2 atteint avec le point ; mesure sur 1 000 établissements à faire ; aucune mesure n'impose la v1. |
+| Optimisation du calcul de distance (411 s) | **v1.1** | Acceptable pour un traitement par lot ; sans effet sur les réponses. |
+| Pages graphiques (OCR, cartes) | **v1.1** | Hors périmètre sans OCR ; règle de détection à revoir. |
+| Multivecteur, quantification (ADR-0001) | **v1.1** | 12 à 25 Go en fp32 avec les cahiers : au-delà de la machine. |
+| Seuil de score seul pour l'abstention | **abandonné** | Ne sépare pas la sonde Q21. |
+| PyMuPDF trié (`sort=True`) pour les cahiers | **abandonné** | Colonnes entrelacées. |
+| Vérification automatisée BAN comme arbitre de la source de coordonnées | **abandonné** | Biaisée : les coordonnées du stock dérivent de la BAN. |
+| Tirages par `hash()` de DuckDB | **abandonné** | Stabilité entre versions non garantie ; remplacé par `md5`. |
+| Dédoublonnage des articles identiques entre zones | **abandonné** | Chaque passage porte sa zone ; le supprimer empêcherait de retrouver l'article d'une zone. |
+
+Position sur l'avis de départ du porteur : **conforme aux mesures** (filtre, en-tête, partie I, payload, indice exposé, abstention structurelle en v1 ; bâtiment en v1.1), avec trois ajouts en v1 que les mesures imposent : l'extracteur mixte et son nettoyage, la correspondance des codes de zone, le protocole de revue. Le reranker reste en v1 (ADR-0001).
+
+### Délai
+
+Le cadrage prévoyait 4 à 6 semaines après le GO. Charges ajoutées par le spike, estimées : partie I du règlement (2 à 3 jours, tableaux compris) ; chaîne Docling et nettoyage (2 jours) ; en-tête, payload, filtre et leur mesure (2 à 3 jours) ; indice de confiance exposé (1 jour) ; abstention structurelle et mesure des signaux (2 à 3 jours) ; correspondance des codes de zone (0,5 jour) ; revue humaine réellement faite sur le jeu de référence et les contrôles (2 à 3 jours répartis). Total ≈ 2 à 3 semaines. Gain : une partie de la semaine 1 et de la semaine 2 du cadrage est déjà faite (sources figées, référentiel, jointure, extraction pilote), à réécrire proprement (≈ 1 semaine économisée).
+
+**Estimation révisée : 6 à 8 semaines** après le GO (au lieu de 4 à 6). Si le délai dérape, appliquer la règle du cadrage : réduire le périmètre (moins de cahiers communaux, moins de zones) avant de réduire la qualité de l'évaluation. La mise à jour de `docs/cadrage-v1.md` (v0.3) est à faire après validation de ces classements.

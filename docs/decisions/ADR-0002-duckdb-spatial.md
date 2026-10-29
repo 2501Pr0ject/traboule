@@ -1,6 +1,6 @@
 # ADR-0002 — DuckDB + extension spatiale comme stockage structuré
 
-- **Statut :** accepté (à confirmer par le test 2 du spike)
+- **Statut :** accepté (confirmé par le test 2 du spike, 2026-10-29 : jointure de 957 377 points sur 4 487 polygones en 2,5 s, pic 689 Mo, 99,99 % dans exactement une zone ; voir `spikes/reports/rapport-spike.md`)
 - **Date :** 2026-10-27
 
 ## Contexte
