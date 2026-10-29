@@ -8,7 +8,7 @@
 | Test 1 — Référentiel et Sirene | **GO avec réserves** (voir ci-dessous) |
 | Test 2 — Jointure spatiale | **GO avec réserves** (critères atteints, règles de contrôle fixées en cours de route) |
 | Test 3 — PDF | **GO avec réserves** (critères atteints sur le règlement ; cahiers et choix d'extracteur à traiter) |
-| Test 4 — BGE-M3 | à faire |
+| Test 4 — BGE-M3 | **GO avec réserves** (16/20 ; requêtes ciblant une zone : 6/9 sans filtre) |
 
 ## Environnement
 
@@ -448,7 +448,7 @@ Nouvelles ressources téléchargées dans `data/raw/SRC-005/2026-10-28/<ressourc
 | Docling B | 25,8 s | 8,8 s | 726 Mo |
 | Docling C | 121,8 s | 51,3 s (1,3 p/s) | 965 Mo |
 
-Le temps PyMuPDF comprend la détection de tableaux et le comptage des tracés (le texte seul est bien plus rapide). Le premier passage cumule téléchargement des modèles Docling (**1 590 Mo** dans le cache Hugging Face), premiers chargements et disque froid ; les deux passages sont consignés. Mémoire : < 1,4 Go, compatible avec la machine. OCR désactivé (PDF natifs).
+Le temps PyMuPDF comprend la détection de tableaux et le comptage des tracés (le texte seul est bien plus rapide). Le premier passage cumule téléchargement des modèles Docling (**529 Mo** réels : `docling-models` 358 Mo + `docling-layout-heron` 171 Mo ; *corrigé le 2026-10-28 : la valeur de 1 590 Mo publiée d'abord comptait deux fois les fichiers liés du cache*), premiers chargements et disque froid ; les deux passages sont consignés. Mémoire : < 1,4 Go, compatible avec la machine. OCR désactivé (PDF natifs).
 
 ### Pages graphiques
 
@@ -547,7 +547,100 @@ Les 9 cahiers « communaux » des secteurs 31–39 portent tous la page de titre
 4. `UCe3-p` reste sans rattachement au règlement ;
 5. **aucun extracteur ne suffit seul** : PyMuPDF pour le règlement (rapide, une colonne), Docling pour les cahiers et les tableaux ; choix à consigner en ADR.
 
-## Test 4 — BGE-M3 : à faire
+## Test 4 — BGE-M3 : GO avec réserves
+
+### Protocole (fixé le 2026-10-28, avant l'encodage)
+
+- **Corpus** : `spikes/output/pdf/passages.jsonl`, 360 passages, 90 634 tokens, sha256 `fda1d07b9ca9299e207877dac53110641838095862b479328c57bd1c48eaffdb` (vérifié avant encodage).
+- **Requêtes** : `spikes/queries_pilote.tsv`, écrites par le porteur, **figées** (sha256 `1355d77e18f317dc85dae1c0b350496d3ed6f4d2cfe703d7c0bc6856857bdb5d`) : 20 requêtes du critère (types L littérale, P paraphrase, U usager) et une sonde Q21 hors critère.
+- **Revue préalable des requêtes** (recherche textuelle dans le document et la zone attendus, sans classement) : l'ancienne Q11 (« logement de gardien ») n'avait **aucun** passage traitant du sujet ; remplacée par « règles de hauteur des bâtiments dans les zones d'activités » (23 passages ciblés). L'ancienne Q11 devient **Q21, sonde hors critère** : encodée et classée dans les 4 modes, scores des top 10 consignés, exclue du critère ; elle sert à caler un seuil d'abstention. Q10 (le corpus n'a que le renvoi vers la partie I) et Q14 (hauteur des clôtures traitée en UEi1 et UEi2 seulement) confirmées.
+- **Modes** : dense, sparse, hybride (fusion RRF), hybride filtré sur la zone attendue (Q01–Q08, Q13 ; pour Q13, zone `AUEi1` absente des passages, filtre sur `AUs.co` ou `UEi1` d'après la correspondance du Test 3).
+- **Critère GO** : hybride **sans** filtre ; une requête est réussie si au moins un passage jugé `pertinent = oui` (ligne `relu_par_humain = oui`) figure dans son top 10 ; GO si **≥ 14 / 20**. Le gain du filtre est rapporté à part, comme mesure.
+- **Pool de jugement** : top 10 hybride ∪ top 5 dense ∪ top 5 sparse ∪ top 5 hybride filtré ; pré-indications automatiques (doc, zone) non contraignantes.
+- **Règles de jugement particulières** :
+  - **Q13** : pertinents = la règle de renvoi des zones AU indicées (p. 731, chapitre AUs.co) ou un article du chapitre UEi1 ; le passage de renvoi seul suffit pour une réussite ;
+  - **Q19** : est jugé pertinent (« oui ») **tout passage sur les règles d'extension d'une zone économique, quelle qu'elle soit** : le retrieval seul ne connaît pas la zone de l'entrepôt (aucun lien commune → zone dans le règlement ; ce lien relève de la jointure spatiale) ;
+  - **Q10** : le bon passage est le renvoi vers le chapitre 5 de la partie I.
+- **Limite relevée (Q10, ancienne Q11)** : la v1 devra intégrer la **partie I du règlement** (dispositions communes : stationnement, définitions), absente du corpus pilote.
+
+### Mesures
+
+Script : `spikes/test4_bge_m3.py`. Sorties (non versionnées) : `spikes/output/qdrant/`, `spikes/output/test4/{metrics.json, jugements.csv, revue_requetes.html}`. Environnement : torch 2.14.1, FlagEmbedding 1.4.2 (avec transformers 5.21.0, chargé sans incident), qdrant-client 1.20.0 ; **device `mps`**, fp16.
+
+| Mesure | Valeur |
+|---|---:|
+| Modèle BGE-M3 téléchargé | **4,59 Go** réels (`pytorch_model.bin` 2,27 Go + `model.onnx_data` 2,27 Go, la version ONNX n'étant pas utilisée) |
+| Chargement du modèle (exclu des mesures) | 133 s (dont téléchargement), pic RSS 2,2 Go |
+| Encodage du corpus (360 passages, 90 634 tokens, dense + sparse) | **30,0 s** — 720 passages/min, 3 022 tokens/s |
+| Mémoire pendant l'encodage | RSS 224 Mo + **2,27 Go alloués sur MPS** (mémoire unifiée) ; pic du processus 2,23 Go |
+| Indexation Qdrant local (vecteurs nommés `dense` 1024 cosinus + `sparse`) | 0,34 s ; 360 points ; **4,3 Mo** sur disque |
+| Encodage des 21 requêtes | 0,5 s |
+| Latence de recherche (médiane / max, ms) | dense 0,7 / 38 ; sparse 3,3 / 4,3 ; hybride RRF 4,4 / 7,0 ; hybride filtré 7,8 / 14,4 |
+
+Contrôle de cohérence : Q05 ramène bien un passage UEp « coefficient de pleine terre » en dense ou en sparse.
+
+### Multivecteur (mesuré, non indexé)
+
+Taille = tokens × 1024 × 4 octets (fp32) ou × 2 (fp16). Tokens par page mesurés : règlement 396, OAP 402, cahier 535. Cahiers : 76 × 67 à 150 pages (fourchette observée).
+
+| Périmètre | Tokens | fp32 | fp16 | Encodage estimé (débit mesuré) |
+|---|---:|---:|---:|---:|
+| Corpus pilote | 90 634 | 0,37 Go | 0,19 Go | 0,5 min |
+| Règlement complet (803 p.) | ≈ 318 000 | 1,3 Go | 0,65 Go | 1,8 min |
+| Règlement + 76 cahiers (bas) | ≈ 2,9 M | 11,9 Go | 5,9 Go | 16 min |
+| Règlement + 76 cahiers (haut) | ≈ 6,1 M | 25,0 Go | 12,5 Go | 34 min |
+
+Le multivecteur reste raisonnable pour le règlement seul ; avec tous les cahiers il dépasse la mémoire de la machine en fp32 et la frôle en fp16 (stockage disque ou quantification nécessaires) : cohérent avec son report en v1.1 (ADR-0001).
+
+### Sonde Q21 (hors critère) — seuil d'abstention
+
+Q21 (« logement de gardien », sujet absent du corpus) : score du premier résultat dense 0,526, sparse 0,108, hybride (RRF) 0,700. Parmi les 20 requêtes du critère, une a un premier score dense plus bas (Q02, 0,519), une un premier score sparse plus bas (Q20, 0,090), neuf un premier score hybride plus bas. **Un seuil simple sur le score du premier résultat ne sépare pas la sonde des requêtes légitimes** ; les scores RRF, fondés sur les rangs, ne sont pas calibrés pour cela. L'abstention devra reposer sur autre chose (ex. reranking, écart entre scores, vérification par le LLM) — à mesurer en v1.
+
+### Jugement (porteur, 2026-10-29)
+
+Méthode (étape 1, suffisante pour le critère) : pour chaque requête, lecture du top 10 hybride dans l'ordre jusqu'au premier passage pertinent ; lecture complète des 10 pour les requêtes en échec. **Pré-lecture automatisée, puis lecture humaine** : le porteur a vérifié les échecs (Q02, Q04, Q06, Q19) et les cas limites (Q03, Q08, Q16) dans `etape1.html` ; les autres requêtes réussies sont acceptées par le porteur sur la base de cette pré-lecture. Report automatisé dans `jugements.csv` (80 lignes, `relu_par_humain = oui` : rangs lus jusqu'au premier oui, 10 rangs pour les échecs ; colonne `methode` : `pre_lecture_automatisee_verifiee_porteur` ou `pre_lecture_automatisee_acceptee_porteur`), avec vérification de la correspondance rang → passage (une divergence de description sans effet : pour Q04, le #1 est UEc 2.2 et non le préambule de UEa). L'étape 2 (reste du pool : dense, sparse, hybride filtré) n'est pas faite ; elle est facultative.
+
+| Requête | Type | 1er pertinent (rang hybride) | Passage |
+|---|---|---|---|
+| Q01 | L | 1 | UEi1 2.5.1 hauteur de façade |
+| Q02 | L | **aucun** | l'article 1.1 de UEc n'est pas dans le top 10 (#1 = préambule UEc) |
+| Q03 | L | 3 (et 8) | UEi2 2.4.3 règles alternatives ; 2.4.1 « limité à 60 % » au #8 |
+| Q04 | L | **aucun** | l'article 2.1 de UEa n'est pas dans le top 10 |
+| Q05 | L | 6 | UEp 3.2.1 « n'est pas réglementé » |
+| Q06 | L | **aucun** | l'article 1.2 de UEl n'est pas dans le top 10 (#2 = préambule UEl) |
+| Q07 | P | 3 | UEi1 2.2.1 retrait par rapport aux limites séparatives |
+| Q08 | P | 1 | préambule AU (principe : « seule la gestion du bâti existant ») — compté oui par le porteur |
+| Q09 | L | 1 | UEl 2.2 retrait ≥ 4 m |
+| Q10 | L | 6 | UEl 5.2.1, renvoi au chapitre 5 de la partie I |
+| Q11 | P | 1 | UEl 2.5.1 hauteur |
+| Q12 | P | 1 | UEl 3.3.2 traitement paysager |
+| Q13 | P | 4 | AUs.co, renvoi à la zone U de référence |
+| Q14 | L | 1 | UEi1 4.5 clôtures, hauteur limitée à 2 m |
+| Q15 | L | 5 | OAP 7 ZA de la Saulaie (#1 = OAP 5 La Saulaie, autre OAP) |
+| Q16 | P | 3 | OAP 1 Aulagne (#2 OAP de Pierre-Bénite : non) |
+| Q17 | P | 1 | PADD de Pierre-Bénite, zones d'activités |
+| Q18 | L | 1 | tableau des surfaces de zonages de Pierre-Bénite |
+| Q19 | U | **aucun** | seulement du diagnostic du cahier de Pierre-Bénite, aucune règle d'extension |
+| Q20 | U | 1 | UEi2 1.2.1, commerce de détail sous conditions |
+
+**Résultat : 16 / 20** (critère : ≥ 14). Par type : L 8/11, P 7/7, U 1/2. **Requêtes ciblant une zone (Q01–Q08, Q13) : 6/9** ; les trois échecs (Q02, Q04, Q06) suivent le même schéma : le **préambule de la zone** (« caractère de la zone ») remonte à la place de l'article demandé.
+
+**Indication automatique, non jugée** (étape 2 non faite) : en mode **hybride filtré par zone**, l'article attendu de Q02 (UEc 1.1), Q04 (UEa 2.1) et Q06 (UEl 1.2) apparaît au **rang 2 ou 3** ; sans filtre, il est absent du top 10 hybride (dense : Q02 au rang 8 ; sparse : Q04 au rang 9). Le gain du filtre reste à confirmer par jugement.
+
+### Verdict Test 4 : GO avec réserves
+
+| Critère | Résultat |
+|---|---|
+| Corpus pilote indexé en < 1 h ; extrapolation au corpus complet < 4 h | **Atteint** : 30 s ; 2 à 34 min selon le périmètre (règlement seul à règlement + 76 cahiers). |
+| Pic mémoire < 10 Go | **Atteint** : 2,23 Go pour le processus + 2,27 Go sur MPS. |
+| Bon passage dans le top 10 pour une majorité nette (≥ 14 / 20, hybride sans filtre) | **Atteint** : 16 / 20. |
+
+Réserves :
+1. **Requêtes ciblant un article d'une zone** : 6/9 sans filtre ; le préambule de zone concurrence l'article. C'est le cas d'usage central (question mixte zone → règle) : la v1 doit filtrer ou pondérer par la zone connue (la jointure spatiale fournit la zone) ; gain indiqué automatiquement, à mesurer par jugement.
+2. **Abstention** : un seuil sur le score du premier résultat ne sépare pas la sonde Q21 des requêtes légitimes ; mécanisme à concevoir et mesurer.
+3. **Requêtes d'usager sans zone** (Q19) : le retrieval seul ne relie pas une commune à une zone ; elles exigent la route HYBRID (SQL/spatial puis RAG).
+4. Jugement limité au premier passage pertinent (suffisant pour le critère) ; la comparaison des modes (étape 2) reste à faire pour l'ADR.
+5. Modèle : 4,59 Go téléchargés, dont 2,27 Go de version ONNX inutile ; en v1, limiter le téléchargement aux poids PyTorch (`snapshot_download(..., allow_patterns=…)` sur les fichiers nécessaires : poids PyTorch, configuration, tokenizer, têtes sparse et colbert), sans le dossier `onnx/`.
 
 ## Surprises et risques
 
@@ -563,8 +656,13 @@ Les 9 cahiers « communaux » des secteurs 31–39 portent tous la page de titre
 - Statut de diffusion : le stock INSEE le plus récent prévaut ; jamais de coordonnées SRC-007 pour un établissement `P` (conventions §3.10).
 - Indice de confiance de zone (règle, seuils révisés après le Test 2) et son usage dans les réponses.
 - Correspondance code de zone → chapitre du règlement (règle de suffixe + table manuelle `AU*` ; les zones à urbaniser renvoient souvent aux règles d'une autre zone ou à une OAP — à confirmer au Test 3).
+- **Retrieval v1** : BGE-M3 dense + sparse, fusion RRF.
+  - **Cause des échecs Q02, Q04, Q06** : le nom de zone est absent du texte des passages (il n'est que dans les métadonnées), et les articles sont identiques d'une zone à l'autre ; seul le préambule nomme la zone, d'où sa remontée.
+  - **Remèdes à tester ensemble en v1** : un **en-tête contextuel** préfixé au texte avant encodage (zone, libellé de zone, chapitre, article) et un **filtre de payload par zone** quand la zone est connue ; mesurer chacun et leur combinaison sur les requêtes ciblant une zone. Préambules de zone à traiter comme passages de contexte, pas de règle.
+  - **Payload** : ajouter la **commune** et le **nom d'OAP** (d'après Q15 — OAP 5 « La Saulaie » devant l'OAP 7 « ZA de la Saulaie » — et Q16 — OAP de Pierre-Bénite remontée pour une question sur Oullins).
+- **Abstention** : mécanisme autre qu'un seuil sur le score du premier résultat (sonde Q21 non séparable).
 - **Après le GO :** rattachement établissement → parcelle cadastrale ou bâtiment (RNB) → zone, au lieu du point d'adresse (voir Test 2, distance à une autre zone) ; chiffrer la part résiduelle à position aléatoire.
-- **Choix de l'extracteur pour la v1** (après relecture de la grille du Test 3) : Docling partout, ou Docling seulement pour les pages à tableaux et les cahiers (PyMuPDF pour le texte du règlement). Mesure à l'appui : sur 5 pages à tableaux du règlement (p. 101, 103, 277, 362, 436, graine 3104), les deux extracteurs détectent les mêmes 8 tableaux ; Docling restitue en-têtes et cellules fusionnées, PyMuPDF colle les mots et crée des colonnes fantômes ; coût Docling ≈ 2 s par page contre ≈ 0,1 s pour PyMuPDF, modèles 1,6 Go. À trancher aussi : nettoyage des duplications de Docling sur les pages de graphiques.
+- **Choix de l'extracteur pour la v1** (après relecture de la grille du Test 3) : Docling partout, ou Docling seulement pour les pages à tableaux et les cahiers (PyMuPDF pour le texte du règlement). Mesure à l'appui : sur 5 pages à tableaux du règlement (p. 101, 103, 277, 362, 436, graine 3104), les deux extracteurs détectent les mêmes 8 tableaux ; Docling restitue en-têtes et cellules fusionnées, PyMuPDF colle les mots et crée des colonnes fantômes ; coût Docling ≈ 2 s par page contre ≈ 0,1 s pour PyMuPDF, modèles 0,53 Go. À trancher aussi : nettoyage des duplications de Docling sur les pages de graphiques.
 - Protocole de contrôle par échantillon : tirages futurs par `md5(siret || graine)`, une graine par échantillon, règles de statut / remplacement / fin fixées avant le tirage.
 
 ## Impact sur le planning

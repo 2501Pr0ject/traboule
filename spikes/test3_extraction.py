@@ -113,8 +113,9 @@ def source_pdf(resource: str) -> Path:
 
 
 def cache_size() -> int:
+    # Sans suivre les liens symboliques (le cache Hugging Face lie snapshots et blobs)
     return (
-        sum(p.stat().st_size for p in HF_CACHE.rglob("*") if p.is_file())
+        sum(p.lstat().st_size for p in HF_CACHE.rglob("*") if p.is_file() and not p.is_symlink())
         if HF_CACHE.exists()
         else 0
     )

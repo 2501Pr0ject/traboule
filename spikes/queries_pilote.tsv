@@ -1,0 +1,22 @@
+id	type	zone_attendue	doc_attendu	requete	role
+Q01	L	UEi1	A	hauteur maximale des constructions en zone UEi1	critere
+Q02	L	UEc	A	destinations et sous-destinations interdites en zone UEc	critere
+Q03	L	UEi2	A	emprise au sol des constructions en zone UEi2	critere
+Q04	L	UEa	A	implantation des constructions par rapport aux voies en zone UEa	critere
+Q05	L	UEp	A	coefficient de pleine terre en zone UEp	critere
+Q06	L	UEl	A	occupations et utilisations du sol soumises à conditions en zone UEl	critere
+Q07	P	UEi1	A	à quelle distance de la parcelle voisine peut-on construire dans la zone UEi1	critere
+Q08	P	AU	A	que peut-on construire dans une zone AU tant qu'elle n'est pas ouverte à l'urbanisation	critere
+Q09	L	-	A	implantation des constructions par rapport aux limites séparatives	critere
+Q10	L	-	A	obligations de réalisation d'aires de stationnement pour les activités économiques	critere
+Q11	P	-	A	règles de hauteur des bâtiments dans les zones d'activités	critere
+Q12	P	-	A	plantations et traitement paysager des espaces libres autour des bâtiments d'activités	critere
+Q13	P	AUEi1	A	quelles règles s'appliquent à une zone AUEi1	critere
+Q14	L	-	A	aspect extérieur et hauteur des clôtures	critere
+Q15	L	-	B	orientations d'aménagement de l'OAP ZA de la Saulaie à Oullins	critere
+Q16	P	-	B	cheminements piétons et modes doux prévus par les OAP d'Oullins	critere
+Q17	P	-	C	orientations du PADD pour le développement économique de Pierre-Bénite	critere
+Q18	L	-	C	surfaces des zones du PLU-H à Pierre-Bénite	critere
+Q19	U	-	A	est-ce que je peux agrandir mon entrepôt à Pierre-Bénite	critere
+Q20	U	-	A	j'ai un terrain en zone industrielle, est-ce que je peux y ouvrir un magasin	critere
+Q21	P	-	A	un logement de gardien est-il autorisé dans une zone d'activités	sonde_hors_critere
