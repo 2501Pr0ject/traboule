@@ -189,6 +189,18 @@ Candidate uniquement si un cas d'usage la justifie. Contrôles : licence, millé
 - **Téléchargé :** WFS `adr_voie_lieu.adrcomgl_2024`, GeoJSON EPSG:4326, **58 objets**.
 - **Licence constatée :** Licence Ouverte 2.0 (`lov2`).
 
+## Services consultés pour les contrôles du spike (données non conservées ni redistribuées)
+
+Ces services ont été interrogés le 2026-10-28 pour les contrôles du test 2 (`spikes/test2_controle_auto.py`, `spikes/test2_verif_batiments.py`). **Ce ne sont pas des sources de données du projet** : aucune réponse n'est versionnée ni redistribuée ; les sorties détaillées sont restées locales (`spikes/output/`, jamais versionné) ; le [rapport du spike](../../spikes/reports/rapport-spike.md) n'en publie que des statuts de contrôle et des mesures (zones, distances). Licences vérifiées le 2026-10-29.
+
+| Service | Point d'accès | Données servies | Producteur | Licence |
+|---|---|---|---|---|
+| Géocodage de la Géoplateforme, index `address` | `https://data.geopf.fr/geocodage/search` | Base Adresse Nationale : « L'index des adresses est actualisé chaque semaine à partir des adresses de la Base Adresse Nationale (BAN) » ([guide du service](https://cartes.gouv.fr/aide/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/geocodage/)) | Service : IGN (Géoplateforme). BAN : organisation « Base Adresse Nationale » sur data.gouv ; pilotage exact **à vérifier** (le site affiche le ministère de la Transition écologique, l'IGN et l'ANCT, sans préciser les rôles) | BAN : Licence Ouverte 2.0 (`lov2`, [fiche data.gouv](https://www.data.gouv.fr/datasets/base-adresse-nationale), jeu `5530fbacc751df5ff937dddb`) ; conditions propres au service : **à vérifier** (le guide indique etalab-2.0 pour les contenus du site) |
+| API Carto, module cadastre | `https://apicarto.ign.fr/api/cadastre/parcelle` | Parcellaire Express (PCI), produit utilisé par défaut quand `source_ign` n'est pas renseigné, ce qui était le cas ([documentation du module](https://github.com/IGNF/apicarto), dépôt `IGNF/apicarto`) | IGN ; dérivé du Plan cadastral informatisé de la DGFiP : **à vérifier** | Parcellaire Express : Licence Ouverte 2.0 (`lov2`, [fiche data.gouv](https://www.data.gouv.fr/datasets/parcellaire-express-pci), jeu `61489f2f2de14040f348fa0b`). Les mentions légales d'API Carto réservent à l'IGN les données cartographiques issues de la consultation en ligne : articulation avec la Licence Ouverte **à vérifier** |
+| WFS de la Géoplateforme, BD TOPO | `https://data.geopf.fr/wfs/ows`, couches `BDTOPO_V3:batiment` et `BDTOPO_V3:troncon_de_route` | BD TOPO (bâtiments, tronçons de route) | IGN | Licence Ouverte 2.0 (`lov2`, [fiche data.gouv](https://www.data.gouv.fr/datasets/bd-topo-r), jeu `61489083dc4223219e50cc35`) |
+
+Le module GPU d'API Carto (`/api/gpu/zone-urba`), utilisé par les mêmes contrôles, relève de SRC-005.
+
 ---
 
 ## Manifeste obligatoire par ressource
