@@ -4,7 +4,7 @@ Moteur d'intelligence territoriale **local-first** sur la Métropole de Lyon : i
 
 **Fonctionnalité signature :** relier un fait géographique (un établissement situé dans une zone du PLU-H) à la règle écrite qui s'applique à cette zone.
 
-> **Statut : phase 0 — spike de faisabilité.** Aucun code applicatif pour l'instant.
+> **Statut : v1, semaine 1.** Spike de faisabilité clos (GO avec réserves, `spikes/reports/rapport-spike.md`) ; code applicatif en cours d'écriture dans `packages/`.
 
 ## Principes
 
@@ -26,9 +26,12 @@ Moteur d'intelligence territoriale **local-first** sur la Métropole de Lyon : i
 ## Démarrage
 
 ```bash
-uv sync                 # environnement de base
-uv sync --extra spike   # dépendances du spike
+make setup   # uv sync --all-extras : base + extras pdf, embeddings, index + outils de dev
+make test    # tests
+make lint    # ruff
 ```
+
+Extras : `pdf` (PyMuPDF, Docling), `embeddings` (FlagEmbedding, BGE-M3), `index` (qdrant-client). Un `uv sync` sans `--all-extras` les désinstalle. Les scripts de `spikes/` (lecture seule, pour référence) utilisent aussi `psutil`, dépendance de dev.
 
 ## Sources de données
 

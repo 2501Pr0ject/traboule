@@ -24,16 +24,12 @@ module-name = "traboule"
 module-root = "packages"
 
 [project.optional-dependencies]
-spike = [
-  "pymupdf>=1.24",
-  "docling>=2.0",
-  "FlagEmbedding>=1.2",
-  "qdrant-client>=1.12",
-  "psutil>=5.9",
-]
+pdf = ["pymupdf>=1.24", "docling>=2.0"]  # extraction du règlement et des cahiers (ADR-0008)
+embeddings = ["FlagEmbedding>=1.2"]  # BGE-M3 dense + sparse
+index = ["qdrant-client>=1.12"]  # index vectoriel Qdrant
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.22"]
+dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.22", "psutil>=5.9"]
 
 [tool.ruff]
 line-length = 100

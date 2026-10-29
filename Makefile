@@ -1,10 +1,7 @@
-.PHONY: setup spike-setup lint test validate-gold
+.PHONY: setup lint test validate-gold
 
-setup:            ## Installe l'environnement de base
-	uv sync
-
-spike-setup:      ## Ajoute les dépendances du spike (PDF, embeddings, Qdrant)
-	uv sync --extra spike
+setup:            ## Installe l'environnement complet (extras pdf, embeddings, index + dev)
+	uv sync --all-extras
 
 lint:
 	uv run ruff check . && uv run ruff format --check .

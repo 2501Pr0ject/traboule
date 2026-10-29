@@ -3,7 +3,7 @@
 # data.gouv.fr (https://www.data.gouv.fr/api/1/datasets/<id-ou-slug>/) ou la page
 # officielle de l'INSEE, puis à remplacer ici avant tout téléchargement.
 #
-# Chaque ressource est téléchargée par spikes/download.py dans
+# Chaque ressource est téléchargée par traboule.ingestion.download dans
 # data/raw/<source_id>/<AAAA-MM-JJ>/<resource.name>/ avec son manifest.json.
 #   kind: http  -> téléchargement direct ; si `datagouv` est renseigné, le sha1 publié
 #                  par data.gouv est vérifié.

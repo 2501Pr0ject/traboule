@@ -42,6 +42,18 @@ def test_mixed_answer_partially_abstained():
     assert reponse.composantes[1].valeur is None
 
 
+def test_non_spatial_count_needs_no_lower_bound():
+    # FAC-001 : comptage par code commune du stock, sans jointure spatiale.
+    c = Composante(type="structuree", valeur=510)
+    assert Reponse(route="SQL", composantes=[c]).composantes[0].minorant is None
+
+
+def test_decimal_value_is_accepted():
+    # FAC-003 : part des établissements actifs à diffusion partielle, en pourcentage.
+    c = Composante(type="structuree", valeur=18.09)
+    assert Reponse(route="SQL", composantes=[c]).composantes[0].valeur == 18.09
+
+
 def test_abstention_may_cite_its_justification():
     # ABS-001 : la partie I (p. 17) exclut le PSMV du champ du règlement.
     c = Composante(

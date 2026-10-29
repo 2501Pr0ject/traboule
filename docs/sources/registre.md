@@ -193,7 +193,7 @@ Candidate uniquement si un cas d'usage la justifie. Contrôles : licence, millé
 
 ## Manifeste obligatoire par ressource
 
-Les champs sont définis par le modèle Pydantic `Manifest` (`spikes/download.py` pendant le spike, déplacé dans `packages/` après le GO), qui fait foi.
+Les champs sont définis par le modèle Pydantic `Manifest` (`traboule.contracts.manifest`), qui fait foi ; le téléchargement passe par `traboule.ingestion.download` (`spikes/download.py` pendant le spike).
 
 Les fichiers sources ne sont jamais remplacés silencieusement : une nouvelle version = un nouveau dossier daté.
 

@@ -8,7 +8,11 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 
 - Machine de référence : MacBook Air M2, 16 Go de RAM, sans GPU distant.
 - Aucun gros fichier n'est chargé entier en mémoire. Le stock Sirene national (plusieurs Go) est filtré en streaming avec DuckDB (`read_csv` / `read_parquet` + `WHERE`) et écrit en Parquet.
-- Toute opération lourde (filtrage, indexation, embeddings) consigne son pic mémoire et son temps.
+- Toute opération lourde (filtrage, indexation, embeddings) consigne son pic mémoire et son temps. Méthode :
+  - **une opération lourde = une commande = un processus**, pour que le pic mémoire du processus soit celui de l'étape ;
+  - pic mémoire lu par `resource.getrusage` via une fonction unique, `traboule.measure.peak_rss_bytes`, qui convertit `ru_maxrss` selon la plateforme (octets sous macOS, kilo-octets sous Linux) ;
+  - la mémoire MPS des embeddings se lit à part avec `torch.mps` (`current_allocated_memory`, `driver_allocated_memory`) ;
+  - les mesures sont écrites dans un fichier avec la configuration et les versions (§8).
 - Accélération : `mps` si PyTorch le voit, sinon CPU. Le device utilisé est toujours consigné.
 
 ## 2. Stack
@@ -19,7 +23,7 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 | Données structurées | DuckDB + extension `spatial`, Polars, PyArrow, Parquet |
 | Contrats de données | Pydantic v2 |
 | Réseau, configuration, CLI | httpx, PyYAML, Typer |
-| PDF | PyMuPDF en premier, Docling en comparaison |
+| PDF | PyMuPDF pour le texte du règlement ; Docling pour les cahiers communaux et les pages à tableaux (ADR-0008) |
 | Embeddings | BGE-M3 (candidat, validé par le spike) |
 | Index vectoriel | Qdrant : mode local embarqué (`QdrantClient(path=...)`) pour le spike, serveur Docker pour les benchmarks |
 | Génération | Ollama, modèle local 7–8B quantifié, choisi après mesure ; aucune API LLM distante dans le code applicatif |
@@ -28,7 +32,7 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 ## 3. Règles de données
 
 1. **Données brutes immuables, par ressource.** Chaque ressource est stockée dans `data/raw/<source_id>/<AAAA-MM-JJ>/<ressource>/` avec son manifeste ; une fois le manifeste écrit, le script de téléchargement passe ce dossier de ressource en lecture seule (`chmod -R a-w`), et une ressource existante n'est jamais modifiée ni réécrite. Le dossier daté reste inscriptible pour accueillir de nouvelles ressources ; une nouvelle version d'une ressource va dans un nouveau dossier daté. Rendre une ressource de nouveau inscriptible est une action manuelle et délibérée. Toute transformation écrit dans `data/interim/` ou `data/processed/`.
-2. **Un manifeste par téléchargement** (`manifest.json` à côté du fichier). Ses champs sont définis par le modèle Pydantic `Manifest` (`spikes/download.py` pendant le spike, puis `packages/`), qui fait foi.
+2. **Un manifeste par téléchargement** (`manifest.json` à côté du fichier). Ses champs sont définis par le modèle Pydantic `Manifest` (`traboule.contracts.manifest`, utilisé par `traboule.ingestion`), qui fait foi.
 3. **Aucune URL inventée.** Les URLs de ressources se résolvent via l'API data.gouv.fr (`https://www.data.gouv.fr/api/1/datasets/<id-ou-slug>/`) ou la page officielle de l'INSEE. Une URL non confirmée reste `A_CONFIRMER` dans `configs/sources.yaml`.
 4. **Codes officiels comme clés de jointure**, jamais des noms : code commune INSEE, SIRET, code IRIS, code de zone.
 5. **Lyon et ses arrondissements.** La commune 69123 et ses 9 arrondissements municipaux (69381–69389) ne sont jamais additionnés ni confondus. Chaque table déclare son niveau géographique.
