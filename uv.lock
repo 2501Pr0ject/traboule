@@ -3627,7 +3627,7 @@ wheels = [
 [[package]]
 name = "traboule"
 version = "0.0.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
     { name = "httpx" },
