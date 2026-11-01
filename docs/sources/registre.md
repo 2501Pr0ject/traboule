@@ -9,6 +9,7 @@
 
 - Nouvelle source **REF-ARRONDISSEMENTS-LYON** (contours des 9 arrondissements de Lyon, Métropole de Lyon), téléchargée le 2026-11-01 par `traboule.ingestion.download` : minorant des comptages par zone établi par arrondissement pour Lyon.
 - Section « Services consultés pour les contrôles du spike » (services interrogés, non conservés).
+- SRC-005 : 74 cahiers communaux et d'arrondissement téléchargés le 2026-11-01 (1,31 Go, 6 028 pages), version de chaque pièce consignée.
 
 ## Changements depuis la v0.2
 
@@ -173,6 +174,85 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 - **Téléchargé :** le règlement écrit (11,1 Mo) et la liste JSON des 617 pièces ; pour le Test 3 (même dossier daté, immuabilité par ressource) : cahier communal d'Oullins (SECT45, 30,5 Mo), cahier communal de Pierre-Bénite (SECT46, 14,7 Mo), plan de secteurs (0,6 Mo).
 - **Versions des pièces (constaté au Test 3)** : chaque pièce porte sa propre procédure, lue dans la pièce — règlement « Modification n° 4 – Approbation 2024 », cahier d'Oullins « Mise en compatibilité n°10 – Approbation 2025 », cahier de Pierre-Bénite « Modification n°4 – Approbation 2024 », plan de secteurs « Révision n°2 – Approbation 2019 ». Une citation donne la version de la pièce (conventions §6).
 - **Organisation des pièces** : les OAP sont la partie 4 de chaque cahier communal (pas de pièce OAP séparée) ; 67 secteurs (58 communes du découpage à 59 + 9 arrondissements de Lyon), 67 cahiers communaux + 9 cahiers d'arrondissement ; Oullins et Pierre-Bénite ont des cahiers séparés.
+**Cahiers communaux et d'arrondissement (téléchargés le 2026-11-01)** : 74 pièces, 1,31 Go, 6 028 pages, dans `data/raw/SRC-005/2026-11-01/` (manifeste, sha256, lecture seule ; Oullins et Pierre-Bénite déjà présents au 2026-10-28). Correspondance secteur → commune lue dans `plan_de_secteurs`. Version lue dans l'en-tête de chaque pièce : 68 en « Modification n°4 – Approbation 2024 » (graphies variables), 3 en « Modification n°3 – Approbation 2022 » (SECT11, SECT13, SECT64), 3 en mise en compatibilité (SECT03 n°6 – 2025, SECT27 n°10 – 2025, SECT63 n°18 – 2026). Les secteurs lyonnais 31 à 39 ont chacun un cahier communal et un cahier d'arrondissement.
+
+| Ressource | Commune (code, secteur) | Pages | sha256 (8 car.) | Version de la pièce |
+|---|---|---:|---|---|
+| `cahier_arrondissement_sect31` | Lyon 1 (69381, sect. 31) | 58 | `8b678aaf` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect32` | Lyon 2 (69382, sect. 32) | 64 | `dec2009e` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect33` | Lyon 3 (69383, sect. 33) | 74 | `baf1e9fb` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect34` | Lyon 4 (69384, sect. 34) | 68 | `69945c45` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect35` | Lyon 5 (69385, sect. 35) | 70 | `80d9764a` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect36` | Lyon 6 (69386, sect. 36) | 57 | `d7ad754d` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect37` | Lyon 7 (69387, sect. 37) | 99 | `3eaa3e56` | Modification n°4 – Approbation 2024 |
+| `cahier_arrondissement_sect38` | Lyon 8 (69388, sect. 38) | 104 | `090c6b5c` | Modification n°4 - Approbation 2024 |
+| `cahier_arrondissement_sect39` | Lyon 9 (69389, sect. 39) | 80 | `f5013461` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect01` | Albigny sur Saône (69003, sect. 01) | 63 | `0e337a18` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect02` | Bron (69029, sect. 02) | 99 | `d84798be` | MODIFICATION N°4 - Approbation 2024 |
+| `cahier_communal_sect03` | Cailloux sur Fontaines (69033, sect. 03) | 63 | `1a7ec318` | Mise en compatibilité N°6 - Approbation 2025 |
+| `cahier_communal_sect04` | Caluire et Cuire (69034, sect. 04) | 102 | `909973e2` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect05` | Champagne au Mont d'Or (69040, sect. 05) | 57 | `d5086633` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect06` | Charbonnières les Bains (69044, sect. 06) | 69 | `4af33ca5` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect07` | Charly (69046, sect. 07) | 69 | `f72c9a77` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect08` | Chassieu (69271, sect. 08) | 75 | `f5391867` | MODIFICATION N°4 - Approbation 2024 |
+| `cahier_communal_sect09` | Collonges au Mont d'Or (69063, sect. 09) | 69 | `38eecef0` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect10` | Corbas (69273, sect. 10) | 75 | `24eba00a` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect11` | Couzon au Mont d'Or (69068, sect. 11) | 59 | `c1d0630b` | Modification n°3 - Approbation 2022 |
+| `cahier_communal_sect12` | Craponne (69069, sect. 12) | 61 | `1e56f03d` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect13` | Curis au Mont d'Or (69071, sect. 13) | 57 | `0f922d80` | Modification n°3 - Approbation 2022 |
+| `cahier_communal_sect14` | Dardilly (69072, sect. 14) | 87 | `2537b638` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect15` | Décines-Charpieu (69275, sect. 15) | 111 | `b0d79174` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect16` | Ecully (69081, sect. 16) | 59 | `9e13e0ef` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect17` | Feyzin (69276, sect. 17) | 75 | `cd29f862` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect18` | Fleurieu sur Saône (69085, sect. 18) | 59 | `58320b51` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect19` | Fontaines Saint Martin (69087, sect. 19) | 65 | `b238dc52` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect20` | Fontaines sur Saône (69088, sect. 20) | 63 | `942cce10` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect21` | Francheville (69089, sect. 21) | 65 | `b2d4fc63` | Modification n°4 – Approbation 2024 |
+| `cahier_communal_sect22` | Genay (69278, sect. 22) | 75 | `9a57873d` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect23` | Givors (69091, sect. 23) | 73 | `fa136df5` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect24` | Grigny (69096, sect. 24) | 65 | `40c4ee5f` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect25` | Irigny (69100, sect. 25) | 65 | `d77ba478` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect26` | Jonage (69279, sect. 26) | 63 | `4c51cd1c` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect27` | La Mulatière (69142, sect. 27) | 67 | `0bd219f6` | Mise en compatibilité n°10 - Approbation 2025 |
+| `cahier_communal_sect28` | La Tour de Salvagny (69250, sect. 28) | 67 | `5ff64d80` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect29` | Limonest (69116, sect. 29) | 67 | `353f12b7` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect30` | Lissieu (69117, sect. 30) | 69 | `5b7719d8` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect31` | Lyon 1 (69381, sect. 31) | 150 | `7f5e808d` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect32` | Lyon 2 (69382, sect. 32) | 150 | `5bcf2b25` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect33` | Lyon 3 (69383, sect. 33) | 150 | `bd6c749a` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect34` | Lyon 4 (69384, sect. 34) | 150 | `5490a592` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect35` | Lyon 5 (69385, sect. 35) | 150 | `78393a44` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect36` | Lyon 6 (69386, sect. 36) | 150 | `c4bcc575` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect37` | Lyon 7 (69387, sect. 37) | 150 | `824fda4e` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect38` | Lyon 8 (69388, sect. 38) | 150 | `0adff79c` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect39` | Lyon 9 (69389, sect. 39) | 150 | `d8e1257e` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect40` | Marcy l'Etoile (69127, sect. 40) | 53 | `8528deb8` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect41` | Meyzieu (69282, sect. 41) | 91 | `4c03712b` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect42` | Mions (69283, sect. 42) | 73 | `05b2b9a6` | MODIFICATION N°4 - Approbation 2024 |
+| `cahier_communal_sect43` | Montanay (69284, sect. 43) | 53 | `7536d888` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect44` | Neuville sur Saône (69143, sect. 44) | 79 | `d84c21f2` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect47` | Poleymieux au Mont d'Or (69153, sect. 47) | 53 | `ecff10b7` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect48` | Quincieux (69163, sect. 48) | 57 | `362900ae` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect49` | Rillieux la Pape (69286, sect. 49) | 99 | `44b8225d` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect50` | Rochetaillée sur Saône (69168, sect. 50) | 59 | `68f8287a` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect51` | Saint Cyr au Mont d'Or (69191, sect. 51) | 63 | `911d6531` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect52` | Saint Didier au Mont d'Or (69194, sect. 52) | 75 | `9dbcd679` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect53` | Saint Fons (69199, sect. 53) | 73 | `32b083a1` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect54` | Saint Genis les Ollières (69205, sect. 54) | 53 | `c5f1db5f` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect55` | Saint Genis-Laval (69204, sect. 55) | 89 | `a6234092` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect56` | Saint Germain au Mont d'Or (69207, sect. 56) | 61 | `5d2baaea` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect57` | Saint Priest (69290, sect. 57) | 111 | `addc35a3` | MODIFICATION N°4 - Approbation 2024 |
+| `cahier_communal_sect58` | Saint Romain au Mont d'Or (69233, sect. 58) | 57 | `ebd25ad0` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect59` | Sainte Foy Lès Lyon (69202, sect. 59) | 75 | `1ea5709f` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect60` | Sathonay Camp (69292, sect. 60) | 61 | `fe6b3471` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect61` | Sathonay Village (69293, sect. 61) | 57 | `52abe87a` | Modification N°4 - Approbation 2024 |
+| `cahier_communal_sect62` | Solaize (69296, sect. 62) | 73 | `4b4ff6ac` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect63` | Tassin la Demi Lune (69244, sect. 63) | 73 | `0c278ad7` | Mise en compatibilité n°18 - Approbation 2026 |
+| `cahier_communal_sect64` | Vaulx en Velin (69256, sect. 64) | 30 | `bcb10e2e` | Modification n°3 - Approbation 2022 |
+| `cahier_communal_sect65` | Vénissieux (69259, sect. 65) | 105 | `c7f8106a` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect66` | Vernaison (69260, sect. 66) | 67 | `2cff9e9a` | Modification n°4 - Approbation 2024 |
+| `cahier_communal_sect67` | Villeurbanne (69266, sect. 67) | 151 | `0fd7e3cd` | Modification n°4 - Approbation 2024 |
+
 - **Licence constatée :** les [CGU du GPU](https://www.geoportail-urbanisme.gouv.fr/cgu/) soumettent les données d'urbanisme à « la licence ouverte », avec un lien vers le texte Etalab de 2014 (version 1). **Version applicable ambiguë** (1.0 ou 2.0) ; le contenu propre du site relève d'un régime distinct.
 
 **Contrôles :**

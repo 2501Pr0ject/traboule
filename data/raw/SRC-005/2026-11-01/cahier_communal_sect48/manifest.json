@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT48_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT48_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:54.472521Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 7742730,
+  "sha256": "362900aef5abf5607f7f29f9ff00104b4df08a27368a9d281a0f556654cb8e4e",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier communal de Quincieux (code 69163, secteur 48) ; procédure à lire dans la pièce.",
+  "crs": null
+}

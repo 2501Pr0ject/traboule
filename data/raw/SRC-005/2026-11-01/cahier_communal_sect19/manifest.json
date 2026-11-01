@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT19_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT19_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:12.808466Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 12589635,
+  "sha256": "b238dc52f31ea1327210a9b53aa382876ff6947200d3888855f98e58f4a3881e",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier communal de Fontaines Saint Martin (code 69087, secteur 19) ; procédure à lire dans la pièce.",
+  "crs": null
+}

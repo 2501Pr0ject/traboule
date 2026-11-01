@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_arrondissement_SECT39_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT39_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:48.253363Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 19430076,
+  "sha256": "f501346124f7fd57f1ff171df0108a0c14f18e641f9d71c0c24e2c2b62ea24ad",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier d'arrondissement de Lyon 9 (code 69389, secteur 39) ; procédure à lire dans la pièce.",
+  "crs": null
+}

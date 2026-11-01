@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_arrondissement_SECT38_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT38_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:44.905026Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 25762727,
+  "sha256": "090c6b5c263dd5525ccedc064e6c076871ece52459e204e4d0bdc40e7ac2bc4c",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier d'arrondissement de Lyon 8 (code 69388, secteur 38) ; procédure à lire dans la pièce.",
+  "crs": null
+}

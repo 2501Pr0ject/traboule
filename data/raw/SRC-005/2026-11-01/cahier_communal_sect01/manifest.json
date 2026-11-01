@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT01_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT01_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:56:54.708699Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 8502385,
+  "sha256": "0e337a1848634a086ed273538af48b30a478a3fcce84ed8d96b5f44adf861269",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier communal de Albigny sur Saône (code 69003, secteur 01) ; procédure à lire dans la pièce.",
+  "crs": null
+}

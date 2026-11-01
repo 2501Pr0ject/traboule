@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_arrondissement_SECT34_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT34_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:33.773673Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 17455080,
+  "sha256": "69945c45a5018a3aed063cd679a6c0287ebbb98603c197344f81c1c86dd08c31",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier d'arrondissement de Lyon 4 (code 69384, secteur 34) ; procédure à lire dans la pièce.",
+  "crs": null
+}

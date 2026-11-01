@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT66_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT66_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:58:18.419410Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 15461872,
+  "sha256": "2cff9e9a950b68beddda584e2de46bd64c66d1e9c570f6006a1c63678319aee8",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier communal de Vernaison (code 69260, secteur 66) ; procédure à lire dans la pièce.",
+  "crs": null
+}

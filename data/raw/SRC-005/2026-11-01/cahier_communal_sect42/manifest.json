@@ -1,0 +1,18 @@
+{
+  "source_id": "SRC-005",
+  "source_title": "200046977_cahier_communal_SECT42_20260326.pdf",
+  "publisher": "Métropole de Lyon (producteur) — Géoportail de l'Urbanisme (IGN / ministère)",
+  "source_url": "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT42_20260326.pdf",
+  "license": "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë",
+  "retrieved_at": "2026-11-01T14:57:51.722987Z",
+  "published_at": "2026-04-23",
+  "reference_date": "2026-03-26",
+  "geographic_vintage": null,
+  "format": "pdf",
+  "file_size_bytes": 17878418,
+  "sha256": "05b2b9a65178eb5da2eef3b272909b8c6bb280d34bd7c54f59fd65582ec71a51",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Cahier communal de Mions (code 69283, secteur 42) ; procédure à lire dans la pièce.",
+  "crs": null
+}

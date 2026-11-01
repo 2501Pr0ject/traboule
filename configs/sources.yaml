@@ -243,6 +243,599 @@ sources:
         format: pdf
         published_at: "2026-04-23"
         limitations: "Correspondance secteur (01–67) → commune ou arrondissement, découpage à 59 communes (en-tête « Révision n°2 – Approbation 2019 »)."
+      # Cahiers communaux et d'arrondissement (ajoutés le 2026-11-01, même document GPU ; correspondance secteur → commune : plan_de_secteurs)
+      - name: cahier_communal_sect01
+        title: "200046977_cahier_communal_SECT01_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT01_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Albigny sur Saône (code 69003, secteur 01) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 63 pages."
+      - name: cahier_communal_sect02
+        title: "200046977_cahier_communal_SECT02_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT02_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Bron (code 69029, secteur 02) ; procédure lue dans la pièce : « MODIFICATION N°4 - Approbation 2024 » ; 99 pages."
+      - name: cahier_communal_sect03
+        title: "200046977_cahier_communal_SECT03_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT03_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Cailloux sur Fontaines (code 69033, secteur 03) ; procédure lue dans la pièce : « Mise en compatibilité N°6 - Approbation 2025 » ; 63 pages."
+      - name: cahier_communal_sect04
+        title: "200046977_cahier_communal_SECT04_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT04_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Caluire et Cuire (code 69034, secteur 04) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 102 pages."
+      - name: cahier_communal_sect05
+        title: "200046977_cahier_communal_SECT05_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT05_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Champagne au Mont d'Or (code 69040, secteur 05) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 57 pages."
+      - name: cahier_communal_sect06
+        title: "200046977_cahier_communal_SECT06_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT06_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Charbonnières les Bains (code 69044, secteur 06) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 69 pages."
+      - name: cahier_communal_sect07
+        title: "200046977_cahier_communal_SECT07_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT07_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Charly (code 69046, secteur 07) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 69 pages."
+      - name: cahier_communal_sect08
+        title: "200046977_cahier_communal_SECT08_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT08_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Chassieu (code 69271, secteur 08) ; procédure lue dans la pièce : « MODIFICATION N°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect09
+        title: "200046977_cahier_communal_SECT09_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT09_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Collonges au Mont d'Or (code 69063, secteur 09) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 69 pages."
+      - name: cahier_communal_sect10
+        title: "200046977_cahier_communal_SECT10_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT10_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Corbas (code 69273, secteur 10) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect11
+        title: "200046977_cahier_communal_SECT11_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT11_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Couzon au Mont d'Or (code 69068, secteur 11) ; procédure lue dans la pièce : « Modification n°3 - Approbation 2022 » ; 59 pages."
+      - name: cahier_communal_sect12
+        title: "200046977_cahier_communal_SECT12_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT12_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Craponne (code 69069, secteur 12) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 61 pages."
+      - name: cahier_communal_sect13
+        title: "200046977_cahier_communal_SECT13_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT13_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Curis au Mont d'Or (code 69071, secteur 13) ; procédure lue dans la pièce : « Modification n°3 - Approbation 2022 » ; 57 pages."
+      - name: cahier_communal_sect14
+        title: "200046977_cahier_communal_SECT14_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT14_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Dardilly (code 69072, secteur 14) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 87 pages."
+      - name: cahier_communal_sect15
+        title: "200046977_cahier_communal_SECT15_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT15_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Décines-Charpieu (code 69275, secteur 15) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 111 pages."
+      - name: cahier_communal_sect16
+        title: "200046977_cahier_communal_SECT16_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT16_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Ecully (code 69081, secteur 16) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 59 pages."
+      - name: cahier_communal_sect17
+        title: "200046977_cahier_communal_SECT17_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT17_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Feyzin (code 69276, secteur 17) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect18
+        title: "200046977_cahier_communal_SECT18_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT18_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Fleurieu sur Saône (code 69085, secteur 18) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 59 pages."
+      - name: cahier_communal_sect19
+        title: "200046977_cahier_communal_SECT19_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT19_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Fontaines Saint Martin (code 69087, secteur 19) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 65 pages."
+      - name: cahier_communal_sect20
+        title: "200046977_cahier_communal_SECT20_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT20_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Fontaines sur Saône (code 69088, secteur 20) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 63 pages."
+      - name: cahier_communal_sect21
+        title: "200046977_cahier_communal_SECT21_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT21_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Francheville (code 69089, secteur 21) ; procédure lue dans la pièce : « Modification n°4 – Approbation 2024 » ; 65 pages."
+      - name: cahier_communal_sect22
+        title: "200046977_cahier_communal_SECT22_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT22_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Genay (code 69278, secteur 22) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect23
+        title: "200046977_cahier_communal_SECT23_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT23_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Givors (code 69091, secteur 23) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 73 pages."
+      - name: cahier_communal_sect24
+        title: "200046977_cahier_communal_SECT24_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT24_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Grigny (code 69096, secteur 24) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 65 pages."
+      - name: cahier_communal_sect25
+        title: "200046977_cahier_communal_SECT25_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT25_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Irigny (code 69100, secteur 25) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 65 pages."
+      - name: cahier_communal_sect26
+        title: "200046977_cahier_communal_SECT26_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT26_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Jonage (code 69279, secteur 26) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 63 pages."
+      - name: cahier_communal_sect27
+        title: "200046977_cahier_communal_SECT27_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT27_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de La Mulatière (code 69142, secteur 27) ; procédure lue dans la pièce : « Mise en compatibilité n°10 - Approbation 2025 » ; 67 pages."
+      - name: cahier_communal_sect28
+        title: "200046977_cahier_communal_SECT28_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT28_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de La Tour de Salvagny (code 69250, secteur 28) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 67 pages."
+      - name: cahier_communal_sect29
+        title: "200046977_cahier_communal_SECT29_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT29_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Limonest (code 69116, secteur 29) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 67 pages."
+      - name: cahier_communal_sect30
+        title: "200046977_cahier_communal_SECT30_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT30_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lissieu (code 69117, secteur 30) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 69 pages."
+      - name: cahier_arrondissement_sect31
+        title: "200046977_cahier_arrondissement_SECT31_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT31_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 1 (code 69381, secteur 31) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 58 pages."
+      - name: cahier_communal_sect31
+        title: "200046977_cahier_communal_SECT31_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT31_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 1 (code 69381, secteur 31) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect32
+        title: "200046977_cahier_arrondissement_SECT32_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT32_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 2 (code 69382, secteur 32) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 64 pages."
+      - name: cahier_communal_sect32
+        title: "200046977_cahier_communal_SECT32_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT32_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 2 (code 69382, secteur 32) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect33
+        title: "200046977_cahier_arrondissement_SECT33_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT33_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 3 (code 69383, secteur 33) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 74 pages."
+      - name: cahier_communal_sect33
+        title: "200046977_cahier_communal_SECT33_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT33_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 3 (code 69383, secteur 33) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect34
+        title: "200046977_cahier_arrondissement_SECT34_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT34_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 4 (code 69384, secteur 34) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 68 pages."
+      - name: cahier_communal_sect34
+        title: "200046977_cahier_communal_SECT34_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT34_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 4 (code 69384, secteur 34) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect35
+        title: "200046977_cahier_arrondissement_SECT35_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT35_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 5 (code 69385, secteur 35) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 70 pages."
+      - name: cahier_communal_sect35
+        title: "200046977_cahier_communal_SECT35_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT35_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 5 (code 69385, secteur 35) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect36
+        title: "200046977_cahier_arrondissement_SECT36_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT36_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 6 (code 69386, secteur 36) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 57 pages."
+      - name: cahier_communal_sect36
+        title: "200046977_cahier_communal_SECT36_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT36_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 6 (code 69386, secteur 36) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect37
+        title: "200046977_cahier_arrondissement_SECT37_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT37_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 7 (code 69387, secteur 37) ; procédure lue dans la pièce : « Modification n°4 – Approbation 2024 » ; 99 pages."
+      - name: cahier_communal_sect37
+        title: "200046977_cahier_communal_SECT37_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT37_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 7 (code 69387, secteur 37) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect38
+        title: "200046977_cahier_arrondissement_SECT38_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT38_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 8 (code 69388, secteur 38) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 104 pages."
+      - name: cahier_communal_sect38
+        title: "200046977_cahier_communal_SECT38_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT38_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 8 (code 69388, secteur 38) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_arrondissement_sect39
+        title: "200046977_cahier_arrondissement_SECT39_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_arrondissement_SECT39_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier d'arrondissement de Lyon 9 (code 69389, secteur 39) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 80 pages."
+      - name: cahier_communal_sect39
+        title: "200046977_cahier_communal_SECT39_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT39_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Lyon 9 (code 69389, secteur 39) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 150 pages."
+      - name: cahier_communal_sect40
+        title: "200046977_cahier_communal_SECT40_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT40_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Marcy l'Etoile (code 69127, secteur 40) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 53 pages."
+      - name: cahier_communal_sect41
+        title: "200046977_cahier_communal_SECT41_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT41_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Meyzieu (code 69282, secteur 41) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 91 pages."
+      - name: cahier_communal_sect42
+        title: "200046977_cahier_communal_SECT42_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT42_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Mions (code 69283, secteur 42) ; procédure lue dans la pièce : « MODIFICATION N°4 - Approbation 2024 » ; 73 pages."
+      - name: cahier_communal_sect43
+        title: "200046977_cahier_communal_SECT43_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT43_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Montanay (code 69284, secteur 43) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 53 pages."
+      - name: cahier_communal_sect44
+        title: "200046977_cahier_communal_SECT44_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT44_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Neuville sur Saône (code 69143, secteur 44) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 79 pages."
+      - name: cahier_communal_sect47
+        title: "200046977_cahier_communal_SECT47_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT47_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Poleymieux au Mont d'Or (code 69153, secteur 47) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 53 pages."
+      - name: cahier_communal_sect48
+        title: "200046977_cahier_communal_SECT48_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT48_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Quincieux (code 69163, secteur 48) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 57 pages."
+      - name: cahier_communal_sect49
+        title: "200046977_cahier_communal_SECT49_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT49_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Rillieux la Pape (code 69286, secteur 49) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 99 pages."
+      - name: cahier_communal_sect50
+        title: "200046977_cahier_communal_SECT50_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT50_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Rochetaillée sur Saône (code 69168, secteur 50) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 59 pages."
+      - name: cahier_communal_sect51
+        title: "200046977_cahier_communal_SECT51_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT51_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Cyr au Mont d'Or (code 69191, secteur 51) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 63 pages."
+      - name: cahier_communal_sect52
+        title: "200046977_cahier_communal_SECT52_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT52_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Didier au Mont d'Or (code 69194, secteur 52) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect53
+        title: "200046977_cahier_communal_SECT53_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT53_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Fons (code 69199, secteur 53) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 73 pages."
+      - name: cahier_communal_sect54
+        title: "200046977_cahier_communal_SECT54_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT54_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Genis les Ollières (code 69205, secteur 54) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 53 pages."
+      - name: cahier_communal_sect55
+        title: "200046977_cahier_communal_SECT55_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT55_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Genis-Laval (code 69204, secteur 55) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 89 pages."
+      - name: cahier_communal_sect56
+        title: "200046977_cahier_communal_SECT56_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT56_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Germain au Mont d'Or (code 69207, secteur 56) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 61 pages."
+      - name: cahier_communal_sect57
+        title: "200046977_cahier_communal_SECT57_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT57_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Priest (code 69290, secteur 57) ; procédure lue dans la pièce : « MODIFICATION N°4 - Approbation 2024 » ; 111 pages."
+      - name: cahier_communal_sect58
+        title: "200046977_cahier_communal_SECT58_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT58_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Saint Romain au Mont d'Or (code 69233, secteur 58) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 57 pages."
+      - name: cahier_communal_sect59
+        title: "200046977_cahier_communal_SECT59_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT59_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Sainte Foy Lès Lyon (code 69202, secteur 59) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 75 pages."
+      - name: cahier_communal_sect60
+        title: "200046977_cahier_communal_SECT60_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT60_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Sathonay Camp (code 69292, secteur 60) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 61 pages."
+      - name: cahier_communal_sect61
+        title: "200046977_cahier_communal_SECT61_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT61_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Sathonay Village (code 69293, secteur 61) ; procédure lue dans la pièce : « Modification N°4 - Approbation 2024 » ; 57 pages."
+      - name: cahier_communal_sect62
+        title: "200046977_cahier_communal_SECT62_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT62_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Solaize (code 69296, secteur 62) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 73 pages."
+      - name: cahier_communal_sect63
+        title: "200046977_cahier_communal_SECT63_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT63_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Tassin la Demi Lune (code 69244, secteur 63) ; procédure lue dans la pièce : « Mise en compatibilité n°18 - Approbation 2026 » ; 73 pages."
+      - name: cahier_communal_sect64
+        title: "200046977_cahier_communal_SECT64_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT64_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Vaulx en Velin (code 69256, secteur 64) ; procédure lue dans la pièce : « Modification n°3 - Approbation 2022 » ; 30 pages."
+      - name: cahier_communal_sect65
+        title: "200046977_cahier_communal_SECT65_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT65_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Vénissieux (code 69259, secteur 65) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 105 pages."
+      - name: cahier_communal_sect66
+        title: "200046977_cahier_communal_SECT66_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT66_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Vernaison (code 69260, secteur 66) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 67 pages."
+      - name: cahier_communal_sect67
+        title: "200046977_cahier_communal_SECT67_20260326.pdf"
+        kind: http
+        url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT67_20260326.pdf"
+        format: pdf
+        published_at: "2026-04-23"
+        reference_date: "2026-03-26"
+        limitations: "Cahier communal de Villeurbanne (code 69266, secteur 67) ; procédure lue dans la pièce : « Modification n°4 - Approbation 2024 » ; 151 pages."
 
   - id: SRC-006
     name: bpe
