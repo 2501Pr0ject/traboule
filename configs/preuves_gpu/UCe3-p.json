@@ -57,5 +57,8 @@
         }
       ]
     }
+  ],
+  "notes": [
+    "2026-11-01 (ajoutée après tirage) : les points de cette preuve ont été tirés avec la graine 20261101, réutilisée par erreur : c'est celle de l'échantillon A du protocole d'évaluation. Sans effet : les populations sont disjointes (objets de zonage ici, établissements pour l'échantillon A). Tout tirage futur a sa graine propre (option --graine obligatoire)."
   ]
 }

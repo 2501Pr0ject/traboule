@@ -23,8 +23,9 @@ Chaque rattachement porte une citation extraite du texte du règlement (jamais �
 main) et la page où elle se trouve. `secteur` désigne le code dont les dispositions propres
 doivent être vérifiées dans le chapitre applicable (`dispositions_secteur`, ADR-0009).
 
-Usage : `uv run python -m traboule.geo.zones_reglement [--check]` ; enregistrer une preuve GPU :
-`uv run python -m traboule.geo.zones_reglement --preuve-gpu UCe3-p --chapitre UCe3`.
+Usage : `uv run python -m traboule.geo.zones_reglement [--check]`.
+Enregistrer une preuve GPU (graine propre au tirage, obligatoire) :
+`... zones_reglement --preuve-gpu <code> --chapitre <zone> --graine <graine>`.
 """
 
 import csv
@@ -54,7 +55,6 @@ ALIASES = ROOT / "configs" / "zones_alias.csv"
 ALIAS_STATUSES = ("probable", "confirmé")
 GPU_ZONE_URBA = "https://apicarto.ign.fr/api/gpu/zone-urba"
 GPU_FIELDS = ("libelle", "libelong", "typezone", "idurba", "partition", "datvalid", "nomfic")
-GPU_SEED = "20261101"
 DEFERRED_AU = ("AU1", "AU2", "AU3")
 SAFEGUARDED = "SECTSAUV"
 # Document qui porte les règles, selon la méthode ; un document non ingéré est un signal
@@ -493,8 +493,11 @@ def stecal_numbers(path: Path) -> dict[str, list[str]]:
     return {code: list(numbers) for code, numbers in rows}
 
 
-def sample_points(path: Path, code: str, n: int = 3, seed: str = GPU_SEED) -> list[dict]:
-    """Points intérieurs (ST_PointOnSurface, EPSG:4326) de `n` objets du code, tirés par md5."""
+def sample_points(path: Path, code: str, seed: str, n: int = 3) -> list[dict]:
+    """Points intérieurs (ST_PointOnSurface, EPSG:4326) de `n` objets du code, tirés par md5.
+
+    La graine est propre à chaque tirage (protocole d'évaluation, §1) : pas de valeur par défaut.
+    """
     import duckdb
 
     con = duckdb.connect()
@@ -539,24 +542,25 @@ def main(
         str | None, typer.Option(help="Enregistrer la preuve GPU d'un code")
     ] = None,
     chapitre: Annotated[str | None, typer.Option(help="Chapitre candidat de la preuve")] = None,
+    graine: Annotated[str | None, typer.Option(help="Graine propre au tirage des points")] = None,
 ) -> None:
     """Génère (ou vérifie) configs/zones_reglement.csv, ou enregistre une preuve GPU."""
     if preuve_gpu:
         import httpx
 
         path = EVIDENCE_DIR / f"{preuve_gpu}.json"
-        if path.exists() or not chapitre:
-            typer.echo(f"{path} existe déjà, ou --chapitre manque", err=True)
+        if path.exists() or not chapitre or not graine:
+            typer.echo(f"{path} existe déjà, ou --chapitre ou --graine manque", err=True)
             sys.exit(1)
         with httpx.Client(timeout=30, headers={"User-Agent": "traboule-controle"}) as client:
-            points = query_gpu(client, sample_points(raw_dir / ZONAGE, preuve_gpu))
+            points = query_gpu(client, sample_points(raw_dir / ZONAGE, preuve_gpu, graine))
         evidence = {
             "code_zonage": preuve_gpu,
             "chapitre_candidat": chapitre,
             "source": "API Carto, module GPU, zone-urba",
             "url": GPU_ZONE_URBA,
             "requete_le": datetime.now(UTC).isoformat(timespec="seconds"),
-            "points_tires_par": f"ST_PointOnSurface, md5(OGC_FID || '{GPU_SEED}')",
+            "points_tires_par": f"ST_PointOnSurface, md5(OGC_FID || '{graine}')",
             "points": points,
         }
         path.parent.mkdir(parents=True, exist_ok=True)

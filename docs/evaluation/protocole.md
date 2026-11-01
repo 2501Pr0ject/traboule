@@ -13,6 +13,7 @@ Toute règle ajoutée après un premier résultat est **datée et marquée** « 
 - **Une graine par échantillon**, consignée dans ce document avant le tirage. Deux échantillons n'ont jamais la même graine.
 - La population, la taille, les règles de statut, de remplacement et de fin, et le critère sont écrits ici avant le tirage.
 - Le tirage porte sur une table identifiée : fichier, commande qui l'a produite, tag ou commit du code.
+- **Note du 2026-11-01 (ajoutée après tirage)** : la graine `20261101` de l'échantillon A a été réutilisée par erreur pour tirer les 3 points de la preuve GPU de `UCe3-p` (`configs/preuves_gpu/UCe3-p.json`). Sans effet sur l'échantillon A : les populations sont disjointes (objets de zonage d'un côté, établissements de l'autre). Tout tirage futur a sa graine propre ; l'enregistrement d'une preuve GPU exige désormais une graine explicite (`--graine`).
 
 ### Grilles de revue
 

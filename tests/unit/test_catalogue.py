@@ -34,6 +34,19 @@ def test_etablissements_carries_the_status_p_rule():
     assert "statut P" in STATUT_P and "liste blanche" in STATUT_P
 
 
+def test_zones_reglement_columns_match_catalogue_by_name():
+    # En-tête du CSV versionné, champs du générateur et catalogue : mêmes noms, même ordre.
+    import csv
+    from dataclasses import fields
+
+    from traboule.geo.zones_reglement import Rattachement
+
+    expected = [c.name for c in table("zones_reglement").columns]
+    with (ROOT / "configs" / "zones_reglement.csv").open(encoding="utf-8") as fh:
+        assert next(csv.reader(fh)) == expected
+    assert [f.name for f in fields(Rattachement)] == expected
+
+
 def test_versioned_documentation_matches_catalogue():
     assert doc.DOC_PATH.read_text(encoding="utf-8") == doc.render()
 

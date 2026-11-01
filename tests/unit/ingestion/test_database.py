@@ -1,5 +1,6 @@
 """Construction de la base DuckDB documentée, sur des données synthétiques."""
 
+import csv
 import json
 from pathlib import Path
 
@@ -76,8 +77,10 @@ def inputs(tmp_path: Path) -> Inputs:
     )
     arrondissements = geojson(tmp_path / "arr.geojson", [({"insee": "69387"}, poly(SQUARE))], 2154)
     zones = tmp_path / "zones_reglement.csv"
-    header = columns("zones_reglement")
-    zones.write_text(",".join(header) + "\n" + "UEi2,exact" + "," * (len(header) - 2) + "\n")
+    with zones.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=columns("zones_reglement"), restval="")
+        writer.writeheader()
+        writer.writerow({"code_zone": "UEi2", "methode": "exact"})
     raw = tmp_path / "raw"
     manifest = raw / "SRC-002" / "2026-10-28" / "zonage" / "manifest.json"
     manifest.parent.mkdir(parents=True)
