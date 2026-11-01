@@ -25,7 +25,7 @@ Une règle ne change que par un ADR (`docs/decisions/`).
 | Réseau, configuration, CLI | httpx, PyYAML, Typer |
 | PDF | PyMuPDF pour le texte du règlement ; Docling pour les cahiers communaux et les pages à tableaux (ADR-0008) |
 | Embeddings | BGE-M3 (candidat, validé par le spike) |
-| Index vectoriel | Qdrant : mode local embarqué (`QdrantClient(path=...)`) pour le spike, serveur Docker pour les benchmarks |
+| Index vectoriel | Qdrant en mode local embarqué (`QdrantClient(path=...)`) pour toute la v1 ; serveur Docker seulement pour les mesures de latence en conditions de service ([ADR-0013](decisions/ADR-0013-qdrant-embarque.md)) |
 | Génération | Ollama, modèle local 7–8B quantifié, choisi après mesure ; aucune API LLM distante dans le code applicatif |
 | Qualité | pytest, ruff |
 
