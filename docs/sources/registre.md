@@ -1,9 +1,14 @@
 # Registre des sources
 
-**Version :** 0.3
-**Date de contrôle :** 28 octobre 2026
+**Version :** 0.4
+**Date de contrôle :** 28 octobre 2026 (REF-ARRONDISSEMENTS-LYON : 1er novembre 2026)
 **Périmètre :** Métropole de Lyon (58 communes au 1er janvier 2024, EPCI 200046977)
 **Version machine :** `configs/sources.yaml`
+
+## Changements depuis la v0.3
+
+- Nouvelle source **REF-ARRONDISSEMENTS-LYON** (contours des 9 arrondissements de Lyon, Métropole de Lyon), téléchargée le 2026-11-01 par `traboule.ingestion.download` : minorant des comptages par zone établi par arrondissement pour Lyon.
+- Section « Services consultés pour les contrôles du spike » (services interrogés, non conservés).
 
 ## Changements depuis la v0.2
 
@@ -42,6 +47,12 @@
 | REF-COMMUNES-ML-2024 | `communes.geojson` | 1 251 747 | `151a86dd` | EPSG:4326 (déclaré par le serveur) |
 
 Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gouv pour les fichiers Sirene ; nombre d'objets reçus égal au `numberMatched` du serveur pour les ressources WFS (limite serveur : 1 000 000 d'objets par requête).
+
+## Téléchargement du 2026-11-01
+
+| source_id | fichier | taille (octets) | sha256 (8 car.) | CRS |
+|---|---|---:|---|---|
+| REF-ARRONDISSEMENTS-LYON | `arrondissements.geojson` | 123 623 | `70ad57b2` | EPSG:2154 (déclaré par le serveur) |
 
 ---
 
@@ -188,6 +199,19 @@ Candidate uniquement si un cas d'usage la justifie. Contrôles : licence, millé
 - **Producteur :** Métropole de Lyon. **Fiche :** [data.gouv](https://www.data.gouv.fr/datasets/communes-de-la-metropole-de-lyon-a-partir-de-2024) (jeu `65cfe9aa969c7ab093a48414`).
 - **Téléchargé :** WFS `adr_voie_lieu.adrcomgl_2024`, GeoJSON EPSG:4326, **58 objets**.
 - **Licence constatée :** Licence Ouverte 2.0 (`lov2`).
+
+## REF-ARRONDISSEMENTS-LYON — Arrondissements de la commune de Lyon
+
+- **Producteur :** Métropole de Lyon. **Fiche :** [data.gouv](https://www.data.gouv.fr/datasets/arrondissements-de-la-commune-de-lyon) (jeu `66cf9fae3a5fe2a118a3180e`, mise à jour 2026-07-30). Une seconde fiche, « Arrondissements de Lyon » (jeu `56ebdc12c751df46949abcae`), pointe vers la **même couche WFS** : doublon, non retenue.
+- **Téléchargé (2026-11-01) :** WFS `metropole-de-lyon:adr_voie_lieu.adrarrond`, GeoJSON avec `SRSNAME=EPSG:2154` (CRS proposé par le serveur pour cette couche dans GetCapabilities ; la ressource Shapefile de la fiche est elle-même publiée en EPSG:2154), **9 objets** = `numberMatched`.
+- **Licence constatée :** Licence Ouverte 2.0 (`lov2` sur la fiche data.gouv publiée par la Métropole). **À vérifier sur data.grandlyon** : le portail ne s'affiche qu'avec JavaScript et son catalogue GeoNetwork n'a pas répondu (404) le 2026-11-01 ; le service WFS ne publie pas de conditions d'accès.
+- **Attributs :** `insee` (code d'arrondissement), `nom`, `nomreduit`, `trigramme`, `datemaj` (1997-10-22 à 2011-03-03), `gid`.
+- **Contrôles (2026-11-01) :**
+  1. CRS déclaré `EPSG:2154` ;
+  2. codes `insee` = 69381 à 69389, identiques à `ref_arrondissements_lyon` (COG 2026) ;
+  3. géométries valides, aucun chevauchement entre arrondissements ;
+  4. union des 9 = commune 69123 de REF-COMMUNES-ML-2024 : 47,8923 km² de part et d'autre, écart symétrique de 0,0003 % (≈ 64 m², arrondis de reprojection) ; même producteur et même référentiel `adr_voie_lieu`.
+- **Utilisation :** périmètre du minorant des comptages par zone, Lyon étant remplacée par ses arrondissements (`traboule.geo.minorant`, conventions §3, règle 7).
 
 ## Services consultés pour les contrôles du spike (données non conservées ni redistribuées)
 

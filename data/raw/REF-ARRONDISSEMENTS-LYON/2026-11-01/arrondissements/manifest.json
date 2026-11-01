@@ -1,0 +1,18 @@
+{
+  "source_id": "REF-ARRONDISSEMENTS-LYON",
+  "source_title": "WFS metropole-de-lyon:adr_voie_lieu.adrarrond (GeoJSON, EPSG:2154)",
+  "publisher": "Métropole de Lyon",
+  "source_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrarrond&outputFormat=application/json&SRSNAME=EPSG:2154",
+  "license": "Licence Ouverte 2.0 (lov2 sur data.gouv ; vérification sur data.grandlyon à faire)",
+  "retrieved_at": "2026-11-01T08:57:13.826050Z",
+  "published_at": null,
+  "reference_date": null,
+  "geographic_vintage": "Contours de la Métropole de Lyon (référentiel adr_voie_lieu)",
+  "format": "geojson",
+  "file_size_bytes": 123623,
+  "sha256": "70ad57b20140dd3bcde4a2f4821fc4a1444c554ad96ebe5ea5b63d2ebaa30513",
+  "schema_version": null,
+  "ingestion_version": "0.2.0",
+  "limitations": "Contours de gestion de la Métropole, référentiel adr_voie_lieu comme REF-COMMUNES-ML-2024 ; pas un produit INSEE.",
+  "crs": "urn:ogc:def:crs:EPSG::2154"
+}

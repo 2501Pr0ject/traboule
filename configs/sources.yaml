@@ -11,8 +11,8 @@
 #                  numberMatched du serveur. `urls` est essayé dans l'ordre.
 
 metadata:
-  version: "0.3"
-  checked_at: "2026-10-28"
+  version: "0.4"
+  checked_at: "2026-11-01"
   territory:
     name: "Métropole de Lyon"
     epci_code: "200046977"
@@ -289,6 +289,26 @@ sources:
         urls:
           - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrcomgl_2024&outputFormat=application/json&SRSNAME=EPSG:4326"
         format: geojson
+
+  - id: REF-ARRONDISSEMENTS-LYON
+    name: arrondissements_lyon
+    title: "Arrondissements de la commune de Lyon"
+    publisher: "Métropole de Lyon"
+    role: reference
+    dataset_url: "https://www.data.gouv.fr/datasets/arrondissements-de-la-commune-de-lyon"
+    datagouv_dataset_id: "66cf9fae3a5fe2a118a3180e"
+    license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; vérification sur data.grandlyon à faire)"
+    status: to_download
+    v1: true
+    resources:
+      - name: arrondissements
+        title: "WFS metropole-de-lyon:adr_voie_lieu.adrarrond (GeoJSON, EPSG:2154)"
+        kind: wfs
+        urls:
+          - "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrarrond&outputFormat=application/json&SRSNAME=EPSG:2154"
+        format: geojson
+        geographic_vintage: "Contours de la Métropole de Lyon (référentiel adr_voie_lieu)"
+        limitations: "Contours de gestion de la Métropole, référentiel adr_voie_lieu comme REF-COMMUNES-ML-2024 ; pas un produit INSEE."
 
 excluded:
   - name: sirene_geocodee_etalab_ban
