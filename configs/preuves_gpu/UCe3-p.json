@@ -1,0 +1,61 @@
+{
+  "code_zonage": "UCe3-p",
+  "chapitre_candidat": "UCe3",
+  "source": "API Carto, module GPU, zone-urba",
+  "url": "https://apicarto.ign.fr/api/gpu/zone-urba",
+  "requete_le": "2026-11-01T09:57:27+00:00",
+  "points_tires_par": "ST_PointOnSurface, md5(OGC_FID || '20261101')",
+  "points": [
+    {
+      "ogc_fid": 1011,
+      "gid": 44883,
+      "lon": 4.831862,
+      "lat": 45.798863,
+      "zones": [
+        {
+          "libelle": "UCe3-p",
+          "libelong": "Tissus urbains marques par une forte mixite de l habitat et des activites economiques. Ils sont constitues sur un parcellaire profond et etroit par un front bati continu le long des rues a l arriere duquel se developpe generalement un ba",
+          "typezone": "U",
+          "idurba": "200046977_PLUI_20260326",
+          "partition": "DU_200046977",
+          "datvalid": "20260326",
+          "nomfic": "200046977_reglement_20260326.pdf"
+        }
+      ]
+    },
+    {
+      "ogc_fid": 4088,
+      "gid": 47967,
+      "lon": 4.805176,
+      "lat": 45.77291,
+      "zones": [
+        {
+          "libelle": "UCe3-p",
+          "libelong": "Tissus urbains marques par une forte mixite de l habitat et des activites economiques. Ils sont constitues sur un parcellaire profond et etroit par un front bati continu le long des rues a l arriere duquel se developpe generalement un ba",
+          "typezone": "U",
+          "idurba": "200046977_PLUI_20260326",
+          "partition": "DU_200046977",
+          "datvalid": "20260326",
+          "nomfic": "200046977_reglement_20260326.pdf"
+        }
+      ]
+    },
+    {
+      "ogc_fid": 432,
+      "gid": 44319,
+      "lon": 4.867382,
+      "lat": 45.74482,
+      "zones": [
+        {
+          "libelle": "UCe3-p",
+          "libelong": "Tissus urbains marques par une forte mixite de l habitat et des activites economiques. Ils sont constitues sur un parcellaire profond et etroit par un front bati continu le long des rues a l arriere duquel se developpe generalement un ba",
+          "typezone": "U",
+          "idurba": "200046977_PLUI_20260326",
+          "partition": "DU_200046977",
+          "datvalid": "20260326",
+          "nomfic": "200046977_reglement_20260326.pdf"
+        }
+      ]
+    }
+  ]
+}

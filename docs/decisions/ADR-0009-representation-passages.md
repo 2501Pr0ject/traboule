@@ -29,3 +29,11 @@ Autres constats : Q15 (l'OAP 5 « La Saulaie » devant l'OAP 7 « ZA de la Saula
 
 ## Critère de réexamen
 Si l'en-tête dégrade les requêtes sans zone, ou si le filtre seul suffit à porter les requêtes ciblant une zone au niveau des autres.
+
+## Amendement du 2026-11-01 : secteurs de zone
+
+Le règlement est organisé par zone mère : un secteur (ex. `UCe1a`, `URm1c`, `A2sj`) n'a pas de chapitre propre. La correspondance code de zone → chapitre (`configs/zones_reglement.csv`, généré par `traboule.geo.zones_reglement`) distingue le **secteur** (code complet) de la **zone mère** et du chapitre, et indique si le code de secteur est cité dans le texte du chapitre applicable (`dispositions_secteur`, avec les pages).
+
+- Une réponse sur un secteur **cite le chapitre de la zone mère** et **vérifie les dispositions propres au secteur** aux pages indiquées ; si le secteur n'est pas cité dans le chapitre (`dispositions_secteur = non`), la réponse le dit.
+- Le **code de secteur figure dans l'en-tête contextuel** des passages concernés, en plus de la zone mère.
+- **Correspondance de code par alias** (`configs/zones_alias.csv`, table fermée, colonne `alias_statut` de la correspondance) : une disposition propre au secteur du règlement citée pour un objet du code de zonage correspondant (ex. disposition de `UCe3p` pour un objet `UCe3-p`) est signalée « correspondance de code probable » tant que le statut n'est pas « confirmé ». Seul le porteur passe un alias en « confirmé ». Aucun code n'est rapproché hors de cette table.

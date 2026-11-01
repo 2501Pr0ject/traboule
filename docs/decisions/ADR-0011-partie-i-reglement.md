@@ -23,3 +23,12 @@ Ingérer la partie I en v1, avec la même structure de passages que la partie II
 
 ## Critère de réexamen
 Aucun prévu : condition de complétude des réponses réglementaires.
+
+## Amendement du 2026-11-01 : partie III du règlement (STECAL)
+
+La nomenclature (partie I, §0.2, p. 23 et 24) renvoie les STECAL « installations ou activités spécifiques » (`A2s1`, `A2s2`… et `N2s1`, `N2s2`…) à des « règles particulières figurant dans la partie III du règlement ». Constaté le 2026-11-01 :
+- le règlement écrit `200046977_reglement_20260326.pdf` ne contient que les parties I et II ;
+- aucune des 617 pièces du document GPU `200046977_PLUi_20260326` (`liste_pieces.json`) ne porte un nom qui évoque une partie III ou les STECAL ;
+- le zonage SRC-002 porte le numéro de chaque STECAL dans l'attribut `stecal`, objet par objet (A2s : 1 à 3 ; N2s : 1 à 7).
+
+Décision : la **source de la partie III est à localiser** (aucune supposition). Jusque-là, une question sur un STECAL `A2s` ou `N2s` donne lieu à une **abstention**, motif `document_non_ingere` (ADR-0010), **avec le numéro du STECAL** lu dans l'attribut `stecal` de l'objet concerné ; la correspondance `configs/zones_reglement.csv` liste les numéros présents par code (`numeros_stecal`).
