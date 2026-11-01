@@ -73,6 +73,22 @@ La grille est remplie par le porteur (`methode = humain`). Aucun pré-remplissag
 - Le rapport donne pour chaque strate : confirmés (dont à cheval et dont adresses sans numéro), infirmés par cause, indéterminables, écarts de version et remplacements. Aucun SIRET ni aucune adresse.
 - Échec du critère : réexamen de l'ADR-0006 (seuils de distance, place de la qualité `21`) avant toute réponse qui expose la confiance « haute ».
 
+## 2 bis. Échantillon C — ordre de lecture des cahiers (extraction Docling)
+
+**Objet :** juger la qualité du texte Docling des cahiers communaux et d'arrondissement avant d'étendre l'extraction aux 76 cahiers (ADR-0008). Écrit le 2026-11-01, avant tout tirage.
+
+- **Population :** pages non graphiques des 6 cahiers du sous-ensemble d'essai (Vénissieux SECT65, Saint-Fons SECT53, Lyon cahier communal SECT37, Lyon 7e cahier d'arrondissement SECT37, Meyzieu SECT41, Poleymieux-au-Mont-d'Or SECT47), extraits par `uv run python -m traboule.retrieval.cahiers`.
+- **Graine : `20261104`** (propre à cet échantillon). Ordre `md5(ressource || '|' || page || '|' || graine)` dans chaque cahier.
+- **Taille :** 5 pages par cahier, soit 30 ; rangs 6 à 10 de chaque cahier en remplacement, masqués.
+- **Méthode (humaine) :** comparer le rendu de la page à son texte Docling nettoyé (grille et page de revue locales, `data/interim/controles/`).
+- **Statuts :**
+  - **correct** : tout le texte lisible de la page est présent, dans l'ordre de lecture (colonnes, encadrés) ;
+  - **partiel** : ordre correct, mais omission, doublon ou mots coupés qui gênent la lecture d'au moins une phrase ;
+  - **incorrect** : ordre de lecture faux (colonnes entrelacées, encadré inséré au milieu d'une phrase) ;
+  - **graphique** : page en réalité graphique (plan, carte) non détectée ; remplacée par le rang suivant du même cahier et rapportée à part.
+- **Fin :** 5 pages jugées par cahier, relues par le porteur (`relu_par_humain = oui`).
+- **Critère :** aucun critère bloquant ; le rapport donne, par cahier, les nombres de pages correctes, partielles et incorrectes, et le porteur décide de l'extension aux autres cahiers.
+
 ## 3. Échantillon B — calibration du juge automatique (LLM-as-judge)
 
 Structure seulement ; taille, population, graine et critère fixés **avant la semaine 4** (cadrage §6), par une nouvelle version de ce document.
