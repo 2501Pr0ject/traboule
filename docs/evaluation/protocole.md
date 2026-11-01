@@ -35,6 +35,7 @@ Toute règle ajoutée après un premier résultat est **datée et marquée** « 
 - **Graine : `20261101`** (une seule pour l'échantillon ; les strates sont disjointes).
 - Taille : **10 établissements par strate**, soit 30. Dans chaque strate, les 10 premiers rangs de l'ordre de tirage.
 - L'adresse déclarée est lue dans le stock SRC-001a (champs d'adresse de l'établissement) et reste dans la grille locale.
+- Commande : `uv run python -m traboule.evaluation.tirage --graine 20261101`, qui écrit la grille, les remplacements masqués et les métadonnées du tirage dans `data/interim/controles/` et refuse de réécrire une grille existante ; un test vérifie en local qu'elle redonne exactement la grille tirée.
 
 ### Méthode de vérification (humaine)
 
