@@ -23,6 +23,7 @@ Moteur d'intelligence territoriale **local-first** sur la Métropole de Lyon : i
 | [Décisions (ADR)](docs/decisions/) | Choix structurants et leurs justifications |
 | [Conventions](docs/conventions.md) | Règles de données, garde-fous SQL, règles de réponse, code |
 | [Jeu de référence](benchmarks/datasets/gold/guide-annotation.md) | Schéma et règles d'annotation |
+| [Protocole d'évaluation](docs/evaluation/protocole.md) | Tirages, revue humaine, contrôle de l'indice de confiance |
 
 ## Démarrage
 
@@ -49,7 +50,8 @@ Sources utilisées, telles que consignées dans le [registre des sources](docs/s
 | COG 2026, table d'appartenance, table de passage 2003–2026 (SRC-004) | INSEE | Licence Ouverte 2.0 (mentions légales insee.fr) | Référentiel géographique |
 | Règlement écrit et pièces du PLU-H, document `200046977_PLUi_20260326` (SRC-005) | Métropole de Lyon, diffusion par le Géoportail de l'Urbanisme | « Licence ouverte » selon les CGU du GPU, version ambiguë | Corpus documentaire |
 | Sirene de la Métropole de Lyon (SRC-007) | Métropole de Lyon, à partir de Sirene | Licence Ouverte 2.0 | Contrôle croisé |
-| Communes de la Métropole de Lyon (REF-COMMUNES-ML-2024) | Métropole de Lyon | Licence Ouverte 2.0 | Contrôle croisé |
+| Communes de la Métropole de Lyon (REF-COMMUNES-ML-2024) | Métropole de Lyon | Licence Ouverte 2.0 | Contrôle croisé, périmètre du minorant |
+| Arrondissements de la commune de Lyon (REF-ARRONDISSEMENTS-LYON) | Métropole de Lyon | Licence Ouverte 2.0 (fiche data.gouv ; vérification sur data.grandlyon à faire) | Périmètre du minorant pour Lyon |
 
 **Points ambigus**, consignés plutôt que tranchés :
 
