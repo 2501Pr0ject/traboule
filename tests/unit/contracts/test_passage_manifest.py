@@ -40,6 +40,22 @@ def test_cahier_passage_carries_both_communes():
     assert p.commune_historique == "69152"
 
 
+def test_shared_piece_carries_all_sectors_not_one():
+    # Cahier communal de Lyon : un exemplaire pour les secteurs 31 à 39.
+    shared = PASSAGE | {
+        "zone": None,
+        "secteurs_pluh": ["31", "39"],
+        "code_commune_cog2026": "69123",
+        "commune_historique": "69123",
+        "titre_piece": "Cahier communal de Lyon (identique pour les secteurs 31 à 39)",
+    }
+    assert Passage(**shared).secteurs_pluh == ["31", "39"]
+    with pytest.raises(ValidationError, match="secteur seul"):
+        Passage(**(shared | {"secteur_pluh": "31"}))
+    with pytest.raises(ValidationError):
+        Passage(**(shared | {"secteurs_pluh": ["68"]}))
+
+
 @pytest.mark.parametrize("secteur", ["00", "68", "7"])
 def test_sector_outside_01_67_is_rejected(secteur):
     with pytest.raises(ValidationError):

@@ -1,0 +1,33 @@
+# OAP citées dans un cahier (renvois, signets) mais non définies dans ce cahier, avec leur motif.
+# Lue par traboule.retrieval.cahiers : toute OAP citée non détectée doit figurer ici, sinon
+# l'extraction s'arrête.
+
+exceptions:
+  - ressource: cahier_arrondissement_sect31
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect32
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect33
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect34
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect35
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect37
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"
+  - ressource: cahier_arrondissement_sect39
+    oap: "0.1"
+    motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
+    decision: "proposée le 2026-11-02, à valider par le porteur"

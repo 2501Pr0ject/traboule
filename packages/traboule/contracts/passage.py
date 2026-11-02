@@ -1,8 +1,10 @@
 """Passage d'un document du PLU-H et son payload (ADR-0008, ADR-0009)."""
 
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+
+Secteur = Annotated[str, StringConstraints(pattern=r"^(0[1-9]|[1-5][0-9]|6[0-7])$")]
 
 
 class QualiteTexte(BaseModel):
@@ -42,6 +44,10 @@ class Passage(BaseModel):
     secteur_pluh: str | None = Field(default=None, pattern=r"^(0[1-9]|[1-5][0-9]|6[0-7])$")
     code_commune_cog2026: str | None = Field(default=None, pattern=r"^[0-9]{5}$")
     commune_historique: str | None = Field(default=None, pattern=r"^[0-9]{5}$")
+    # Pièce identique pour plusieurs secteurs (cahier communal de Lyon, secteurs 31 à 39) :
+    # un seul exemplaire indexé, avec tous ses secteurs et le titre à citer (ADR-0009).
+    secteurs_pluh: list[Secteur] | None = None
+    titre_piece: str | None = None
     # Cahiers : défauts restants après réparation des ligatures (traboule.retrieval.ligatures).
     qualite_texte: QualiteTexte | None = None
 
@@ -51,6 +57,8 @@ class Passage(BaseModel):
             raise ValueError("page_fin antérieure à page_debut")
         if self.secteur_pluh and not (self.code_commune_cog2026 and self.commune_historique):
             raise ValueError("un passage de cahier porte sa commune COG 2026 et historique")
+        if self.secteurs_pluh and self.secteur_pluh:
+            raise ValueError("une pièce commune à plusieurs secteurs ne porte pas de secteur seul")
         if self.est_preambule and self.zone is None:
             raise ValueError("un préambule de zone porte sa zone")
         return self

@@ -1,8 +1,16 @@
 """Cahiers communaux et d'arrondissement : structure, passages et mesures de qualité.
 
 - texte Docling (ordre des colonnes), titres repérés sur PyMuPDF (ADR-0008) ;
-- chemin d'un passage = entrées actives de la table des matières du cahier ; dans la partie 4
-  (OAP), le titre d'OAP (« OAP / numéro / nom ») ouvre un passage ;
+- chemin d'un passage = entrées actives de la table des matières du cahier (signets du PDF,
+  sinon parties du sommaire imprimé page 2) ; dans la partie 4 (OAP), le titre d'OAP
+  (« OAP / numéro / nom ») ouvre un passage ;
+- partie 4 : pages couvertes selon les signets ou selon le sommaire imprimé (les signets de
+  certains cahiers sont décalés) ; titre d'OAP sans numéro (numéro seulement sur la carte de la
+  page) repris de la première ligne de la page ;
+- contrôle bloquant : chaque OAP citée dans le cahier (renvois, signets) est détectée ou figure
+  dans `configs/oap_exceptions.yaml` avec son motif ;
+- pièces identiques (`configs/index.yaml`) : sha256 et texte de chaque exemplaire contrôlés ;
+  la référence porte tous les secteurs et le titre à citer ;
 - en-têtes et pieds de page courants retirés (lignes présentes sur plus de la moitié des
   pages), pages graphiques écartées, passages longs découpés aux limites de phrase ;
 - payload ADR-0009 : secteur PLU-H, commune COG 2026 et commune historique, OAP ; version lue
@@ -26,8 +34,9 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+import yaml
 
-from traboule.config import INTERIM_DIR, RAW_DIR
+from traboule.config import INTERIM_DIR, OAP_EXCEPTIONS, RAW_DIR
 from traboule.contracts.passage import Passage
 from traboule.measure import peak_rss_bytes, write_metrics
 from traboule.retrieval.decoupage import (
@@ -36,6 +45,7 @@ from traboule.retrieval.decoupage import (
     DecoupageError,
     long_ranges,
     split_block,
+    text_page_numbers,
 )
 from traboule.retrieval.extraction import (
     Page,
@@ -45,6 +55,12 @@ from traboule.retrieval.extraction import (
     read_pages,
     repair_ligatures,
 )
+from traboule.retrieval.index_config import (
+    IndexConfigError,
+    PieceIdentique,
+    check_identical,
+    load_identical,
+)
 
 RAW_DATE = "2026-11-01"
 VERSION_GPU = "200046977_PLUi_20260326"
@@ -52,6 +68,15 @@ OUT_DIR = INTERIM_DIR / "extraction" / "cahiers"
 # Titre de la partie 4 dans la table des matières (parfois altéré : « … et de4. Orientation… »).
 OAP_PART = re.compile(r"^\s*4\.\s*Orientations?\s+d.Am[ée]nagement", re.I)
 OAP_NUMBER = re.compile(r"^(\d+(?:\s*[.-]\s*\d+)*)\s*(.*)$")  # « 7.4 », « 11-1 », « 11 -1 »
+# Partie du sommaire imprimé : « 4.\tOrientations d'Aménagement et de Programmation (OAP)....52 ».
+SOMMAIRE_PART = re.compile(r"^\s*([1-6])\.\s*(.+?)\s*\.{3,}\s*(\d+)\s*$")
+SOMMAIRE_PAGES = (2, 3)
+# Lignes d'en-tête d'une page de la partie 4, sautées pour lire le titre d'une OAP sans numéro.
+OAP_PAGE_HEADER = re.compile(
+    r"^(\d{1,3}|PLU-H\b.*|4\.?\s*(Orientations? d.Am[ée]nagement.*)?|"
+    r"Orientations? d.Am[ée]nagement.*|Programmation.*)$",
+    re.I,
+)
 # Fragments laissés par une ligature « ti », « tt », « ff », « fi », « fl » codée avec une espace
 # dans certains PDF (« parti e », « créati on ») : comptés, non réparés (règle à valider).
 SPLIT_LIGATURE = re.compile(
@@ -106,8 +131,54 @@ def version_at(versions: dict[int, str | None], page: int) -> tuple[str, bool]:
     raise CahierError(f"aucune version lue jusqu'à la page {page}")
 
 
-def oap_part(toc: list[tuple[int, str, int]], page_count: int) -> range | None:
-    """Pages de la partie 4 (OAP), d'après les entrées de niveau 1 de la table des matières."""
+def printed_parts(pages: dict[int, Page]) -> list[tuple[int, str, int]]:
+    """Parties (niveau 1) lues dans le sommaire imprimé des pages 2 et 3."""
+    parts: dict[str, tuple[int, str, int]] = {}
+    for number in SOMMAIRE_PAGES:
+        for line in pages[number].texte_pymupdf.splitlines() if number in pages else []:
+            if m := SOMMAIRE_PART.match(line):
+                title = f"{m.group(1)}. {' '.join(m.group(2).split())}"
+                parts.setdefault(m.group(1), (1, title, int(m.group(3))))
+    return sorted(parts.values(), key=lambda t: t[2])
+
+
+def shows_part_heading(page: Page | None, title: str) -> bool:
+    """La page porte le titre de partie « n. Mot » (ex. « 4. Orientations »)."""
+    number, _, rest = title.partition(".")
+    if page is None or not rest.split():
+        return False
+    heading = re.compile(rf"(?<!\d){number}\.\s*{re.escape(rest.split()[0])}", re.I)
+    return bool(heading.search(" ".join(page.texte_pymupdf.split())))
+
+
+def structure_toc(
+    toc: list[tuple[int, str, int]], pages: dict[int, Page]
+) -> tuple[list[tuple[int, str, int]], str, list[str]]:
+    """Table des matières : signets du PDF, sinon parties du sommaire imprimé.
+
+    Un signet de partie dont la page ne porte pas le titre, alors que la page du sommaire
+    imprimé le porte, est corrigé ; chaque correction est consignée.
+    """
+    printed = {title.split(".")[0]: page for _, title, page in printed_parts(pages)}
+    if not any(level == 1 for level, _, _ in toc):
+        return printed_parts(pages), "sommaire imprimé", []
+    out, corrections = [], []
+    for level, title, page in toc:
+        number = title.split(".")[0].strip()
+        other = printed.get(number) if level == 1 else None
+        if (
+            other
+            and other != page
+            and shows_part_heading(pages.get(other), title)
+            and not shows_part_heading(pages.get(page), title)
+        ):
+            corrections.append(f"{title} : page {page} → {other}")
+            page = other
+        out.append((level, title, page))
+    return out, "signets", corrections
+
+
+def _part_range(toc: list[tuple[int, str, int]], page_count: int) -> range | None:
     top = sorted((page, title) for level, title, page in toc if level == 1)
     for i, (page, title) in enumerate(top):
         if OAP_PART.match(title):
@@ -116,24 +187,51 @@ def oap_part(toc: list[tuple[int, str, int]], page_count: int) -> range | None:
     return None
 
 
+def oap_part(
+    toc: list[tuple[int, str, int]],
+    page_count: int,
+    printed: list[tuple[int, str, int]] | None = None,
+) -> range | None:
+    """Pages de la partie 4 (OAP) : union des plages des signets et du sommaire imprimé."""
+    candidates = (_part_range(toc, page_count), _part_range(printed or [], page_count))
+    ranges = [r for r in candidates if r]
+    if not ranges:
+        return None
+    return range(min(r.start for r in ranges), max(r.stop for r in ranges))
+
+
 def oap_titles(pages: dict[int, Page], part: range | None) -> dict[int, str]:
     """Page → « OAP n Nom » pour les titres d'OAP de la partie 4.
 
     Un titre est la ligne « OAP », suivie du numéro et du nom (sur la même ligne ou la
     suivante) ; un renvoi sans nom (« OAP 0.1 » suivi d'un autre « OAP ») n'est pas un titre.
+    Seul le premier titre d'une page compte (les suivants sont des légendes de carte). Une page
+    sans titre qui porte un seul numéro d'OAP sans nom, non titré ailleurs, ouvre cette OAP sous
+    le nom de sa première ligne.
     """
-    titles = {}
+    titles, unnamed = {}, {}
     for number in part or []:
         lines = [line.strip() for line in pages[number].texte_pymupdf.splitlines()]
-        for i, line in enumerate(lines[:-1]):
-            if line != "OAP" or not (m := OAP_NUMBER.match(lines[i + 1])):
+        labels = set()
+        for i, line in enumerate(lines):
+            if line != "OAP" or i + 1 >= len(lines) or not (m := OAP_NUMBER.match(lines[i + 1])):
                 continue
+            numero = re.sub(r"\s+", "", m.group(1))
             name = m.group(2) or (lines[i + 2] if i + 2 < len(lines) else "")
-            if name and not name.startswith("OAP"):
+            if name and not name.startswith(("OAP", "PIP")):
                 name, _ = repair_ligatures(" ".join(name.split()))
-                numero = re.sub(r"\s+", "", m.group(1))
                 titles[number] = f"OAP {numero} {name}"
-    return titles
+                break
+            labels.add(numero)
+        if number not in titles and len(labels) == 1:
+            first = next((x for x in lines if x and not OAP_PAGE_HEADER.match(x)), None)
+            if first:
+                unnamed[number] = (labels.pop(), repair_ligatures(" ".join(first.split()))[0])
+    named = {t.split()[1] for t in titles.values()}
+    for number, (numero, name) in unnamed.items():
+        if numero not in named:
+            titles[number] = f"OAP {numero} {name}"
+    return dict(sorted(titles.items()))
 
 
 def chemins(toc: list[tuple[int, str, int]], page_count: int) -> dict[int, list[str]]:
@@ -171,9 +269,15 @@ def build_passages(
 ) -> tuple[list[Passage], dict]:
     """Passages d'un cahier dont les pages portent déjà leurs lignes Docling nettoyées."""
     versions = page_versions(pages)
-    part = oap_part(toc, len(pages))
+    printed = printed_parts(pages)
+    toc, toc_source, toc_corrections = structure_toc(toc, pages)
+    part = oap_part(toc, len(pages), printed)
     oaps = oap_titles(pages, part)
     paths = chemins(toc, len(pages))
+    part_title = next(
+        (t for level, t, _ in toc + printed if level == 1 and OAP_PART.match(t)), None
+    )
+    text_pages = text_page_numbers(pages)
     running = running_lines(pages)
     groups: list[dict] = []
     current_oap = None
@@ -181,7 +285,11 @@ def build_passages(
     for number, page in pages.items():
         in_part = part is not None and number in part
         current_oap = oaps.get(number, current_oap) if in_part else None
-        chemin = paths[number] + ([current_oap] if current_oap else [])
+        base = paths[number]
+        # Signets décalés : une page de la partie 4 est rattachée à la partie 4.
+        if in_part and part_title and not OAP_PART.match(base[0]):
+            base = [part_title]
+        chemin = base + ([current_oap] if current_oap else [])
         lines = [line for line in page.lignes if line not in running]
         version, fallback = version_at(versions, number)
         same_path = bool(groups) and groups[-1]["chemin"] == chemin
@@ -194,7 +302,7 @@ def build_passages(
         groups[-1]["lignes"].extend((number, line) for line in lines)
     passages, fallbacks, too_long = [], 0, []
     for g in groups:
-        chunks = split_block(g["lignes"])
+        chunks = split_block(g["lignes"], text_pages=text_pages)
         too_long += [(c.page_debut, c.page_fin) for c in long_ranges(chunks)]
         fallbacks += g["repli"] * len(chunks)
         for partie, chunk in enumerate(chunks, start=1):
@@ -214,11 +322,13 @@ def build_passages(
                     **commune,
                 )  # fmt: skip
             )
-    referenced = {
-        m.group(1) for p in pages.values() for m in OAP_REFERENCE.finditer(p.texte_pymupdf)
-    }
+    cited_texts = [p.texte_pymupdf for p in pages.values()] + [t for _, t, _ in toc]
+    referenced = {m.group(1) for text in cited_texts for m in OAP_REFERENCE.finditer(text)}
     detected = {t.split()[1] for t in oaps.values()}
     return passages, {
+        "structure": toc_source,
+        "signets_corriges": toc_corrections,
+        "partie_oap": [part.start, part.stop - 1] if part else None,
         "version_piece": versions[1],
         "passages_version_hors_couverture": sum(p.version_piece != versions[1] for p in passages),
         "passages_version_par_repli": fallbacks,
@@ -228,6 +338,35 @@ def build_passages(
         "oap_detectees": sorted(set(oaps.values()), key=oap_order),
         "oap_citees_non_detectees": sorted(referenced - detected - {"0"}),
     }  # fmt: skip
+
+
+def load_oap_exceptions(path: Path = OAP_EXCEPTIONS) -> dict[tuple[str, str], str]:
+    """(ressource, numéro d'OAP) → motif ; une exception sans motif ni décision est refusée."""
+    entries = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("exceptions") or []
+    exceptions = {}
+    for entry in entries:
+        if not all(entry.get(k) for k in ("ressource", "oap", "motif", "decision")):
+            raise CahierError(f"exception d'OAP incomplète : {entry}")
+        exceptions[(entry["ressource"], str(entry["oap"]))] = entry["motif"]
+    return exceptions
+
+
+def check_oaps(resource: str, missing: list[str], exceptions: dict[tuple[str, str], str]) -> dict:
+    """Contrôle bloquant : chaque OAP citée non détectée figure dans les exceptions."""
+    unexplained = [n for n in missing if (resource, n) not in exceptions]
+    if unexplained:
+        raise CahierError(f"{resource} : OAP citées non détectées sans exception {unexplained}")
+    return {n: exceptions[(resource, n)] for n in missing}
+
+
+def shared_payload(group: PieceIdentique) -> dict:
+    """Payload d'une pièce commune à plusieurs secteurs : secteurs, commune et titre à citer."""
+    return {
+        "secteurs_pluh": list(group.secteurs),
+        "code_commune_cog2026": group.code_commune_cog2026,
+        "commune_historique": group.code_commune_cog2026,
+        "titre_piece": group.titre,
+    }
 
 
 def oap_order(title: str) -> list[int]:
@@ -306,6 +445,8 @@ def extract(
     communes: dict[str, str],
     sectors: dict[str, str],
     raw_dir: Path = RAW_DIR,
+    exceptions: dict[tuple[str, str], str] | None = None,
+    shared: dict[str, PieceIdentique] | None = None,
 ) -> dict:
     """Extrait un cahier : passages écrits dans OUT_DIR/<ressource>/, mesures renvoyées."""
     pdf = next(resource_folder(resource, raw_dir).glob("*.pdf"))
@@ -324,8 +465,11 @@ def extract(
         t_docling = time.perf_counter() - t1
         cache.write_text(json.dumps(markdown, ensure_ascii=False))
     apply_docling(pages, markdown)
-    passages, quality = build_passages(
-        pdf.name, toc, pages, commune_of(pdf.name, sectors, communes)
+    group = (shared or {}).get(resource)
+    commune = shared_payload(group) if group else commune_of(pdf.name, sectors, communes)
+    passages, quality = build_passages(pdf.name, toc, pages, commune)
+    quality["oap_exceptions"] = check_oaps(
+        resource, quality["oap_citees_non_detectees"], exceptions or {}
     )
     # Texte brut ; la réparation des ligatures écrit passages.jsonl (traboule.retrieval.ligatures).
     (out / "passages_brut.jsonl").write_text(
@@ -333,6 +477,7 @@ def extract(
     )
     graphic = [n for n, p in pages.items() if p.graphique]
     return {
+        "sha256": hashlib.sha256(pdf.read_bytes()).hexdigest(),
         "pages": len(pages),
         "pages_graphiques": len(graphic),
         "secondes_pymupdf": round(t_pymupdf, 1),
@@ -349,6 +494,17 @@ def extract(
     }
 
 
+def check_group(group: PieceIdentique, results: dict[str, dict]) -> None:
+    """Contrôle bloquant des pièces identiques, sur les passages bruts extraits."""
+    texts = {
+        r: "\n".join(
+            json.loads(line)["texte"] for line in (OUT_DIR / r / "passages_brut.jsonl").open()
+        )
+        for r in group.exemplaires
+    }
+    check_identical(group, {r: results[r]["sha256"] for r in group.exemplaires}, texts)
+
+
 app = typer.Typer(add_completion=False)
 
 
@@ -360,12 +516,18 @@ def main(
     converter = docling_converter()
     communes = load_passage_communes()
     sectors = sector_codes(RAW_DIR / PLAN_DE_SECTEURS)
+    exceptions = load_oap_exceptions()
+    groups = load_identical()
+    shared = {g.reference: g for g in groups}
     results = {}
     try:
         for name in ressource:
             typer.echo(f"  {name} …")
-            results[name] = extract(name, converter, communes, sectors)
-    except (CahierError, DecoupageError) as exc:
+            results[name] = extract(name, converter, communes, sectors, RAW_DIR, exceptions, shared)
+        for group in groups:
+            if all(r in results for r in group.exemplaires):
+                check_group(group, results)
+    except (CahierError, DecoupageError, IndexConfigError) as exc:
         typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)
     write_metrics(

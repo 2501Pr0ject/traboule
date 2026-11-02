@@ -4,6 +4,11 @@ Commun à toutes les pièces (cahiers, règlement) : un bloc est une suite de li
 sa page. Au-delà de `MAX_CHARS` caractères, il est découpé aux limites de phrase ; chaque
 passage porte la plage des pages de ses propres lignes, jamais celle du bloc entier.
 
+Redécoupage par paragraphe (décision du porteur, 2026-11-02) : un passage qui couvre au moins
+`MIN_TEXT_PAGES_TO_SPLIT` pages de texte (pages non graphiques d'au moins `TEXT_PAGE_MIN_CHARS`
+caractères), ou qui dépasse `MAX_CHARS` faute de fin de phrase, est redécoupé aux limites de
+ligne (paragraphes). Un passage long à cause de cartes intercalées reste tel quel.
+
 Contrôles :
 - bloquant : un bloc de plusieurs pages découpé en plusieurs passages qui reprendraient tous sa
   plage entière (`DecoupageError`) ;
@@ -17,6 +22,8 @@ MAX_CHARS = 2000
 # Seuil fixé d'après la distribution observée sur les 76 cahiers (2026-11-02) : 99 % des
 # passages couvrent au plus 4 pages ; au-delà, des pages graphiques sont intercalées.
 MAX_PAGES = 4
+TEXT_PAGE_MIN_CHARS = 400
+MIN_TEXT_PAGES_TO_SPLIT = 4
 SENTENCE_END = re.compile(r"(?<=[.;:!?])\s+")
 
 
@@ -58,8 +65,41 @@ def split_long(text: str, max_chars: int = MAX_CHARS) -> list[str]:
     return [text[s:e] for s, e in chunk_spans(text, max_chars)]
 
 
-def split_block(lines: list[tuple[int, str]], max_chars: int = MAX_CHARS) -> list[Chunk]:
-    """Découpe un bloc de lignes (page, texte) ; chaque morceau porte les pages de ses lignes."""
+def text_page_numbers(pages: dict, min_chars: int = TEXT_PAGE_MIN_CHARS) -> set[int]:
+    """Pages de texte : non graphiques, d'au moins `min_chars` caractères (PyMuPDF)."""
+    return {n for n, p in pages.items() if not p.graphique and p.caracteres >= min_chars}
+
+
+def needs_paragraph_split(
+    length: int, pages: set[int], text_pages: set[int], max_chars: int = MAX_CHARS
+) -> bool:
+    return length > max_chars or len(pages & text_pages) >= MIN_TEXT_PAGES_TO_SPLIT
+
+
+def paragraph_spans(
+    bounds: list[tuple[int, int, int]], text_pages: set[int], max_chars: int = MAX_CHARS
+) -> list[tuple[int, int]]:
+    """Regroupe des lignes (début, fin, page) en morceaux, coupés aux limites de ligne."""
+    spans: list[tuple[int, int, set[int]]] = []
+    for s, e, page in bounds:
+        if spans:
+            start, _, pages = spans[-1]
+            if not needs_paragraph_split(e - start, pages | {page}, text_pages, max_chars):
+                spans[-1] = (start, e, pages | {page})
+                continue
+        spans.append((s, e, {page}))
+    return [(s, e) for s, e, _ in spans]
+
+
+def split_block(
+    lines: list[tuple[int, str]],
+    max_chars: int = MAX_CHARS,
+    text_pages: set[int] | None = None,
+) -> list[Chunk]:
+    """Découpe un bloc de lignes (page, texte) ; chaque morceau porte les pages de ses lignes.
+
+    `text_pages` (pages de texte du document) active le redécoupage par paragraphe.
+    """
     lines = [(page, line.strip()) for page, line in lines if line.strip()]
     if not lines:
         return []
@@ -68,9 +108,21 @@ def split_block(lines: list[tuple[int, str]], max_chars: int = MAX_CHARS) -> lis
         bounds.append((pos, pos + len(line), page))
         pos += len(line) + 1
     text = " ".join(line for _, line in lines)
-    chunks = []
+
+    def pages_of(s: int, e: int) -> set[int]:
+        return {page for ls, le, page in bounds if ls < e and le > s}
+
+    spans = []
     for s, e in chunk_spans(text, max_chars):
-        pages = [page for ls, le, page in bounds if ls < e and le > s]
+        pages = pages_of(s, e)
+        if text_pages is not None and needs_paragraph_split(e - s, pages, text_pages, max_chars):
+            inner = [(max(ls, s), min(le, e), p) for ls, le, p in bounds if ls < e and le > s]
+            spans += paragraph_spans(inner, text_pages, max_chars)
+        else:
+            spans.append((s, e))
+    chunks = []
+    for s, e in spans:
+        pages = pages_of(s, e)
         chunks.append(Chunk(text[s:e], min(pages), max(pages)))
     first, last = lines[0][0], lines[-1][0]
     if (

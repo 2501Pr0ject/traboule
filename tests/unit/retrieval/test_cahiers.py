@@ -138,3 +138,86 @@ def test_unknown_sector_is_refused():
 
 def test_split_ligature_fragments_are_counted_not_repaired():
     assert ca.SPLIT_LIGATURE.findall("la créati on de la parti e nord") == ["créati on", "parti e"]
+
+
+SOMMAIRE = (
+    "Sommaire\n1.\tRapport de présentation.......................1\n"
+    "\tI Habitat..........................17\n"
+    "4.\tOrientations d'Aménagement et de Programmation (OAP)...........3\n"
+    "5.\tRapport de présentation.......... 6\n"
+)
+
+
+def test_printed_sommaire_replaces_missing_bookmarks(pages):
+    pages[2].texte_pymupdf = SOMMAIRE
+    toc, source, _ = ca.structure_toc([], pages)
+    assert source == "sommaire imprimé"
+    assert toc == [
+        (1, "1. Rapport de présentation", 1),
+        (1, "4. Orientations d'Aménagement et de Programmation (OAP)", 3),
+        (1, "5. Rapport de présentation", 6),
+    ]
+    assert ca.oap_part(toc, 6) == range(3, 6)
+    assert ca.structure_toc(TOC, pages) == (TOC, "signets", [])
+
+
+def test_oap_part_is_the_union_of_bookmarks_and_printed_sommaire():
+    # Signets décalés de deux pages (fin de la partie 4 à la page 3 au lieu de 5).
+    shifted = [(1, "4. Orientations d'Aménagement et de Programmation (OAP)", 1), (1, "5. A", 4)]
+    printed = [(1, "4. Orientations d'Aménagement et de Programmation (OAP)", 3), (1, "5. A", 6)]
+    assert ca.oap_part(shifted, 6, printed) == range(1, 6)
+
+
+def test_only_the_first_oap_title_of_a_page_counts(pages):
+    pages[
+        4
+    ].texte_pymupdf = (
+        "OAP \n5.1 Génovéfains - Lyon 5\nTexte\nOAP \n5.1\nOAP \n0.1\nSite UNESCO (renvoi)"
+    )
+    assert ca.oap_titles(pages, range(4, 5)) == {4: "OAP 5.1 Génovéfains - Lyon 5"}
+
+
+def test_unnumbered_oap_title_is_read_on_the_first_line(pages):
+    pages[3].texte_pymupdf = (
+        "56\nPLU-H - TEST\n4.\t\nOrientations d'Aménagement et de \nProgrammation (OAP)\n"
+        "Centre bourg \nEncadrer la restructuration.\nPrincipes d'aménagement\nOAP \n1\n"
+    )
+    pages[4].texte_pymupdf = "OAP \n3\nGriset\nEncadrer."
+    assert ca.oap_titles(pages, range(3, 5)) == {3: "OAP 1 Centre bourg", 4: "OAP 3 Griset"}
+
+
+def test_cited_oap_must_be_detected_or_excepted():
+    exceptions = {("cahier_a", "0.1"): "Définie dans le cahier communal de Lyon"}
+    assert ca.check_oaps("cahier_a", ["0.1"], exceptions) == {
+        "0.1": "Définie dans le cahier communal de Lyon"
+    }
+    with pytest.raises(ca.CahierError, match="sans exception"):
+        ca.check_oaps("cahier_a", ["0.1", "2"], exceptions)
+
+
+def test_oap_exceptions_carry_reason_and_decision(tmp_path):
+    exceptions = ca.load_oap_exceptions()
+    assert exceptions and all(exceptions.values())
+    path = tmp_path / "oap.yaml"
+    path.write_text("exceptions:\n  - ressource: a\n    oap: '1'\n", encoding="utf-8")
+    with pytest.raises(ca.CahierError, match="incomplète"):
+        ca.load_oap_exceptions(path)
+
+
+def test_shared_piece_payload_names_lyon_not_an_arrondissement():
+    from traboule.retrieval.index_config import load_identical
+
+    (group,) = load_identical()
+    payload = ca.shared_payload(group)
+    assert payload["titre_piece"] == "Cahier communal de Lyon (identique pour les secteurs 31 à 39)"
+    assert payload["commune_historique"] == "69123" and "secteur_pluh" not in payload
+
+
+def test_shifted_part_bookmark_is_corrected_by_the_printed_sommaire(pages):
+    pages[2].texte_pymupdf = SOMMAIRE
+    pages[3].texte_pymupdf = "4. Orientations d'Aménagement et de Programmation (OAP)"
+    pages[1].texte_pymupdf = "3. Programme d'Orientations et d'Actions pour l'Habitat"
+    shifted = [(1, "4. Orientations d'Aménagement et de Programmation (OAP)", 1)]
+    toc, _, corrections = ca.structure_toc(shifted, pages)
+    assert toc == [(1, "4. Orientations d'Aménagement et de Programmation (OAP)", 3)]
+    assert corrections == ["4. Orientations d'Aménagement et de Programmation (OAP) : page 1 → 3"]

@@ -529,6 +529,8 @@ Règle lue dans le règlement : zone **AUs.co** (p. PDF 731) — « Dès lors qu
 
 Les 9 cahiers « communaux » des secteurs 31–39 portent tous la page de titre « Lyon — Cahier communal » mais ont des contenus distincts (sha256 tous différents, lus en mémoire, non stockés). Le « 58 » du Test 2 ne comptait que les entrées non lyonnaises de SRC-003.
 
+> **Note de correction (2026-11-02, v1 semaine 3).** Le constat « contenus distincts » ci-dessus est inexact : il a été déduit des sha256 différents, sans comparer le contenu. La comparaison page par page des 9 fichiers (texte PyMuPDF et rendu des 150 pages) montre qu'ils sont identiques, couverture comprise ; seules leurs métadonnées (dates de modification) diffèrent. Le contenu propre à chaque arrondissement est dans les cahiers d'arrondissement. Décision et traitement : ADR-0009, amendement du 2026-11-02 (2). Le texte d'origine est conservé.
+
 ### Pour le jeu de référence
 
 - **Oullins et Pierre-Bénite ont des cahiers communaux séparés** (SECT45, SECT46) malgré la fusion du 1er janvier 2024, avec des procédures différentes (« Mise en compatibilité n°10 – 2025 » / « Modification n°4 – 2024 ») : question piège sur la commune 69149 et sur la version citée.
