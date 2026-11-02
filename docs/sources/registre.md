@@ -10,6 +10,7 @@
 - Nouvelle source **REF-ARRONDISSEMENTS-LYON** (contours des 9 arrondissements de Lyon, Métropole de Lyon), téléchargée le 2026-11-01 par `traboule.ingestion.download` : minorant des comptages par zone établi par arrondissement pour Lyon.
 - Section « Services consultés pour les contrôles du spike » (services interrogés, non conservés).
 - SRC-005 : 74 cahiers communaux et d'arrondissement téléchargés le 2026-11-01 (1,31 Go, 6 028 pages), version de chaque pièce consignée.
+- Nouvelle source **BENCH-FR-BSARD** (benchmark public français de retrieval), téléchargée seulement au moment de l'évaluation.
 
 ## Changements depuis la v0.2
 
@@ -304,6 +305,14 @@ Ces services ont été interrogés le 2026-10-28 pour les contrôles du test 2 (
 | WFS de la Géoplateforme, BD TOPO | `https://data.geopf.fr/wfs/ows`, couches `BDTOPO_V3:batiment` et `BDTOPO_V3:troncon_de_route` | BD TOPO (bâtiments, tronçons de route) | IGN | Licence Ouverte 2.0 (`lov2`, [fiche data.gouv](https://www.data.gouv.fr/datasets/bd-topo-r), jeu `61489083dc4223219e50cc35`) |
 
 Le module GPU d'API Carto (`/api/gpu/zone-urba`), utilisé par les mêmes contrôles, relève de SRC-005.
+
+## BENCH-FR-BSARD — Benchmark public français de retrieval (BSARD)
+
+- **Jeu :** BSARD, *Belgian Statutory Article Retrieval Dataset* (articles de loi belges et questions de citoyens, en français) ; jeu d'origine `maastrichtlawtech/bsard` (Maastricht Law & Tech Lab), tâche MTEB `BSARDRetrieval` (`mteb/BSARDRetrieval`, révision `8c492add6a14ac188f2debdaf6cbdfb406fd6be3`, 2025-05-06).
+- **Contenu (split test) :** 22 633 articles (`corpus`, 8,7 Mo), 222 requêtes (`queries`), 222 jugements de pertinence (`qrels`).
+- **Licence constatée :** CC BY-NC-SA 4.0 (fiches Hugging Face du jeu d'origine et de la version MTEB). Usage retenu : **évaluation et publication de scores agrégés** ; les données ne sont **jamais commitées ni redistribuées** (seul le manifeste est versionné, comme pour les autres sources).
+- **Téléchargement :** au moment de l'évaluation, par `traboule.ingestion.download BENCH-FR-BSARD` (manifeste, sha256, lecture seule), URL épinglées sur la révision ci-dessus.
+- **Choix :** décision du porteur du 2026-11-01, parmi BSARD, AlloprofRetrieval (licence ambiguë : CC BY-NC-SA 4.0 sur la fiche MTEB, Apache-2.0 sur la fiche source) et SyntecRetrieval (licence non indiquée) ; BSARD est le plus proche de Traboule (recherche d'articles juridiques en français). Résultats métier et benchmark public présentés séparément (cadrage §6).
 
 ---
 

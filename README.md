@@ -52,6 +52,7 @@ Sources utilisées, telles que consignées dans le [registre des sources](docs/s
 | Sirene de la Métropole de Lyon (SRC-007) | Métropole de Lyon, à partir de Sirene | Licence Ouverte 2.0 | Contrôle croisé |
 | Communes de la Métropole de Lyon (REF-COMMUNES-ML-2024) | Métropole de Lyon | Licence Ouverte 2.0 | Contrôle croisé, périmètre du minorant |
 | Arrondissements de la commune de Lyon (REF-ARRONDISSEMENTS-LYON) | Métropole de Lyon | Licence Ouverte 2.0 (fiche data.gouv ; vérification sur data.grandlyon à faire) | Périmètre du minorant pour Lyon |
+| BSARD, benchmark public de retrieval (BENCH-FR-BSARD) | Maastricht Law & Tech Lab (version MTEB) | CC BY-NC-SA 4.0 : évaluation et scores agrégés seulement, jamais redistribué | Benchmark public français |
 
 **Points ambigus**, consignés plutôt que tranchés :
 

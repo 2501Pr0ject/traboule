@@ -903,6 +903,33 @@ sources:
         geographic_vintage: "Contours de la Métropole de Lyon (référentiel adr_voie_lieu)"
         limitations: "Contours de gestion de la Métropole, référentiel adr_voie_lieu comme REF-COMMUNES-ML-2024 ; pas un produit INSEE."
 
+  - id: BENCH-FR-BSARD
+    name: benchmark_bsard_retrieval
+    title: "BSARD (Belgian Statutory Article Retrieval Dataset), tâche MTEB BSARDRetrieval"
+    publisher: "Maastricht Law & Tech Lab (jeu d'origine maastrichtlawtech/bsard) ; version MTEB mteb/BSARDRetrieval"
+    role: public_benchmark
+    dataset_url: "https://huggingface.co/datasets/mteb/BSARDRetrieval"
+    revision: "8c492add6a14ac188f2debdaf6cbdfb406fd6be3"
+    license: "CC BY-NC-SA 4.0 : évaluation et publication de scores agrégés autorisées ; jamais commité ni redistribué"
+    status: download_at_evaluation
+    v1: true
+    resources:
+      - name: corpus
+        title: "mteb/BSARDRetrieval — corpus/test-00000-of-00001.parquet (8659255 octets)"
+        kind: http
+        url: "https://huggingface.co/datasets/mteb/BSARDRetrieval/resolve/8c492add6a14ac188f2debdaf6cbdfb406fd6be3/corpus/test-00000-of-00001.parquet"
+        format: parquet
+      - name: queries
+        title: "mteb/BSARDRetrieval — queries/test-00000-of-00001.parquet (16777 octets)"
+        kind: http
+        url: "https://huggingface.co/datasets/mteb/BSARDRetrieval/resolve/8c492add6a14ac188f2debdaf6cbdfb406fd6be3/queries/test-00000-of-00001.parquet"
+        format: parquet
+      - name: qrels
+        title: "mteb/BSARDRetrieval — qrels/test-00000-of-00001.parquet (3691 octets)"
+        kind: http
+        url: "https://huggingface.co/datasets/mteb/BSARDRetrieval/resolve/8c492add6a14ac188f2debdaf6cbdfb406fd6be3/qrels/test-00000-of-00001.parquet"
+        format: parquet
+
 excluded:
   - name: sirene_geocodee_etalab_ban
     reason: "décommissionné en avril 2026 au profit du fichier INSEE"
