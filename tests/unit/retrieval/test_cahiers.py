@@ -198,6 +198,7 @@ def test_cited_oap_must_be_detected_or_excepted():
 def test_oap_exceptions_carry_reason_and_decision(tmp_path):
     exceptions = ca.load_oap_exceptions()
     assert exceptions and all(exceptions.values())
+    assert ("cahier_arrondissement_sect36", "0.1") in exceptions
     path = tmp_path / "oap.yaml"
     path.write_text("exceptions:\n  - ressource: a\n    oap: '1'\n", encoding="utf-8")
     with pytest.raises(ca.CahierError, match="incomplète"):
@@ -221,3 +222,15 @@ def test_shifted_part_bookmark_is_corrected_by_the_printed_sommaire(pages):
     toc, _, corrections = ca.structure_toc(shifted, pages)
     assert toc == [(1, "4. Orientations d'Aménagement et de Programmation (OAP)", 3)]
     assert corrections == ["4. Orientations d'Aménagement et de Programmation (OAP) : page 1 → 3"]
+
+
+def test_referral_to_another_piece_is_not_an_oap(pages):
+    # Arrondissement 36 : la partie 4 ne contient qu'un renvoi au cahier communal de Lyon.
+    pages[3].texte_pymupdf = "OAP \n0.1\nSite UNESCO (se référer au cahier communal - LYON)"
+    # Arrondissement 36 : nom avant le numéro, numéro seul en fin de page.
+    pages[
+        4
+    ].texte_pymupdf = (
+        "Programmation (OAP)\nSite UNESCO (se référer au cahier communal)\nOAP \n0.1\n"
+    )
+    assert ca.oap_titles(pages, range(3, 5)) == {}

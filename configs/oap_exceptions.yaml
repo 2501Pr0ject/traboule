@@ -1,33 +1,46 @@
 # OAP citées dans un cahier (renvois, signets) mais non définies dans ce cahier, avec leur motif.
 # Lue par traboule.retrieval.cahiers : toute OAP citée non détectée doit figurer ici, sinon
-# l'extraction s'arrête.
+# l'extraction s'arrête. `cible` : pièce qui définit l'OAP ; les passages qui la citent portent
+# un lien `renvoi_vers` vers ses passages (traboule.retrieval.renvois).
 
 exceptions:
   - ressource: cahier_arrondissement_sect31
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect32
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect33
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect34
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect35
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
+  - ressource: cahier_arrondissement_sect36
+    oap: "0.1"
+    motif: "Page de renvoi vers l'OAP 0.1 (site UNESCO et zone tampon) du cahier communal de Lyon (« se référer au cahier communal - LYON »), classée comme renvoi et non comme OAP"
+    decision: "porteur, 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect37
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31
   - ressource: cahier_arrondissement_sect39
     oap: "0.1"
     motif: "OAP 0.1 (site UNESCO et zone tampon) définie dans le cahier communal de Lyon, citée ici par renvoi (« se référer au cahier communal - LYON »)"
-    decision: "proposée le 2026-11-02, à valider par le porteur"
+    decision: "acceptée par le porteur le 2026-11-02"
+    cible: cahier_communal_sect31

@@ -18,6 +18,20 @@ class QualiteTexte(BaseModel):
     fragments: int = Field(ge=0)
 
 
+class Renvoi(BaseModel):
+    """Lien d'un passage vers les passages qu'il cite par renvoi (ADR-0009, ADR-0011).
+
+    Ex. : un cahier d'arrondissement renvoie à l'OAP 0.1 du cahier communal de Lyon ; un
+    article de zone renvoie à un chapitre de la partie I du règlement.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    cible: str = Field(min_length=1)
+    doc_id: str = Field(min_length=1)
+    passage_ids: list[str] = Field(min_length=1)
+
+
 class Passage(BaseModel):
     """Passage indexé.
 
@@ -50,6 +64,7 @@ class Passage(BaseModel):
     titre_piece: str | None = None
     # Cahiers : défauts restants après réparation des ligatures (traboule.retrieval.ligatures).
     qualite_texte: QualiteTexte | None = None
+    renvoi_vers: list[Renvoi] | None = None
 
     @model_validator(mode="after")
     def _check(self) -> Self:

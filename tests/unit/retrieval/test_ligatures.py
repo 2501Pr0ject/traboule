@@ -101,3 +101,24 @@ def test_repaired_passages_carry_remaining_defects(tmp_path, monkeypatch):
     assert repaired.texte.startswith("La création d'une stati on")
     assert (repaired.qualite_texte.illisibles, repaired.qualite_texte.fragments) == (1, 1)
     assert result["illisibles_apres"] == 1 and result["fragments_apres"] == 1
+
+
+def test_oap_names_and_paths_are_repaired_with_the_same_rule():
+    raw = Passage(
+        passage_id="p1",
+        texte="Texte.",
+        doc_id="c.pdf",
+        source_id="SRC-005",
+        version_piece="Modification n°4 - Approbation 2024",
+        version_gpu="200046977_PLUi_20260326",
+        page_debut=1,
+        page_fin=1,
+        chemin=["4. OAP", "OAP 8.6 Secteur Parti e nord"],
+        extracteur="docling",
+        oap="OAP 8.6 Secteur Parti e nord",
+    )
+    cache: dict[str, str] = {}
+    fixed = ligatures.repair_titles(raw, VOCAB, cache)
+    assert fixed["oap"] == fixed["chemin"][1] == "OAP 8.6 Secteur Partie nord"
+    # Forme rare : le titre reste tel quel.
+    assert ligatures.repair_titles(raw, vocabulary(["partie"]), {})["oap"] == raw.oap

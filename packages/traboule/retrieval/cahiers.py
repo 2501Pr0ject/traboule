@@ -71,6 +71,8 @@ OAP_NUMBER = re.compile(r"^(\d+(?:\s*[.-]\s*\d+)*)\s*(.*)$")  # « 7.4 », « 11
 # Partie du sommaire imprimé : « 4.\tOrientations d'Aménagement et de Programmation (OAP)....52 ».
 SOMMAIRE_PART = re.compile(r"^\s*([1-6])\.\s*(.+?)\s*\.{3,}\s*(\d+)\s*$")
 SOMMAIRE_PAGES = (2, 3)
+# Renvoi à une OAP définie dans une autre pièce : « Site UNESCO (se référer au cahier communal) ».
+OAP_REFERRAL = re.compile(r"se\s+r[ée]f[ée]rer", re.I)
 # Lignes d'en-tête d'une page de la partie 4, sautées pour lire le titre d'une OAP sans numéro.
 OAP_PAGE_HEADER = re.compile(
     r"^(\d{1,3}|PLU-H\b.*|4\.?\s*(Orientations? d.Am[ée]nagement.*)?|"
@@ -204,12 +206,13 @@ def oap_titles(pages: dict[int, Page], part: range | None) -> dict[int, str]:
     """Page → « OAP n Nom » pour les titres d'OAP de la partie 4.
 
     Un titre est la ligne « OAP », suivie du numéro et du nom (sur la même ligne ou la
-    suivante) ; un renvoi sans nom (« OAP 0.1 » suivi d'un autre « OAP ») n'est pas un titre.
+    suivante) ; un renvoi sans nom (« OAP 0.1 » suivi d'un autre « OAP ») ou vers une autre
+    pièce (« se référer au cahier communal ») n'est pas un titre.
     Seul le premier titre d'une page compte (les suivants sont des légendes de carte). Une page
     sans titre qui porte un seul numéro d'OAP sans nom, non titré ailleurs, ouvre cette OAP sous
     le nom de sa première ligne.
     """
-    titles, unnamed = {}, {}
+    titles, unnamed, referrals = {}, {}, set()
     for number in part or []:
         lines = [line.strip() for line in pages[number].texte_pymupdf.splitlines()]
         labels = set()
@@ -218,14 +221,18 @@ def oap_titles(pages: dict[int, Page], part: range | None) -> dict[int, str]:
                 continue
             numero = re.sub(r"\s+", "", m.group(1))
             name = m.group(2) or (lines[i + 2] if i + 2 < len(lines) else "")
+            if OAP_REFERRAL.search(name):
+                referrals.add(numero)
+                continue
             if name and not name.startswith(("OAP", "PIP")):
                 name, _ = repair_ligatures(" ".join(name.split()))
                 titles[number] = f"OAP {numero} {name}"
                 break
             labels.add(numero)
+        labels -= referrals
         if number not in titles and len(labels) == 1:
             first = next((x for x in lines if x and not OAP_PAGE_HEADER.match(x)), None)
-            if first:
+            if first and not OAP_REFERRAL.search(first):
                 unnamed[number] = (labels.pop(), repair_ligatures(" ".join(first.split()))[0])
     named = {t.split()[1] for t in titles.values()}
     for number, (numero, name) in unnamed.items():

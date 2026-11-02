@@ -16,6 +16,9 @@ caractère est remplacé seulement si une seule ligature donne une forme vue au 
 `MIN_OCCURRENCES` fois dans le vocabulaire de référence, et si cette forme figure dans le
 texte PyMuPDF des pages du passage ; sinon il reste.
 
+Les noms d'OAP et les chemins (titres) sont réparés selon la même règle des fragments
+(décision du porteur, 2026-11-02).
+
 Le texte brut est conservé (`passages_brut.jsonl`) ; chaque réparation est consignée ; chaque
 passage réparé porte `qualite_texte` (caractères illisibles et fragments restants).
 
@@ -138,11 +141,22 @@ def reference_texts(raw_dir: Path = RAW_DIR) -> list[str]:
     return texts
 
 
+def repair_titles(p: Passage, vocab: Counter, cache: dict[str, str]) -> dict:
+    """Nom d'OAP et chemin réparés ; `cache` : titre → titre réparé (une entrée par titre)."""
+
+    def fix(title: str) -> str:
+        if title not in cache:
+            cache[title] = repair(title, vocab)[0]
+        return cache[title]
+
+    return {"oap": fix(p.oap) if p.oap else None, "chemin": [fix(t) for t in p.chemin]}
+
+
 def repair_cahier(folder: Path, vocab: Counter) -> dict:
     """Écrit passages.jsonl (réparé) et reparations.csv à partir de passages_brut.jsonl."""
     raw = [Passage.model_validate_json(line) for line in (folder / "passages_brut.jsonl").open()]
     words = pymupdf_words(folder.name) if any(UNREADABLE in p.texte for p in raw) else {}
-    repaired, repairs, replaced = [], Counter(), Counter()
+    repaired, repairs, replaced, titles = [], Counter(), Counter(), {}
     for p in raw:
         page_words = set().union(
             *(words.get(n, set()) for n in range(p.page_debut, p.page_fin + 1))
@@ -154,12 +168,18 @@ def repair_cahier(folder: Path, vocab: Counter) -> dict:
         quality = QualiteTexte(
             illisibles=text.count(UNREADABLE), fragments=len(SPLIT_LIGATURE.findall(text))
         )
-        repaired.append(p.model_copy(update={"texte": text, "qualite_texte": quality}))
+        update = {"texte": text, "qualite_texte": quality, **repair_titles(p, vocab, titles)}
+        repaired.append(p.model_copy(update=update))
     (folder / "passages.jsonl").write_text("".join(p.model_dump_json() + "\n" for p in repaired))
     with (folder / "reparations.csv").open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
         writer.writerow(["regle", "avant", "apres", "nombre"])
-        for rule, counts in (("caractere_illisible", replaced), ("fragments", repairs)):
+        fixed = Counter({(b, a): 1 for b, a in titles.items() if b != a})
+        for rule, counts in (
+            ("caractere_illisible", replaced),
+            ("fragments", repairs),
+            ("titres", fixed),
+        ):
             for (before, after), n in counts.most_common():
                 writer.writerow([rule, before, after, n])
     return {
@@ -170,6 +190,7 @@ def repair_cahier(folder: Path, vocab: Counter) -> dict:
         "formes": len(repairs),
         "fragments_avant": sum(len(SPLIT_LIGATURE.findall(p.texte)) for p in raw),
         "fragments_apres": sum(len(SPLIT_LIGATURE.findall(p.texte)) for p in repaired),
+        "titres_repares": sum(b != a for b, a in titles.items()),
     }
 
 
@@ -183,7 +204,7 @@ def main() -> None:
     results = {f.name: repair_cahier(f, vocab) for f in sorted(OUT_DIR.iterdir())
                if (f / "passages_brut.jsonl").exists()}  # fmt: skip
     keys = ("illisibles_avant", "illisibles_remplaces", "illisibles_apres", "reparations",
-            "fragments_avant", "fragments_apres")  # fmt: skip
+            "fragments_avant", "fragments_apres", "titres_repares")  # fmt: skip
     totals = {k: sum(r[k] for r in results.values()) for k in keys}
     write_metrics(
         INTERIM_DIR / "metrics" / "ligatures.json",
