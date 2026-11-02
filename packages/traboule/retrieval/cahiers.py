@@ -297,7 +297,8 @@ def extract(
     passages, quality = build_passages(
         pdf.name, toc, pages, commune_of(pdf.name, sectors, communes)
     )
-    (out / "passages.jsonl").write_text(
+    # Texte brut ; la réparation des ligatures écrit passages.jsonl (traboule.retrieval.ligatures).
+    (out / "passages_brut.jsonl").write_text(
         "".join(p.model_dump_json() + "\n" for p in passages), encoding="utf-8"
     )
     graphic = [n for n, p in pages.items() if p.graphique]
