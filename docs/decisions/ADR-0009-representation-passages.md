@@ -44,4 +44,5 @@ Constat sur les 76 cahiers extraits : des ligatures restent mal décodées aprè
 
 - **Payload des passages de cahiers** : champ `qualite_texte` (`illisibles` : caractères « � » restants ; `fragments` : mots coupés restants), calculé après réparation. Il permet de mesurer et, si besoin, de filtrer ou signaler les passages dégradés ; il ne modifie pas le texte cité.
 - **`version_piece`** : lue dans l'en-tête de chaque page (page précédente la plus proche si la page n'en porte pas). Un passage est **coupé à chaque changement de version** : il ne couvre jamais des pages de versions différentes et porte une seule version, celle de ses pages.
+- **`page_debut` et `page_fin`** : pages des lignes du passage lui-même, suivies ligne à ligne lors du découpage (`traboule.retrieval.decoupage`, commun aux cahiers et au règlement) ; un passage découpé ne reprend jamais la plage du bloc entier (contrôle bloquant), et les passages de plus de 4 pages sont signalés dans les mesures.
 - **Exclusions de l'index** : `configs/index.yaml` liste les ressources exclues, chacune avec son motif et sa décision (ex. `cahier_communal_sect64`, pièce mal identifiée).

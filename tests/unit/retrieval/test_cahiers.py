@@ -119,11 +119,6 @@ def test_passage_id_is_stable():
     assert a != ca.passage_id("c.pdf", 3, ["4. OAP", "OAP 1 X"], 2)
 
 
-def test_split_long_at_sentence_boundaries():
-    chunks = ca.split_long("Phrase une. " * 300, max_chars=500)
-    assert all(len(c) <= 500 for c in chunks) and len(chunks) > 1
-
-
 @pytest.mark.parametrize(
     "file_name,expected",
     [("x_cahier_arrondissement_SECT37_2026.pdf", ("37", "69123", "69387")),

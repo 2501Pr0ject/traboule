@@ -30,6 +30,13 @@ import typer
 from traboule.config import INTERIM_DIR, RAW_DIR
 from traboule.contracts.passage import Passage
 from traboule.measure import peak_rss_bytes, write_metrics
+from traboule.retrieval.decoupage import (
+    MAX_CHARS,
+    MAX_PAGES,
+    DecoupageError,
+    long_ranges,
+    split_block,
+)
 from traboule.retrieval.extraction import (
     Page,
     apply_docling,
@@ -42,7 +49,6 @@ from traboule.retrieval.extraction import (
 RAW_DATE = "2026-11-01"
 VERSION_GPU = "200046977_PLUi_20260326"
 OUT_DIR = INTERIM_DIR / "extraction" / "cahiers"
-MAX_CHARS = 2000
 # Titre de la partie 4 dans la table des matières (parfois altéré : « … et de4. Orientation… »).
 OAP_PART = re.compile(r"^\s*4\.\s*Orientations?\s+d.Am[ée]nagement", re.I)
 OAP_NUMBER = re.compile(r"^(\d+(?:\s*[.-]\s*\d+)*)\s*(.*)$")  # « 7.4 », « 11-1 », « 11 -1 »
@@ -152,20 +158,6 @@ def running_lines(pages: dict[int, Page]) -> set[str]:
     return {line for line, n in counts.items() if n > limit or re.fullmatch(r"\d{1,3}", line)}
 
 
-def split_long(text: str, max_chars: int = MAX_CHARS) -> list[str]:
-    """Découpe un texte trop long aux limites de phrase."""
-    if len(text) <= max_chars:
-        return [text]
-    chunks, buf = [], ""
-    for sentence in re.split(r"(?<=[.;:!?])\s+", text):
-        if buf and len(buf) + len(sentence) + 1 > max_chars:
-            chunks.append(buf)
-            buf = sentence
-        else:
-            buf = f"{buf} {sentence}".strip()
-    return [*chunks, buf]
-
-
 def passage_id(doc_id: str, page: int, chemin: list[str], partie: int) -> str:
     key = f"{doc_id}|{page}|{' > '.join(chemin)}|{partie}"
     return hashlib.sha1(key.encode()).hexdigest()[:16]
@@ -199,26 +191,23 @@ def build_passages(
                 {"chemin": chemin, "oap": current_oap, "debut": number, "lignes": [],
                  "version": version, "repli": fallback}
             )  # fmt: skip
-        groups[-1]["fin"] = number
-        groups[-1]["lignes"].extend(lines)
-    passages, fallbacks = [], 0
+        groups[-1]["lignes"].extend((number, line) for line in lines)
+    passages, fallbacks, too_long = [], 0, []
     for g in groups:
-        text = " ".join(g["lignes"]).strip()
-        if not text:
-            continue
-        chunks = split_long(text)
+        chunks = split_block(g["lignes"])
+        too_long += [(c.page_debut, c.page_fin) for c in long_ranges(chunks)]
         fallbacks += g["repli"] * len(chunks)
         for partie, chunk in enumerate(chunks, start=1):
             passages.append(
                 Passage(
                     passage_id=passage_id(doc_id, g["debut"], g["chemin"], partie),
-                    texte=chunk,
+                    texte=chunk.texte,
                     doc_id=doc_id,
                     source_id="SRC-005",
                     version_piece=g["version"],
                     version_gpu=VERSION_GPU,
-                    page_debut=g["debut"],
-                    page_fin=g["fin"],
+                    page_debut=chunk.page_debut,
+                    page_fin=chunk.page_fin,
                     chemin=g["chemin"],
                     extracteur="docling",
                     oap=g["oap"],
@@ -234,6 +223,7 @@ def build_passages(
         "passages_version_hors_couverture": sum(p.version_piece != versions[1] for p in passages),
         "passages_version_par_repli": fallbacks,
         "coupures_de_version": version_cuts,
+        f"passages_au_dela_de_{MAX_PAGES}_pages": too_long,
         "en_tetes_retires": sum(1 for p in pages.values() for line in p.lignes if line in running),
         "oap_detectees": sorted(set(oaps.values()), key=oap_order),
         "oap_citees_non_detectees": sorted(referenced - detected - {"0"}),
@@ -375,7 +365,7 @@ def main(
         for name in ressource:
             typer.echo(f"  {name} …")
             results[name] = extract(name, converter, communes, sectors)
-    except CahierError as exc:
+    except (CahierError, DecoupageError) as exc:
         typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)
     write_metrics(
