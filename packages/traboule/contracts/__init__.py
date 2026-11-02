@@ -2,7 +2,7 @@
 
 from traboule.contracts.etablissement import Etablissement
 from traboule.contracts.manifest import INGESTION_VERSION, Manifest
-from traboule.contracts.passage import Passage
+from traboule.contracts.passage import Passage, QualiteTexte
 from traboule.contracts.question import Evidence, Question
 from traboule.contracts.reponse import (
     Citation,
@@ -24,6 +24,7 @@ __all__ = [
     "Minorant",
     "MotifAbstention",
     "Passage",
+    "QualiteTexte",
     "Question",
     "Reponse",
     "VentilationConfiance",

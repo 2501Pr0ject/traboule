@@ -37,3 +37,11 @@ Le règlement est organisé par zone mère : un secteur (ex. `UCe1a`, `URm1c`, `
 - Une réponse sur un secteur **cite le chapitre de la zone mère** et **vérifie les dispositions propres au secteur** aux pages indiquées ; si le secteur n'est pas cité dans le chapitre (`dispositions_secteur = non`), la réponse le dit.
 - Le **code de secteur figure dans l'en-tête contextuel** des passages concernés, en plus de la zone mère.
 - **Correspondance de code par alias** (`configs/zones_alias.csv`, table fermée, colonne `alias_statut` de la correspondance) : une disposition propre au secteur du règlement citée pour un objet du code de zonage correspondant (ex. disposition de `UCe3p` pour un objet `UCe3-p`) est signalée « correspondance de code probable » tant que le statut n'est pas « confirmé ». Seul le porteur passe un alias en « confirmé ». Aucun code n'est rapproché hors de cette table.
+
+## Amendement du 2026-11-02 : qualité du texte et version des passages de cahiers
+
+Constat sur les 76 cahiers extraits : des ligatures restent mal décodées après réparation (`traboule.retrieval.ligatures`) : caractères « � » laissés par Docling et mots coupés par une espace (« stati on »). Un même cahier peut aussi porter plusieurs procédures dans ses en-têtes (ex. SECT09 : une page en « Modification n°3 » dans une pièce en « Modification n°4 »).
+
+- **Payload des passages de cahiers** : champ `qualite_texte` (`illisibles` : caractères « � » restants ; `fragments` : mots coupés restants), calculé après réparation. Il permet de mesurer et, si besoin, de filtrer ou signaler les passages dégradés ; il ne modifie pas le texte cité.
+- **`version_piece`** : lue dans l'en-tête de chaque page (page précédente la plus proche si la page n'en porte pas). Un passage est **coupé à chaque changement de version** : il ne couvre jamais des pages de versions différentes et porte une seule version, celle de ses pages.
+- **Exclusions de l'index** : `configs/index.yaml` liste les ressources exclues, chacune avec son motif et sa décision (ex. `cahier_communal_sect64`, pièce mal identifiée).

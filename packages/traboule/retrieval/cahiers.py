@@ -5,8 +5,9 @@
   (OAP), le titre d'OAP (« OAP / numéro / nom ») ouvre un passage ;
 - en-têtes et pieds de page courants retirés (lignes présentes sur plus de la moitié des
   pages), pages graphiques écartées, passages longs découpés aux limites de phrase ;
-- payload ADR-0009 : secteur PLU-H, commune COG 2026 et commune historique, OAP, version de
-  la pièce lue dans ses en-têtes.
+- payload ADR-0009 : secteur PLU-H, commune COG 2026 et commune historique, OAP ; version lue
+  dans l'en-tête de chaque page (page précédente la plus proche si la page n'en porte pas) ;
+  un passage est coupé à chaque changement de version, et porte une seule version.
 
 Mesures par cahier : temps, pages graphiques, doublons Docling retirés, ligatures réparées,
 en-têtes retirés, couverture du texte Docling par rapport à PyMuPDF, OAP détectées.
@@ -51,9 +52,16 @@ SPLIT_LIGATURE = re.compile(
     r"\b\w*(?:ti|tt|ff|fi|fl) (?:e|es|er|ers|on|ons|que|ques|f|fs|ve|ves|el|elle|elles|ère|ères)\b"
 )
 OAP_REFERENCE = re.compile(r"\bOAP\s*\n?\s*(\d+(?:\.\d+)*)\b")
-PIECE_VERSION = re.compile(
-    r"PLU-H\s*[-–]\s*[^\n]*?[-–]\s*((?:Modification|Mise en compatibilit[ée]|R[ée]vision)"
+# En-tête courant : « PLU-H – <commune> – Modification n°4 – Approbation 2024 ».
+HEADER_VERSION = re.compile(
+    r"PLU-H\s*[-–][^\n]*?[-–]\s*((?:Modification|Mise en compatibilit[ée]|R[ée]vision)"
     r"[^\n]*?[-–]\s*Approbation\s+\d{4})",
+    re.I,
+)
+# Procédure, sur l'en-tête ou la couverture (« MODIFICATION N°4 / Approbation 2024 »).
+VERSION = re.compile(
+    r"(Modification|Mise\s+en\s+compatibilit[ée]|R[ée]vision)\s*n\s*°\s*(\d+)\s*[-–]?\s*"
+    r"Approbation\s*[-–]?\s*(\d{4})",
     re.I,
 )
 RUNNING_SHARE = 0.5
@@ -63,13 +71,33 @@ class CahierError(RuntimeError):
     """Contrôle bloquant de l'extraction d'un cahier."""
 
 
-def piece_version(pages: dict[int, Page]) -> str:
-    """Procédure la plus fréquente dans les en-têtes de la pièce."""
-    found = [" ".join(m.group(1).split()) for p in pages.values()
-             if (m := PIECE_VERSION.search(p.texte_pymupdf))]  # fmt: skip
-    if not found:
-        raise CahierError("version de la pièce introuvable dans ses en-têtes")
-    return Counter(found).most_common(1)[0][0]
+def canonical_version(text: str) -> str | None:
+    """Procédure sous une graphie unique : « Modification n°4 - Approbation 2024 »."""
+    if not (m := VERSION.search(text)):
+        return None
+    kind = " ".join(m.group(1).split()).lower()
+    label = {"modification": "Modification", "révision": "Révision", "revision": "Révision"}
+    return f"{label.get(kind, 'Mise en compatibilité')} n°{m.group(2)} - Approbation {m.group(3)}"
+
+
+def page_versions(pages: dict[int, Page]) -> dict[int, str | None]:
+    """Version lue sur chaque page : en-tête courant, sinon couverture (page 1)."""
+    versions = {}
+    for number, page in pages.items():
+        header = HEADER_VERSION.search(page.texte_pymupdf)
+        text = header.group(1) if header else page.texte_pymupdf if number == 1 else ""
+        versions[number] = canonical_version(text)
+    if versions.get(1) is None:
+        raise CahierError("version de la pièce introuvable sur la couverture")
+    return versions
+
+
+def version_at(versions: dict[int, str | None], page: int) -> tuple[str, bool]:
+    """Version de la page, sinon de la page précédente la plus proche ; indique le repli."""
+    for number in range(page, 0, -1):
+        if versions.get(number):
+            return versions[number], number != page
+    raise CahierError(f"aucune version lue jusqu'à la page {page}")
 
 
 def oap_part(toc: list[tuple[int, str, int]], page_count: int) -> range | None:
@@ -150,35 +178,44 @@ def build_passages(
     commune: dict[str, str],
 ) -> tuple[list[Passage], dict]:
     """Passages d'un cahier dont les pages portent déjà leurs lignes Docling nettoyées."""
-    version = piece_version(pages)
+    versions = page_versions(pages)
     part = oap_part(toc, len(pages))
     oaps = oap_titles(pages, part)
     paths = chemins(toc, len(pages))
     running = running_lines(pages)
     groups: list[dict] = []
     current_oap = None
+    version_cuts = 0
     for number, page in pages.items():
         in_part = part is not None and number in part
         current_oap = oaps.get(number, current_oap) if in_part else None
         chemin = paths[number] + ([current_oap] if current_oap else [])
         lines = [line for line in page.lignes if line not in running]
-        if not groups or groups[-1]["chemin"] != chemin:
-            groups.append({"chemin": chemin, "oap": current_oap, "debut": number, "lignes": []})
+        version, fallback = version_at(versions, number)
+        same_path = bool(groups) and groups[-1]["chemin"] == chemin
+        if not same_path or groups[-1]["version"] != version:
+            version_cuts += same_path
+            groups.append(
+                {"chemin": chemin, "oap": current_oap, "debut": number, "lignes": [],
+                 "version": version, "repli": fallback}
+            )  # fmt: skip
         groups[-1]["fin"] = number
         groups[-1]["lignes"].extend(lines)
-    passages = []
+    passages, fallbacks = [], 0
     for g in groups:
         text = " ".join(g["lignes"]).strip()
         if not text:
             continue
-        for partie, chunk in enumerate(split_long(text), start=1):
+        chunks = split_long(text)
+        fallbacks += g["repli"] * len(chunks)
+        for partie, chunk in enumerate(chunks, start=1):
             passages.append(
                 Passage(
                     passage_id=passage_id(doc_id, g["debut"], g["chemin"], partie),
                     texte=chunk,
                     doc_id=doc_id,
                     source_id="SRC-005",
-                    version_piece=version,
+                    version_piece=g["version"],
                     version_gpu=VERSION_GPU,
                     page_debut=g["debut"],
                     page_fin=g["fin"],
@@ -193,7 +230,10 @@ def build_passages(
     }
     detected = {t.split()[1] for t in oaps.values()}
     return passages, {
-        "version_piece": version,
+        "version_piece": versions[1],
+        "passages_version_hors_couverture": sum(p.version_piece != versions[1] for p in passages),
+        "passages_version_par_repli": fallbacks,
+        "coupures_de_version": version_cuts,
         "en_tetes_retires": sum(1 for p in pages.values() for line in p.lignes if line in running),
         "oap_detectees": sorted(set(oaps.values()), key=oap_order),
         "oap_citees_non_detectees": sorted(referenced - detected - {"0"}),

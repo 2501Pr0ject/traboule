@@ -5,6 +5,17 @@ from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class QualiteTexte(BaseModel):
+    """Défauts d'extraction restant dans le texte d'un passage après réparation."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    # Caractères « \ufffd » laissés par Docling (ligature non décodée, non remplacée).
+    illisibles: int = Field(ge=0)
+    # Mots coupés par une ligature codée avec une espace (« stati on »), non recollés.
+    fragments: int = Field(ge=0)
+
+
 class Passage(BaseModel):
     """Passage indexé.
 
@@ -31,6 +42,8 @@ class Passage(BaseModel):
     secteur_pluh: str | None = Field(default=None, pattern=r"^(0[1-9]|[1-5][0-9]|6[0-7])$")
     code_commune_cog2026: str | None = Field(default=None, pattern=r"^[0-9]{5}$")
     commune_historique: str | None = Field(default=None, pattern=r"^[0-9]{5}$")
+    # Cahiers : défauts restants après réparation des ligatures (traboule.retrieval.ligatures).
+    qualite_texte: QualiteTexte | None = None
 
     @model_validator(mode="after")
     def _check(self) -> Self:

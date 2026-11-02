@@ -11,6 +11,7 @@
 - Section « Services consultés pour les contrôles du spike » (services interrogés, non conservés).
 - SRC-005 : 74 cahiers communaux et d'arrondissement téléchargés le 2026-11-01 (1,31 Go, 6 028 pages), version de chaque pièce consignée.
 - Nouvelle source **BENCH-FR-BSARD** (benchmark public français de retrieval), téléchargée seulement au moment de l'évaluation.
+- SRC-005 : `cahier_communal_sect64` **exclu de l'indexation** (pièce mal identifiée : Éléments bâtis patrimoniaux) ; version des cahiers lue sur la couverture et, pour chaque passage, sur ses pages (passage coupé à chaque changement de version, ADR-0009).
 
 ## Changements depuis la v0.2
 
@@ -175,7 +176,7 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 - **Téléchargé :** le règlement écrit (11,1 Mo) et la liste JSON des 617 pièces ; pour le Test 3 (même dossier daté, immuabilité par ressource) : cahier communal d'Oullins (SECT45, 30,5 Mo), cahier communal de Pierre-Bénite (SECT46, 14,7 Mo), plan de secteurs (0,6 Mo).
 - **Versions des pièces (constaté au Test 3)** : chaque pièce porte sa propre procédure, lue dans la pièce — règlement « Modification n° 4 – Approbation 2024 », cahier d'Oullins « Mise en compatibilité n°10 – Approbation 2025 », cahier de Pierre-Bénite « Modification n°4 – Approbation 2024 », plan de secteurs « Révision n°2 – Approbation 2019 ». Une citation donne la version de la pièce (conventions §6).
 - **Organisation des pièces** : les OAP sont la partie 4 de chaque cahier communal (pas de pièce OAP séparée) ; 67 secteurs (58 communes du découpage à 59 + 9 arrondissements de Lyon), 67 cahiers communaux + 9 cahiers d'arrondissement ; Oullins et Pierre-Bénite ont des cahiers séparés.
-**Cahiers communaux et d'arrondissement (téléchargés le 2026-11-01)** : 74 pièces, 1,31 Go, 6 028 pages, dans `data/raw/SRC-005/2026-11-01/` (manifeste, sha256, lecture seule ; Oullins et Pierre-Bénite déjà présents au 2026-10-28). Correspondance secteur → commune lue dans `plan_de_secteurs`. Version lue dans l'en-tête de chaque pièce : 68 en « Modification n°4 – Approbation 2024 » (graphies variables), 3 en « Modification n°3 – Approbation 2022 » (SECT11, SECT13, SECT64), 3 en mise en compatibilité (SECT03 n°6 – 2025, SECT27 n°10 – 2025, SECT63 n°18 – 2026). Les secteurs lyonnais 31 à 39 ont chacun un cahier communal et un cahier d'arrondissement.
+**Cahiers communaux et d'arrondissement (téléchargés le 2026-11-01)** : 74 pièces, 1,31 Go, 6 028 pages, dans `data/raw/SRC-005/2026-11-01/` (manifeste, sha256, lecture seule ; Oullins et Pierre-Bénite déjà présents au 2026-10-28). Correspondance secteur → commune lue dans `plan_de_secteurs`. Version lue sur la couverture de chaque pièce (contrôle du 2026-11-02 ; auparavant, procédure la plus fréquente des en-têtes) : 69 en « Modification n°4 – Approbation 2024 », 2 en « Modification n°3 – Approbation 2022 » (SECT11, SECT13), 3 en mise en compatibilité (SECT03 n°6 – 2025, SECT27 n°10 – 2025, SECT63 n°18 – 2026). Chaque passage porte la version de ses pages, lue dans leur en-tête, et il est coupé à chaque changement de version (ADR-0009, amendement du 2026-11-02) : 22 passages diffèrent de la couverture de leur pièce, 1 dans SECT09 (page 68 en « Modification n°3 – Approbation 2022 ») et 21 dans SECT64. Les secteurs lyonnais 31 à 39 ont chacun un cahier communal et un cahier d'arrondissement.
 
 | Ressource | Commune (code, secteur) | Pages | sha256 (8 car.) | Version de la pièce |
 |---|---|---:|---|---|
@@ -249,10 +250,12 @@ Contrôles appliqués au téléchargement : sha1 et taille comparés à data.gou
 | `cahier_communal_sect61` | Sathonay Village (69293, sect. 61) | 57 | `52abe87a` | Modification N°4 - Approbation 2024 |
 | `cahier_communal_sect62` | Solaize (69296, sect. 62) | 73 | `4b4ff6ac` | Modification n°4 - Approbation 2024 |
 | `cahier_communal_sect63` | Tassin la Demi Lune (69244, sect. 63) | 73 | `0c278ad7` | Mise en compatibilité n°18 - Approbation 2026 |
-| `cahier_communal_sect64` | Vaulx en Velin (69256, sect. 64) | 30 | `bcb10e2e` | Modification n°3 - Approbation 2022 |
+| `cahier_communal_sect64` | Vaulx en Velin (69256, sect. 64) | 30 | `bcb10e2e` | Modification n°4 - Approbation 2024 (couverture ; en-têtes : 1 page en Révision n°2 – 2019, 9 en n°3 – 2022, 5 en n°4 – 2024, 14 sans en-tête lisible) — **exclu de l'indexation** |
 | `cahier_communal_sect65` | Vénissieux (69259, sect. 65) | 105 | `c7f8106a` | Modification n°4 - Approbation 2024 |
 | `cahier_communal_sect66` | Vernaison (69260, sect. 66) | 67 | `2cff9e9a` | Modification n°4 - Approbation 2024 |
 | `cahier_communal_sect67` | Villeurbanne (69266, sect. 67) | 151 | `0fd7e3cd` | Modification n°4 - Approbation 2024 |
+
+- **`cahier_communal_sect64` : exclu de l'indexation : pièce mal identifiée (Éléments bâtis patrimoniaux)** (décision du porteur, 2026-11-02 ; `configs/index.yaml`). Contrôle des couvertures des 76 cahiers (2026-11-02) : 75 portent « C.1 Cahier communal » ou « C.1 Cahier d'arrondissement » ; la pièce `200046977_cahier_communal_SECT64_20260326.pdf` porte « C.3.3 Eléments Bâtis Patrimoniaux » (Vaulx-en-Velin), et une partie de son texte est en police mal encodée, illisible par Docling comme par PyMuPDF. Dans `liste_pieces.json`, les autres pièces SECT64 sont des informations (`info_lin_14_00`, `info_surf_16_00`, `info_surf_27_00_1`, `info_surf_27_00_2`, `info_surf_42_01`, `info_surf_99_00`) : aucune autre pièce ne porte le nom de cahier communal. Le cahier communal de Vaulx-en-Velin reste à localiser.
 
 - **Licence constatée :** les [CGU du GPU](https://www.geoportail-urbanisme.gouv.fr/cgu/) soumettent les données d'urbanisme à « la licence ouverte », avec un lien vers le texte Etalab de 2014 (version 1). **Version applicable ambiguë** (1.0 ou 2.0) ; le contenu propre du site relève d'un régime distinct.
 

@@ -811,7 +811,7 @@ sources:
         format: pdf
         published_at: "2026-04-23"
         reference_date: "2026-03-26"
-        limitations: "Cahier communal de Vaulx en Velin (code 69256, secteur 64) ; procédure lue dans la pièce : « Modification n°3 - Approbation 2022 » ; 30 pages."
+        limitations: "Pièce publiée comme cahier communal de Vaulx en Velin (code 69256, secteur 64), mais couverture « C.3.3 Eléments Bâtis Patrimoniaux » : exclue de l'indexation (configs/index.yaml) ; procédure lue sur la couverture : « Modification n°4 - Approbation 2024 » (en-têtes : 1 page en Révision n°2 - 2019, 9 en n°3 - 2022, 5 en n°4 - 2024, 14 sans en-tête lisible) ; 30 pages."
       - name: cahier_communal_sect65
         title: "200046977_cahier_communal_SECT65_20260326.pdf"
         kind: http

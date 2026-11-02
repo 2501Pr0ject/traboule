@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = ROOT / "data" / "raw"
 INTERIM_DIR = ROOT / "data" / "interim"
 SOURCES_CONFIG = ROOT / "configs" / "sources.yaml"
+INDEX_CONFIG = ROOT / "configs" / "index.yaml"
 
 # Indice de confiance de zone (ADR-0006) : seuils provisoires de distance au polygone
 # d'une autre zone, et rayon au-delà duquel la distance est notée « ≥ rayon ».

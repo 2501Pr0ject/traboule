@@ -2,6 +2,8 @@
 
 from collections import Counter
 
+from traboule.contracts.passage import Passage
+from traboule.retrieval import ligatures
 from traboule.retrieval.ligatures import repair, repair_unreadable, vocabulary
 
 VOCAB = vocabulary(
@@ -74,3 +76,28 @@ def test_unreadable_kept_when_form_is_absent_from_pymupdf():
 
 def test_unreadable_kept_when_no_ligature_fits():
     assert repair_unreadable("x� y", ILLISIBLE, {"xti"})[0] == "x� y"
+
+
+def test_repaired_passages_carry_remaining_defects(tmp_path, monkeypatch):
+    folder = tmp_path / "cahier_test"
+    folder.mkdir()
+    raw = Passage(
+        passage_id="p1",
+        texte="La créati on d'une stati on et un mot illisi\ufffd le.",
+        doc_id="c.pdf",
+        source_id="SRC-005",
+        version_piece="Modification n°4 - Approbation 2024",
+        version_gpu="200046977_PLUi_20260326",
+        page_debut=1,
+        page_fin=1,
+        chemin=["Début du cahier"],
+        extracteur="docling",
+    )
+    (folder / "passages_brut.jsonl").write_text(raw.model_dump_json() + "\n")
+    # Texte PyMuPDF sans le mot : le caractère illisible reste.
+    monkeypatch.setattr(ligatures, "pymupdf_words", lambda name: {1: set()})
+    result = ligatures.repair_cahier(folder, VOCAB)
+    repaired = Passage.model_validate_json((folder / "passages.jsonl").read_text())
+    assert repaired.texte.startswith("La création d'une stati on")
+    assert (repaired.qualite_texte.illisibles, repaired.qualite_texte.fragments) == (1, 1)
+    assert result["illisibles_apres"] == 1 and result["fragments_apres"] == 1

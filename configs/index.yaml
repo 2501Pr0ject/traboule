@@ -1,0 +1,9 @@
+# Configuration de l'index des passages (ADR-0009, ADR-0013).
+# Lue par traboule.retrieval.index_config ; toute exclusion porte son motif et sa décision.
+
+exclusions:
+  - ressource: cahier_communal_sect64
+    doc_id: 200046977_cahier_communal_SECT64_20260326.pdf
+    motif: "Exclu de l'indexation : pièce mal identifiée (Éléments bâtis patrimoniaux)"
+    constat: "Couverture « C.3.3 Eléments Bâtis Patrimoniaux » (Vaulx-en-Velin), et non « C.1 Cahier communal » ; texte en partie illisible (police mal encodée)."
+    decision: "porteur, 2026-11-02"

@@ -68,6 +68,51 @@ def test_passages_carry_path_oap_commune_and_drop_running_lines(pages):
     assert (first.page_debut, first.page_fin, first.extracteur) == (1, 2, "docling")
 
 
+def test_version_read_on_passage_start_page(pages):
+    pages[1].texte_pymupdf = "MODIFICATION N°4\nApprobation - 2024\nCOMMUNE"  # couverture
+    pages[
+        4
+    ].texte_pymupdf = "PLU-H - TEST - Modification n°3 - Approbation 2022\nOAP\n2.1 Les Girondins"
+    pages[6].texte_pymupdf = "Annexe sans en-tête"
+    commune = {"secteur_pluh": "65", "code_commune_cog2026": "69259", "commune_historique": "69259"}
+    passages, quality = ca.build_passages("c.pdf", TOC, pages, commune)
+    by_page = {p.page_debut: p.version_piece for p in passages}
+    assert quality["version_piece"] == by_page[1] == "Modification n°4 - Approbation 2024"
+    assert by_page[4] == "Modification n°3 - Approbation 2022"
+    # Page 6 sans en-tête : version de la page 5.
+    assert by_page[6] == "Modification n°4 - Approbation 2024"
+    assert quality["passages_version_hors_couverture"] == 1
+    assert quality["passages_version_par_repli"] == 1
+
+
+def test_passage_is_cut_at_a_version_boundary(pages):
+    # Pages 1 et 2 : même chemin ; la page 2 porte une autre version.
+    pages[2].texte_pymupdf = "PLU-H - TEST - Modification n°3 - Approbation 2022\nTexte"
+    commune = {"secteur_pluh": "65", "code_commune_cog2026": "69259", "commune_historique": "69259"}
+    passages, quality = ca.build_passages("c.pdf", TOC, pages, commune)
+    first = [p for p in passages if p.chemin == passages[0].chemin]
+    assert [(p.page_debut, p.page_fin, p.version_piece) for p in first] == [
+        (1, 1, "Modification n°4 - Approbation 2024"),
+        (2, 2, "Modification n°3 - Approbation 2022"),
+    ]
+    assert quality["coupures_de_version"] == 1
+
+
+def test_cover_without_version_is_refused(pages):
+    pages[1].texte_pymupdf = "Couverture"
+    with pytest.raises(ca.CahierError, match="couverture"):
+        ca.page_versions(pages)
+
+
+def test_canonical_version():
+    assert ca.canonical_version("Mise en compatibilité N°6 - Approbation 2025") == (
+        "Mise en compatibilité n°6 - Approbation 2025"
+    )
+    assert ca.canonical_version("MODIFICATION N° 4 – Approbation 2024") == (
+        "Modification n°4 - Approbation 2024"
+    )
+
+
 def test_passage_id_is_stable():
     a = ca.passage_id("c.pdf", 3, ["4. OAP", "OAP 1 X"], 1)
     assert a == ca.passage_id("c.pdf", 3, ["4. OAP", "OAP 1 X"], 1) and len(a) == 16

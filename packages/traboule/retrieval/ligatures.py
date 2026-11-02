@@ -16,7 +16,8 @@ caractère est remplacé seulement si une seule ligature donne une forme vue au 
 `MIN_OCCURRENCES` fois dans le vocabulaire de référence, et si cette forme figure dans le
 texte PyMuPDF des pages du passage ; sinon il reste.
 
-Le texte brut est conservé (`passages_brut.jsonl`) ; chaque réparation est consignée.
+Le texte brut est conservé (`passages_brut.jsonl`) ; chaque réparation est consignée ; chaque
+passage réparé porte `qualite_texte` (caractères illisibles et fragments restants).
 
 Usage : `uv run python -m traboule.retrieval.ligatures` (après `traboule.retrieval.cahiers`).
 """
@@ -30,7 +31,7 @@ from pathlib import Path
 import typer
 
 from traboule.config import INTERIM_DIR, RAW_DIR
-from traboule.contracts.passage import Passage
+from traboule.contracts.passage import Passage, QualiteTexte
 from traboule.measure import write_metrics
 from traboule.retrieval.cahiers import OUT_DIR, SPLIT_LIGATURE, resource_folder
 from traboule.retrieval.extraction import LIGATURES, read_pages, repair_ligatures
@@ -150,7 +151,10 @@ def repair_cahier(folder: Path, vocab: Counter) -> dict:
         replaced.update(found)
         text, found = repair(text, vocab)
         repairs.update(found)
-        repaired.append(p.model_copy(update={"texte": text}))
+        quality = QualiteTexte(
+            illisibles=text.count(UNREADABLE), fragments=len(SPLIT_LIGATURE.findall(text))
+        )
+        repaired.append(p.model_copy(update={"texte": text, "qualite_texte": quality}))
     (folder / "passages.jsonl").write_text("".join(p.model_dump_json() + "\n" for p in repaired))
     with (folder / "reparations.csv").open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
