@@ -9,11 +9,15 @@ ressource qui cite l'OAP (« OAP 0.1 ») reçoit un lien vers tous les passages 
 la pièce cible. Contrôles bloquants : la cible a des passages pour cette OAP, et la ressource a
 au moins un passage qui la cite.
 
+Renvois à la partie I : résolus à l'extraction du règlement (`link_partie_i`), vers tous les
+passages du chapitre ou de l'article cité ; contrôle bloquant si la cible n'a aucun passage.
+
 Usage : `uv run python -m traboule.retrieval.renvois` (après `traboule.retrieval.ligatures`).
 """
 
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 import typer
@@ -58,6 +62,61 @@ def link_oap(
     if not linked:
         raise RenvoiError(f"aucun passage ne cite l'OAP {numero}")
     return out, linked
+
+
+# Renvois des articles de zone à la partie I (ADR-0011) : « au chapitre 5 de la partie I »,
+# « dans la partie I du règlement (chapitre 5) », « au 3.1.6.1 de la Partie 1 ». Un renvoi à
+# la partie I entière (« définitions prévues dans la partie I ») n'est pas lié.
+PARTIE_I = r"partie\s+(?:I|1)\b(?![IV])"
+CHAPTER_REF = re.compile(
+    rf"chapitre\s+(\d)\s+de\s+la\s+{PARTIE_I}"
+    rf"|{PARTIE_I}\s+du\s+(?:présent\s+)?règlement\s*\(chapitre\s+(\d)\)",
+    re.I,
+)
+ARTICLE_REF = re.compile(rf"\b(\d+(?:\.\d+)+)\s+de\s+la\s+{PARTIE_I}", re.I)
+
+
+def partie_i_targets(passages: list[Passage], ref: str, kind: str) -> tuple[str, list[str]]:
+    """Cible (titre) et passages de la partie I pour un chapitre ou un article."""
+    ids, title = [], None
+    for p in passages:
+        if not p.chemin[0].startswith("Partie I "):
+            continue
+        for part in p.chemin[1:]:
+            match = (
+                re.match(rf"CHAPITRE {ref} - ", part)
+                if kind == "chapitre"
+                else re.match(rf"{re.escape(ref)}(\.\d+)* - ", part)
+            )
+            if match:
+                title = title or (
+                    part if kind == "chapitre" else f"{ref} - {part.split(' - ', 1)[1]}"
+                )
+                ids.append(p.passage_id)
+                break
+    if not ids:
+        raise RenvoiError(f"renvoi à la partie I ({kind} {ref}) sans passage cible")
+    return f"Partie I, {title}", ids
+
+
+def link_partie_i(passages: list[Passage]) -> tuple[list[Passage], Counter]:
+    """Ajoute à chaque passage hors partie I ses renvois à un chapitre ou article de la partie I."""
+    cache: dict[tuple[str, str], tuple[str, list[str]]] = {}
+    out, counts = [], Counter()
+    for p in passages:
+        refs = []
+        if not p.chemin[0].startswith("Partie I "):
+            refs += [("chapitre", a or b) for a, b in CHAPTER_REF.findall(p.texte)]
+            refs += [("article", n) for n in ARTICLE_REF.findall(p.texte)]
+        renvois = []
+        for kind, ref in dict.fromkeys(refs):
+            if (kind, ref) not in cache:
+                cache[(kind, ref)] = partie_i_targets(passages, ref, kind)
+            cible, ids = cache[(kind, ref)]
+            renvois.append(Renvoi(cible=cible, doc_id=p.doc_id, passage_ids=ids))
+            counts[cible] += 1
+        out.append(p.model_copy(update={"renvoi_vers": renvois}) if renvois else p)
+    return out, counts
 
 
 def read_passages(resource: str) -> list[Passage]:

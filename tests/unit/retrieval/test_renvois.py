@@ -51,3 +51,37 @@ def test_configured_links_point_to_the_lyon_communal_cahier():
     links = rv.load_oap_links()
     assert len(links) == 8
     assert {(n, t) for _, n, t in links} == {("0.1", "cahier_communal_sect31")}
+
+
+def regl(pid, texte, chemin):
+    return passage(pid, texte, "reglement.pdf").model_copy(update={"chemin": chemin})
+
+
+PARTIE_I = "Partie I - Dispositions communes"
+REGLEMENT = [
+    regl("c5", "Normes.", [PARTIE_I, "CHAPITRE 5 - DEPLACEMENTS", "5.1 - Accès"]),
+    regl("c5b", "Calcul.", [PARTIE_I, "CHAPITRE 5 - DEPLACEMENTS", "5.2 - Stationnement"]),
+    regl("t1", "Toitures.", [PARTIE_I, "CHAPITRE 3 - NATURE", "3.1.6.1 - Toitures végétalisées"]),
+    regl(
+        "z1",
+        "Les normes se situent au chapitre 5 de la partie I du règlement ; conformément au "
+        "3.1.6.1 de la Partie 1. Définitions prévues dans la partie I du règlement.",
+        ["Partie II Règlement des zones", "Zone UCe1", "CHAPITRE 5 - STATIONNEMENT"],
+    ),
+]
+
+
+def test_zone_articles_link_to_partie_i_chapters_and_articles():
+    out, counts = rv.link_partie_i(REGLEMENT)
+    renvois = {r.cible: r.passage_ids for r in out[3].renvoi_vers}
+    assert renvois == {
+        "Partie I, CHAPITRE 5 - DEPLACEMENTS": ["c5", "c5b"],
+        "Partie I, 3.1.6.1 - Toitures végétalisées": ["t1"],
+    }
+    assert all(p.renvoi_vers is None for p in out[:3]) and sum(counts.values()) == 2
+
+
+def test_reference_to_a_missing_partie_i_chapter_blocks():
+    zone = regl("z", "Voir le chapitre 4 de la partie I.", ["Partie II", "Zone UCe1"])
+    with pytest.raises(rv.RenvoiError, match="sans passage cible"):
+        rv.link_partie_i([*REGLEMENT[:3], zone])

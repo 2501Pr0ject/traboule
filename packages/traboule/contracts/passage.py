@@ -32,6 +32,16 @@ class Renvoi(BaseModel):
     passage_ids: list[str] = Field(min_length=1)
 
 
+class AliasCode(BaseModel):
+    """Code du zonage rapproché d'un code de secteur du règlement (`configs/zones_alias.csv`)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    code_zonage: str = Field(min_length=1)
+    code_reglement: str = Field(min_length=1)
+    statut: Literal["probable", "confirmé"]
+
+
 class Passage(BaseModel):
     """Passage indexé.
 
@@ -53,6 +63,14 @@ class Passage(BaseModel):
     zone: str | None = None
     zone_libelle: str | None = None
     est_preambule: bool = False
+    # Origine du libellé de zone (titre de la zone, ou nomenclature §0.2 de la partie I).
+    zone_libelle_source: str | None = None
+    # Zones auxquelles le passage s'applique (filtre par zone) : la zone du passage, ou toutes
+    # les zones d'un groupe pour ses dispositions communes (UPr1 à UPr7), ADR-0009.
+    zones_applicables: list[str] | None = None
+    # Règlement : codes de secteur de la zone cités dans le texte, et leurs alias (ADR-0009).
+    secteurs: list[str] | None = None
+    alias: list[AliasCode] | None = None
     oap: str | None = None
     # Cahiers communaux, établis sur le découpage à 59 communes (ADR-0009).
     secteur_pluh: str | None = Field(default=None, pattern=r"^(0[1-9]|[1-5][0-9]|6[0-7])$")
