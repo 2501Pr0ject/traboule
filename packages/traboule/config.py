@@ -7,6 +7,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = ROOT / "data" / "raw"
 INTERIM_DIR = ROOT / "data" / "interim"
+PROCESSED_DIR = ROOT / "data" / "processed"
 SOURCES_CONFIG = ROOT / "configs" / "sources.yaml"
 INDEX_CONFIG = ROOT / "configs" / "index.yaml"
 OAP_EXCEPTIONS = ROOT / "configs" / "oap_exceptions.yaml"
