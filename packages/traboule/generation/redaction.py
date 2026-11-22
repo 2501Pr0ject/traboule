@@ -78,6 +78,8 @@ class Contexte:
     trimmable: bool = True
     notes: list[str] = field(default_factory=list)
     refusal: str | None = None  # stratégie inapplicable (CAG sans zone ni OAP…)
+    # Limites du contexte à montrer avec la réponse (ex. repli du parcours du KAG).
+    limits: list[str] = field(default_factory=list)
 
 
 def document_title(doc_id: str, titre_piece: str | None = None) -> str:
@@ -221,6 +223,6 @@ def draft(
         valeur=text,
         texte=text,
         citations=[citation(kept[i - 1]) for i in cited],
-        limites=[MODEL_LIMIT],
+        limites=[*contexte.limits, MODEL_LIMIT],
         notes=notes,
     )

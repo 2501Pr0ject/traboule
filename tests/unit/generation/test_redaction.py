@@ -153,3 +153,10 @@ def test_passage_numbers_in_the_text_follow_the_displayed_citations():
     text = "Non réglementé (passage [16]), sauf exceptions [17] ; voir [3]."
     assert renumber(text, [16, 17]) == "Non réglementé [1], sauf exceptions [2] ; voir."
     assert renumber("Selon le passage 4, 60 %.", [4]) == "Selon le [1], 60 %."
+
+
+def test_context_limits_are_shown_with_the_answer():
+    llm = FakeLlm({"reponse": "x", "passages_cites": [1], "suffisant": True})
+    ctx = Contexte([passage(1)], limits=["Contexte réduit à une vue d'ensemble."])
+    c = draft(llm, WordCounter(), "kag", "q", ctx)
+    assert c.limites[0] == "Contexte réduit à une vue d'ensemble." and len(c.limites) == 2

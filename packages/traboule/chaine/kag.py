@@ -142,6 +142,7 @@ class KagStrategy:
         else:
             starts = [PART_ONE]
         seen: set[tuple[str, ...]] = set()
+        limits: list[str] = []
         for chapter in starts:
             articles = g.articles_of[chapter]
             ranked = [a for _, a in self._ranked(chapter, words)[:MAX_ARTICLES]]
@@ -152,6 +153,11 @@ class KagStrategy:
                 path.append(
                     f"{chapter} : aucun intitulé ne partage un mot, {len(ranked)} premiers "
                     "articles du chapitre dans l'ordre"
+                )
+                limits.append(
+                    f"KAG : aucun intitulé d'article de {chapter} ne partage un mot avec la "
+                    f"question ; contexte réduit aux {len(ranked)} premiers articles du chapitre "
+                    "(vue d'ensemble), réponse possiblement partielle."
                 )
             for article in [*overview, *ranked]:
                 if article in seen:
@@ -180,4 +186,4 @@ class KagStrategy:
         unique = list({p.passage_id: p for p in passages}.values())
         notes = [f"KAG : {len(unique)} passages atteints par le parcours du graphe"]
         notes += [f"Parcours : {p}" for p in path]
-        return Contexte(unique, trimmable=True, notes=notes)
+        return Contexte(unique, trimmable=True, notes=notes, limits=limits)

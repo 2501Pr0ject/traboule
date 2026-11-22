@@ -118,3 +118,6 @@ def test_general_question_walks_the_chapter_in_order():
     ctx = kag.build(Analysis(question="Quelles règles s'appliquent ?"), ["UEi1"])
     assert [p.passage_id for p in ctx.passages] == ["p1", "p2", "p3", "p4"]
     assert any("premiers articles du chapitre dans l'ordre" in n for n in ctx.notes)
+    assert ctx.limits and "vue d'ensemble" in ctx.limits[0]
+    targeted = kag.build(Analysis(question="Hauteur des constructions ?"), ["UEi1"])
+    assert targeted.limits == []
