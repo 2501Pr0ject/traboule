@@ -21,10 +21,9 @@ import typer
 from traboule.config import INTERIM_DIR, RAW_DIR, SEARCH_RADIUS_M
 from traboule.geo.confiance import confiance_sql
 from traboule.geo.crs import LAMBERT93, require_crs
+from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_file, used
 from traboule.measure import measured, write_metrics
 
-RAW_DATE = "2026-10-28"
-ZONAGE = f"SRC-002/{RAW_DATE}/zonage/zonage.geojson"
 OUTPUT = "etablissements_zones.parquet"
 MEMORY_LIMIT = "6GB"
 # Point de contrôle : place Bellecour (conventions §4), dans la zone UCe1b du zonage SRC-002.
@@ -33,6 +32,11 @@ OUTPUT_COLUMNS = (
     "siret, etat, diffusion, code_commune_cog2026, code_arrondissement, qualite_xy, categorie, "
     "zone, famille, zone_stock, ecart_sources_m, dist_autre_zone_m, confiance"
 )
+
+
+def zonage_path(date: str | None = None, raw_dir: Path = RAW_DIR) -> Path:
+    """Zonage du PLU-H (SRC-002), dossier daté résolu par `ingestion.raw`."""
+    return resource_file("SRC-002", "zonage", date, raw_dir, "*.geojson")
 
 
 class JointureError(RuntimeError):
@@ -159,8 +163,14 @@ def main(
     force: Annotated[bool, typer.Option(help="Écraser le Parquet existant")] = False,
     raw_dir: Annotated[Path, typer.Option(help="Racine des données brutes")] = RAW_DIR,
     interim_dir: Annotated[Path, typer.Option(help="Dossier des données dérivées")] = INTERIM_DIR,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Rattache chaque établissement à position publique à sa zone du PLU-H."""
+    try:
+        zonage = zonage_path(date, raw_dir)
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     out = interim_dir / OUTPUT
     if out.exists() and not force:
         typer.echo(f"{out} existe : relancer avec --force.", err=True)
@@ -171,7 +181,7 @@ def main(
     steps: dict = {}
     try:
         with measured(steps, "jointure"):
-            result = build(con, interim_dir / "sirene_ml.parquet", raw_dir / ZONAGE)
+            result = build(con, interim_dir / "sirene_ml.parquet", zonage)
             x, y, expected = BELLECOUR
             found = _scalar(con, f"select code from z where ST_Contains(geom, ST_Point({x}, {y}))")
             if found != expected:
@@ -183,7 +193,11 @@ def main(
     write_metrics(
         interim_dir / "metrics" / "jointure.json",
         {"steps": steps, **result},
-        {"raw_date": RAW_DATE, "memory_limit": MEMORY_LIMIT, "rayon_m": SEARCH_RADIUS_M},
+        {
+            "donnees_brutes": [used(zonage, raw_dir)],
+            "memory_limit": MEMORY_LIMIT,
+            "rayon_m": SEARCH_RADIUS_M,
+        },  # fmt: skip
     )
     typer.echo(f"OK : {result['points']} points, {result['confiance']}")
 

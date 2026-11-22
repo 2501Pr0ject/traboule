@@ -20,7 +20,8 @@
 Mesures par cahier : temps, pages graphiques, doublons Docling retirés, ligatures réparées,
 en-têtes retirés, couverture du texte Docling par rapport à PyMuPDF, OAP détectées.
 
-Usage : `uv run python -m traboule.retrieval.cahiers --ressource cahier_communal_sect65 …`.
+Usage : `uv run python -m traboule.retrieval.cahiers` (tous les cahiers de sources.yaml) ou
+`… --ressource cahier_communal_sect65 …`.
 """
 
 import hashlib
@@ -36,8 +37,9 @@ from typing import Annotated
 import typer
 import yaml
 
-from traboule.config import INTERIM_DIR, OAP_EXCEPTIONS, RAW_DIR
+from traboule.config import INTERIM_DIR, OAP_EXCEPTIONS, RAW_DIR, SOURCES_CONFIG, load_sources
 from traboule.contracts.passage import Passage
+from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_dir, resource_file, used
 from traboule.measure import peak_rss_bytes, write_metrics
 from traboule.retrieval.decoupage import (
     MAX_CHARS,
@@ -62,7 +64,6 @@ from traboule.retrieval.index_config import (
     load_identical,
 )
 
-RAW_DATE = "2026-11-01"
 VERSION_GPU = "200046977_PLUi_20260326"
 OUT_DIR = INTERIM_DIR / "extraction" / "cahiers"
 # Titre de la partie 4 dans la table des matières (parfois altéré : « … et de4. Orientation… »).
@@ -398,7 +399,6 @@ def coverage(pages: dict[int, Page]) -> dict:
     }
 
 
-PLAN_DE_SECTEURS = "SRC-005/2026-10-28/plan_de_secteurs/200046977_plan_de_secteurs_20260326.pdf"
 SECTOR_ENTRY = re.compile(r"(\d{5}):\s*Se(?:ct|tc)eur\s*(\d{2})")  # « Setceur » : coquille du plan
 
 
@@ -438,12 +438,18 @@ def load_passage_communes(path: Path = INTERIM_DIR / "passage_communes.parquet")
     return dict(rows)
 
 
-def resource_folder(resource: str, raw_dir: Path = RAW_DIR) -> Path:
-    """Dossier le plus récent d'une ressource SRC-005, quel que soit son dossier daté."""
-    folders = sorted((raw_dir / "SRC-005").glob(f"*/{resource}"))
-    if not folders:
-        raise CahierError(f"ressource {resource} absente de data/raw/SRC-005")
-    return folders[-1]
+def resource_folder(resource: str, raw_dir: Path = RAW_DIR, date: str | None = None) -> Path:
+    """Dossier daté d'une ressource SRC-005, résolu par `ingestion.raw`."""
+    try:
+        return resource_dir("SRC-005", resource, date, raw_dir)
+    except RawDataError as exc:
+        raise CahierError(str(exc)) from exc
+
+
+def all_cahiers(config: Path = SOURCES_CONFIG) -> list[str]:
+    """Ressources « cahier_* » de SRC-005 déclarées dans sources.yaml."""
+    (source,) = [s for s in load_sources(config)["sources"] if s["id"] == "SRC-005"]
+    return [r["name"] for r in source["resources"] if r["name"].startswith("cahier_")]
 
 
 def extract(
@@ -454,9 +460,10 @@ def extract(
     raw_dir: Path = RAW_DIR,
     exceptions: dict[tuple[str, str], str] | None = None,
     shared: dict[str, PieceIdentique] | None = None,
+    date: str | None = None,
 ) -> dict:
     """Extrait un cahier : passages écrits dans OUT_DIR/<ressource>/, mesures renvoyées."""
-    pdf = next(resource_folder(resource, raw_dir).glob("*.pdf"))
+    pdf = next(resource_folder(resource, raw_dir, date).glob("*.pdf"))
     out = OUT_DIR / resource
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.perf_counter()
@@ -517,12 +524,22 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-    ressource: Annotated[list[str], typer.Option(help="Ressource SRC-005 du 2026-11-01")],
+    ressource: Annotated[
+        list[str] | None,
+        typer.Option(help="Ressource SRC-005 à extraire (défaut : tous les cahiers)"),
+    ] = None,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Extrait les cahiers demandés (un seul processus) et écrit les mesures."""
+    ressource = ressource or all_cahiers()
+    try:
+        plan = resource_file("SRC-005", "plan_de_secteurs", date, RAW_DIR, "*.pdf")
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     converter = docling_converter()
     communes = load_passage_communes()
-    sectors = sector_codes(RAW_DIR / PLAN_DE_SECTEURS)
+    sectors = sector_codes(plan)
     exceptions = load_oap_exceptions()
     groups = load_identical()
     shared = {g.reference: g for g in groups}
@@ -530,7 +547,9 @@ def main(
     try:
         for name in ressource:
             typer.echo(f"  {name} …")
-            results[name] = extract(name, converter, communes, sectors, RAW_DIR, exceptions, shared)
+            results[name] = extract(
+                name, converter, communes, sectors, RAW_DIR, exceptions, shared, date
+            )
         for group in groups:
             if all(r in results for r in group.exemplaires):
                 check_group(group, results)
@@ -540,7 +559,12 @@ def main(
     write_metrics(
         INTERIM_DIR / "metrics" / "extraction_cahiers.json",
         {"cahiers": results, "pic_rss_mo": round(peak_rss_bytes() / 2**20)},
-        {"ressources": ressource, "max_chars": MAX_CHARS, "raw_date": RAW_DATE},
+        {
+            "ressources": ressource,
+            "max_chars": MAX_CHARS,
+            "plan_de_secteurs": used(plan),
+            "date": date,
+        },  # fmt: skip
     )
     for name, r in results.items():
         typer.echo(f"{name} : {r['passages']} passages, {len(r['oap_detectees'])} OAP, "

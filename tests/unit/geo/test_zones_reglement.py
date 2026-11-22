@@ -1,9 +1,13 @@
 """Correspondance code de zone → chapitre du règlement : une branche par règle."""
 
+from pathlib import Path
+
 import pytest
 
 from traboule.config import RAW_DIR, ROOT
 from traboule.geo import zones_reglement as zr
+from traboule.geo.jointure import zonage_path
+from traboule.ingestion.raw import RawDataError
 
 V = "PLU-H – MODIFICATION N° 4 – APPROBATION 2024"
 PAGES = {
@@ -218,8 +222,15 @@ def test_query_gpu_keeps_the_documented_fields():
     assert set(point["zones"][0]) == set(zr.GPU_FIELDS)
 
 
-REGLEMENT = RAW_DIR / zr.REGLEMENT
-ZONAGE = RAW_DIR / zr.ZONAGE
+def _raw(resolve) -> Path:
+    try:
+        return resolve()
+    except RawDataError:
+        return RAW_DIR / "absent"
+
+
+REGLEMENT = _raw(zr.reglement_path)
+ZONAGE = _raw(zonage_path)
 
 
 @pytest.mark.skipif(not (REGLEMENT.exists() and ZONAGE.exists()), reason="données brutes absentes")

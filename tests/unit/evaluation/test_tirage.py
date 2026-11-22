@@ -14,6 +14,8 @@ import pytest
 
 from traboule.config import INTERIM_DIR, RAW_DIR
 from traboule.evaluation import tirage
+from traboule.ingestion.raw import RawDataError
+from traboule.ingestion.sirene import stock_path
 
 
 @pytest.fixture
@@ -88,7 +90,16 @@ def test_grid_has_empty_review_columns_and_is_never_rewritten(tmp_path):
 
 LOCAL = INTERIM_DIR / "controles"
 ZONES = INTERIM_DIR / "etablissements_zones.parquet"
-STOCK = RAW_DIR / tirage.STOCK
+
+
+def _stock() -> Path:
+    try:
+        return stock_path()
+    except RawDataError:
+        return RAW_DIR / "SRC-001a" / "absent"
+
+
+STOCK = _stock()
 
 
 def local_draw_available() -> bool:

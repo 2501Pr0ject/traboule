@@ -18,6 +18,10 @@ from pathlib import Path
 from traboule.config import RAW_DIR, SOURCES_CONFIG, load_sources
 
 MANIFEST = "manifest.json"
+DATE_HELP = (
+    "Dossier daté des données brutes (défaut : date de référence de sources.yaml si ses données "
+    "sont présentes, sinon le dossier le plus récent)"
+)
 
 
 class RawDataError(FileNotFoundError):

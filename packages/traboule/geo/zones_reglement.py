@@ -43,10 +43,9 @@ import typer
 
 from traboule.config import RAW_DIR, ROOT
 from traboule.contracts.reponse import MotifAbstention
+from traboule.geo.jointure import zonage_path
+from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_file
 
-RAW_DATE = "2026-10-28"
-REGLEMENT = f"SRC-005/{RAW_DATE}/reglement_ecrit/200046977_reglement_20260326.pdf"
-ZONAGE = f"SRC-002/{RAW_DATE}/zonage/zonage.geojson"
 VERSION_GPU = "200046977_PLUi_20260326"
 OUTPUT = ROOT / "configs" / "zones_reglement.csv"
 EXPECTED_CHAPTERS = 33
@@ -87,6 +86,11 @@ VERSION_HEADER = re.compile(
     r"PLU-H – ((?:MODIFICATION|REVISION|RÉVISION|MISE EN COMPATIBILITE)[^0-9]*\d+"
     r" – APPROBATION \d{4})"
 )
+
+
+def reglement_path(date: str | None = None, raw_dir: Path = RAW_DIR) -> Path:
+    """Règlement écrit du PLU-H (SRC-005), dossier daté résolu par `ingestion.raw`."""
+    return resource_file("SRC-005", "reglement_ecrit", date, raw_dir, "*.pdf")
 
 
 class CorrespondanceError(RuntimeError):
@@ -543,8 +547,14 @@ def main(
     ] = None,
     chapitre: Annotated[str | None, typer.Option(help="Chapitre candidat de la preuve")] = None,
     graine: Annotated[str | None, typer.Option(help="Graine propre au tirage des points")] = None,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Génère (ou vérifie) configs/zones_reglement.csv, ou enregistre une preuve GPU."""
+    try:
+        zonage, reglement = zonage_path(date, raw_dir), reglement_path(date, raw_dir)
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     if preuve_gpu:
         import httpx
 
@@ -553,7 +563,7 @@ def main(
             typer.echo(f"{path} existe déjà, ou --chapitre ou --graine manque", err=True)
             sys.exit(1)
         with httpx.Client(timeout=30, headers={"User-Agent": "traboule-controle"}) as client:
-            points = query_gpu(client, sample_points(raw_dir / ZONAGE, preuve_gpu, graine))
+            points = query_gpu(client, sample_points(zonage, preuve_gpu, graine))
         evidence = {
             "code_zonage": preuve_gpu,
             "chapitre_candidat": chapitre,
@@ -567,13 +577,12 @@ def main(
         path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         typer.echo(f"preuve écrite : {path}")
         return
-    toc, pages = read_reglement(raw_dir / REGLEMENT)
+    toc, pages = read_reglement(reglement)
     chaps = chapters(toc, max(pages))
     try:
         if len(chaps) != EXPECTED_CHAPTERS:
             found = len(chaps)
             raise CorrespondanceError(f"{found} chapitres « Zone » (attendu {EXPECTED_CHAPTERS})")
-        zonage = raw_dir / ZONAGE
         rows = build(
             zone_codes(zonage), toc, pages, stecal_numbers(zonage), load_evidence(), load_aliases()
         )

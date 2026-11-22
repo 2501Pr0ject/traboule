@@ -35,22 +35,24 @@ import time
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
-from traboule.config import INTERIM_DIR, RAW_DIR
+from traboule.config import INTERIM_DIR
 from traboule.contracts.passage import AliasCode, Passage
 from traboule.geo.zones_reglement import (
     ALIASES,
     NOMENCLATURE_END,
     NOMENCLATURE_START,
     OUTPUT,
-    REGLEMENT,
     VERSION_GPU,
     normalize,
+    reglement_path,
     section_pages,
     token,
 )
+from traboule.ingestion.raw import DATE_HELP, RawDataError, used
 from traboule.measure import peak_rss_bytes, write_metrics
 from traboule.retrieval.cahiers import canonical_version
 from traboule.retrieval.decoupage import (
@@ -696,11 +698,16 @@ app = typer.Typer(add_completion=False)
 
 
 @app.command()
-def main() -> None:
+def main(
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
+) -> None:
     """Extrait les parties I et II du règlement (un seul processus) et écrit les mesures."""
-    path = RAW_DIR / REGLEMENT
     try:
+        path = reglement_path(date)
         passages, quality = extract(path, docling_converter())
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     except (ReglementError, DecoupageError, RenvoiError) as exc:
         typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)
@@ -709,7 +716,7 @@ def main() -> None:
     )
     quality["pic_rss_mo"] = round(peak_rss_bytes() / 2**20)
     write_metrics(INTERIM_DIR / "metrics" / "extraction_reglement.json", quality,
-                  {"document": REGLEMENT, "raw_dir": str(RAW_DIR.name)})  # fmt: skip
+                  {"document": used(path)})  # fmt: skip
     typer.echo(f"OK : {quality['passages']} passages, {quality['zones']} zones, "
                f"{len(quality['pages_tableaux'])} pages à tableaux")  # fmt: skip
 

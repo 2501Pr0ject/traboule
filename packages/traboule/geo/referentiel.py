@@ -23,13 +23,14 @@ import duckdb
 import typer
 
 from traboule.config import INTERIM_DIR, RAW_DIR, load_sources
+from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_file, used
 from traboule.measure import measured, write_metrics
 
-RAW_DATE = "2026-10-28"
+# Archives INSEE (source → ressource), dossiers datés résolus par `ingestion.raw`.
 ARCHIVES = {
-    "SRC-004a": f"SRC-004a/{RAW_DATE}/cog_ensemble/cog_ensemble_2026_csv.zip",
-    "SRC-004b": f"SRC-004b/{RAW_DATE}/table_appartenance/table-appartenance-geo-communes-2026.zip",
-    "SRC-004c": (f"SRC-004c/{RAW_DATE}/table_passage_2003_2026/table_passage_geo2003_geo2026.zip"),
+    "SRC-004a": "cog_ensemble",
+    "SRC-004b": "table_appartenance",
+    "SRC-004c": "table_passage_2003_2026",
 }
 OUTPUTS = ("ref_communes_ml", "ref_arrondissements_lyon", "passage_communes")
 
@@ -70,15 +71,20 @@ def _xlsx(path: Path, sheet: str, cols: str = "Z") -> str:
     )
 
 
-def extract_archives(raw_dir: Path, dest_root: Path) -> dict[str, Path]:
+def archive_paths(date: str | None = None, raw_dir: Path = RAW_DIR) -> dict[str, Path]:
+    """Archive zip de chaque source SRC-004*."""
+    return {s: resource_file(s, r, date, raw_dir, "*.zip") for s, r in ARCHIVES.items()}
+
+
+def extract_archives(archives: dict[str, Path], dest_root: Path) -> dict[str, Path]:
     """Décompresse les archives SRC-004* dans dest_root/<source_id>/ (données dérivées)."""
     extracted = {}
-    for source_id, rel in ARCHIVES.items():
+    for source_id, archive in archives.items():
         dest = dest_root / source_id
         if dest.exists():
             shutil.rmtree(dest)
         dest.mkdir(parents=True)
-        with zipfile.ZipFile(raw_dir / rel) as zf:
+        with zipfile.ZipFile(archive) as zf:
             zf.extractall(dest)
         extracted[source_id] = dest
     return extracted
@@ -215,8 +221,14 @@ def main(
     force: Annotated[bool, typer.Option(help="Écraser les Parquet existants")] = False,
     raw_dir: Annotated[Path, typer.Option(help="Racine des données brutes")] = RAW_DIR,
     interim_dir: Annotated[Path, typer.Option(help="Dossier des données dérivées")] = INTERIM_DIR,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Construit ref_communes_ml, ref_arrondissements_lyon et passage_communes."""
+    try:
+        archives = archive_paths(date, raw_dir)
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     existing = [n for n in OUTPUTS if (interim_dir / f"{n}.parquet").exists()]
     if existing and not force:
         typer.echo(f"Sorties existantes {existing} : relancer avec --force.", err=True)
@@ -226,7 +238,7 @@ def main(
     con = duckdb.connect()
     try:
         with measured(steps, "extraction"):
-            src = extract_archives(raw_dir, interim_dir / "sources")
+            src = extract_archives(archives, interim_dir / "sources")
         with measured(steps, "construction"):
             load_inputs(con, src)
             result = build(con, territory)
@@ -238,7 +250,10 @@ def main(
     write_metrics(
         interim_dir / "metrics" / "referentiel.json",
         {"steps": steps, **result},
-        {"raw_date": RAW_DATE, "epci": territory.epci},
+        {
+            "donnees_brutes": [used(p, raw_dir) for p in archives.values()],
+            "epci": territory.epci,
+        },  # fmt: skip
     )
     typer.echo(
         f"OK : {result['communes']} communes, {result['arrondissements']} arrondissements, "

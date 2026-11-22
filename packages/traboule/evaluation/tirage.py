@@ -26,12 +26,12 @@ from typing import Annotated
 import duckdb
 import typer
 
-from traboule.config import INTERIM_DIR, RAW_DIR, ROOT
+from traboule.config import INTERIM_DIR, ROOT
+from traboule.ingestion.sirene import stock_path
 
 STRATA = ("haute", "moyenne", "faible")
 PER_STRATUM = 10
 REPLACEMENTS = 10
-STOCK = "SRC-001a/2026-10-28/stock_etablissement/stock-stocketablissement-parquet.parquet"
 GRID = "grille_confiance.csv"
 MASKED = "remplacements_confiance.masque.csv"
 META = "tirage_confiance.meta.json"
@@ -168,7 +168,7 @@ def main(
             graine,
             INTERIM_DIR / "etablissements_zones.parquet",
             INTERIM_DIR / "sirene_ml.parquet",
-            RAW_DIR / STOCK,
+            stock_path(),
         )
     except TirageError as exc:
         typer.echo(f"TIRAGE REFUSÉ : {exc}", err=True)

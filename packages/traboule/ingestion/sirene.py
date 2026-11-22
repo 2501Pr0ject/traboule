@@ -19,14 +19,9 @@ import duckdb
 import typer
 
 from traboule.config import INTERIM_DIR, RAW_DIR
+from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_file, used
 from traboule.measure import measured, write_metrics
 
-RAW_DATE = "2026-10-28"
-STOCK = f"SRC-001a/{RAW_DATE}/stock_etablissement/stock-stocketablissement-parquet.parquet"
-GEOLOC = (
-    f"SRC-001b/{RAW_DATE}/geolocalisation/"
-    "geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet"
-)
 OUTPUT = "sirene_ml.parquet"
 MEMORY_LIMIT = "6GB"
 
@@ -109,6 +104,16 @@ def build_sirene_ml(con: duckdb.DuckDBPyConnection, stock: Path, geoloc: Path, o
     return result
 
 
+def stock_path(date: str | None = None, raw_dir: Path = RAW_DIR) -> Path:
+    """Stock Sirene des établissements (SRC-001a), dossier daté résolu par `ingestion.raw`."""
+    return resource_file("SRC-001a", "stock_etablissement", date, raw_dir, "*.parquet")
+
+
+def geoloc_path(date: str | None = None, raw_dir: Path = RAW_DIR) -> Path:
+    """Géolocalisation des établissements (SRC-001b)."""
+    return resource_file("SRC-001b", "geolocalisation", date, raw_dir, "*.parquet")
+
+
 app = typer.Typer(add_completion=False)
 
 
@@ -117,8 +122,20 @@ def main(
     force: Annotated[bool, typer.Option(help="Écraser le Parquet existant")] = False,
     raw_dir: Annotated[Path, typer.Option(help="Racine des données brutes")] = RAW_DIR,
     interim_dir: Annotated[Path, typer.Option(help="Dossier des données dérivées")] = INTERIM_DIR,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Filtre le stock Sirene sur la Métropole et le joint à la géolocalisation."""
+    try:
+        stock, geoloc = stock_path(date, raw_dir), geoloc_path(date, raw_dir)
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
+    if stock.parent.parent.name != geoloc.parent.parent.name:
+        typer.echo(
+            f"ATTENTION : stock ({used(stock, raw_dir)}) et géolocalisation "
+            f"({used(geoloc, raw_dir)}) de dossiers datés différents : appariement non garanti.",
+            err=True,
+        )
     out = interim_dir / OUTPUT
     if out.exists() and not force:
         typer.echo(f"{out} existe : relancer avec --force.", err=True)
@@ -133,14 +150,17 @@ def main(
     steps: dict = {}
     try:
         with measured(steps, "sirene_ml"):
-            result = build_sirene_ml(con, raw_dir / STOCK, raw_dir / GEOLOC, out)
+            result = build_sirene_ml(con, stock, geoloc, out)
     except SireneError as exc:
         typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)
     write_metrics(
         interim_dir / "metrics" / "sirene.json",
         {"steps": steps, **result},
-        {"raw_date": RAW_DATE, "memory_limit": MEMORY_LIMIT},
+        {
+            "donnees_brutes": [used(stock, raw_dir), used(geoloc, raw_dir)],
+            "memory_limit": MEMORY_LIMIT,
+        },  # fmt: skip
     )
     typer.echo(f"OK : {result}")
 

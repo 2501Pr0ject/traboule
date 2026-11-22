@@ -24,13 +24,12 @@ from traboule.catalogue import META_TABLES, TABLES, Table
 from traboule.config import INTERIM_DIR, RAW_DIR, ROOT
 from traboule.contracts.etablissement import LYON
 from traboule.geo.crs import LAMBERT93, require_crs
-from traboule.geo.jointure import ZONAGE
+from traboule.geo.jointure import zonage_path
 from traboule.geo.minorant import load_units
+from traboule.ingestion.raw import DATE_HELP, RawDataError, data_files, resource_file
 from traboule.measure import measured, write_metrics
 
 OUTPUT = Path("data/processed/traboule.duckdb")
-COMMUNES = "REF-COMMUNES-ML-2024/2026-10-28/communes/communes.geojson"
-ARRONDISSEMENTS = "REF-ARRONDISSEMENTS-LYON/2026-11-01/arrondissements/arrondissements.geojson"
 ZONES_REGLEMENT = ROOT / "configs" / "zones_reglement.csv"
 PARQUETS = {
     "communes": "ref_communes_ml",
@@ -57,12 +56,17 @@ class Inputs:
     raw_dir: Path
 
     @classmethod
-    def default(cls, interim_dir: Path = INTERIM_DIR, raw_dir: Path = RAW_DIR) -> "Inputs":
+    def default(
+        cls, interim_dir: Path = INTERIM_DIR, raw_dir: Path = RAW_DIR, date: str | None = None
+    ) -> "Inputs":
+        """Dossiers datés résolus par `ingestion.raw` (référence, sinon le plus récent)."""
         return cls(
             interim_dir=interim_dir,
-            zonage=raw_dir / ZONAGE,
-            communes=raw_dir / COMMUNES,
-            arrondissements=raw_dir / ARRONDISSEMENTS,
+            zonage=zonage_path(date, raw_dir),
+            communes=resource_file("REF-COMMUNES-ML-2024", "communes", date, raw_dir, "*.geojson"),
+            arrondissements=resource_file(
+                "REF-ARRONDISSEMENTS-LYON", "arrondissements", date, raw_dir, "*.geojson"
+            ),
             zones_reglement=ZONES_REGLEMENT,
             raw_dir=raw_dir,
         )
@@ -153,6 +157,8 @@ def write_meta(con: duckdb.DuckDBPyConnection, raw_dir: Path, built_at: str) -> 
     con.execute("""create table _sources (source_id varchar, ressource varchar, source_url varchar,
                    sha256 varchar, retrieved_at varchar, licence varchar)""")
     for path in sorted(raw_dir.glob("*/*/*/manifest.json")):
+        if not data_files(path.parent):
+            continue  # manifeste de référence sans données (clone neuf, ressource modifiée)
         m = json.loads(path.read_text(encoding="utf-8"))
         ressource = f"{path.parent.parent.name}/{path.parent.name}"
         con.execute(
@@ -197,15 +203,21 @@ app = typer.Typer(add_completion=False)
 def main(
     force: Annotated[bool, typer.Option(help="Écraser la base existante")] = False,
     out: Annotated[Path, typer.Option(help="Fichier DuckDB")] = ROOT / OUTPUT,
+    date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
 ) -> None:
     """Construit data/processed/traboule.duckdb depuis les sources et le catalogue."""
+    try:
+        inputs = Inputs.default(date=date)
+    except RawDataError as exc:
+        typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
     if out.exists() and not force:
         typer.echo(f"{out} existe : relancer avec --force.", err=True)
         sys.exit(1)
     steps: dict = {}
     try:
         with measured(steps, "base"):
-            counts = build_database(out, Inputs.default())
+            counts = build_database(out, inputs)
     except DatabaseError as exc:
         typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)

@@ -26,7 +26,6 @@ import typer
 
 from traboule.config import INTERIM_DIR, PROCESSED_DIR
 from traboule.contracts.passage import Passage
-from traboule.geo.zones_reglement import REGLEMENT
 from traboule.measure import peak_rss_bytes, write_metrics
 from traboule.retrieval.cahiers import OUT_DIR as CAHIERS_DIR
 from traboule.retrieval.index_config import load_exclusions
@@ -40,7 +39,6 @@ MAX_LENGTH = 8192
 COLLECTIONS = {"passages_entete": True, "passages_brut": False}
 PAYLOAD_INDEXES = ("zones_applicables", "doc_id", "code_commune_cog2026")
 PREFETCH = 50
-REGLEMENT_DOC = Path(REGLEMENT).name
 TOP_K = 10
 
 
@@ -219,7 +217,8 @@ def build() -> None:
         INTERIM_DIR / "metrics" / "index.json",
         {
             "passages": len(passages),
-            "passages_reglement": sum(p.doc_id == REGLEMENT_DOC for p in passages),
+            "passages_reglement": sum(p.source_id == "SRC-005" and "reglement" in p.doc_id
+                                      for p in passages),  # fmt: skip
             "ressources_exclues": excluded,
             "collections": collections,
             "secondes": {k: round(v, 1) for k, v in steps.items()},

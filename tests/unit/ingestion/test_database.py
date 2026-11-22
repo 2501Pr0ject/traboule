@@ -87,6 +87,11 @@ def inputs(tmp_path: Path) -> Inputs:
     manifest.write_text(json.dumps({"source_id": "SRC-002", "source_url": "https://exemple.test",
                                     "sha256": "a" * 64, "retrieved_at": "2026-10-28T10:00:00Z",
                                     "license": "Licence Ouverte 2.0"}))  # fmt: skip
+    (manifest.parent / "zonage.geojson").write_text("{}")
+    # Manifeste de référence sans données (clone neuf, ressource modifiée) : non cité.
+    alone = raw / "SRC-001b" / "2026-10-28" / "geolocalisation" / "manifest.json"
+    alone.parent.mkdir(parents=True)
+    alone.write_text(manifest.read_text())
     return Inputs(interim, zonage, communes, arrondissements, zones, raw)
 
 

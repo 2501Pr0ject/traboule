@@ -129,11 +129,11 @@ def pymupdf_words(resource: str) -> dict[int, set[str]]:
     }
 
 
-def reference_texts(raw_dir: Path = RAW_DIR) -> list[str]:
+def reference_texts(raw_dir: Path = RAW_DIR, date: str | None = None) -> list[str]:
     """Texte du règlement écrit et des cahiers de référence (passages bruts)."""
-    from traboule.geo.zones_reglement import REGLEMENT, read_reglement
+    from traboule.geo.zones_reglement import read_reglement, reglement_path
 
-    _, pages = read_reglement(raw_dir / REGLEMENT)
+    _, pages = read_reglement(reglement_path(date, raw_dir))
     texts = [repair_ligatures(t)[0] for t in pages.values()]
     for name in REFERENCE_CAHIERS:
         path = OUT_DIR / name / "passages_brut.jsonl"
