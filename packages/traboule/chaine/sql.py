@@ -337,8 +337,8 @@ class StructuredComponent:
         return Composante(
             type="structuree", valeur=split.total, texte=text, comptage_spatial=True,
             ventilation_confiance=split, minorant=minorant, limites=[LOCATION_LIMIT],
-            sources=self.sources("v_etablissements_zones", "v_etablissements", "v_zonage",
-                                 "v_unites"),
+            sources=self.sources("v_etablissements_zones", "v_etablissements",
+                                 *(() if analysis.places else ("v_zonage", "v_unites"))),
             requete=with_params(sql, params) + "\n" + bound_sql,
         )  # fmt: skip
 
