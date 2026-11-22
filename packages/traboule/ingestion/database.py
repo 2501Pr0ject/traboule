@@ -12,7 +12,7 @@ Usage : `uv run python -m traboule.ingestion.database [--force]`.
 
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
@@ -26,7 +26,14 @@ from traboule.contracts.etablissement import LYON
 from traboule.geo.crs import LAMBERT93, require_crs
 from traboule.geo.jointure import zonage_path
 from traboule.geo.minorant import load_units
-from traboule.ingestion.raw import DATE_HELP, RawDataError, data_files, resource_file
+from traboule.ingestion.raw import (
+    DATE_HELP,
+    RawDataError,
+    data_files,
+    reference_date,
+    resource_file,
+)
+from traboule.ingestion.sirene import SireneError, check_pairing, geoloc_path, stock_path
 from traboule.measure import measured, write_metrics
 
 OUTPUT = Path("data/processed/traboule.duckdb")
@@ -54,22 +61,78 @@ class Inputs:
     arrondissements: Path
     zones_reglement: Path
     raw_dir: Path
+    # Millésimes des tables tirés des données réellement lues (sinon ceux du catalogue).
+    millesimes: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def default(
         cls, interim_dir: Path = INTERIM_DIR, raw_dir: Path = RAW_DIR, date: str | None = None
     ) -> "Inputs":
         """Dossiers datés résolus par `ingestion.raw` (référence, sinon le plus récent)."""
+        zonage = zonage_path(date, raw_dir)
+        arrondissements = resource_file(
+            "REF-ARRONDISSEMENTS-LYON", "arrondissements", date, raw_dir, "*.geojson"
+        )
         return cls(
             interim_dir=interim_dir,
-            zonage=zonage_path(date, raw_dir),
+            zonage=zonage,
             communes=resource_file("REF-COMMUNES-ML-2024", "communes", date, raw_dir, "*.geojson"),
-            arrondissements=resource_file(
-                "REF-ARRONDISSEMENTS-LYON", "arrondissements", date, raw_dir, "*.geojson"
-            ),
+            arrondissements=arrondissements,
             zones_reglement=ZONES_REGLEMENT,
             raw_dir=raw_dir,
+            millesimes=millesimes(
+                sirene_month(interim_dir, date, raw_dir),
+                zonage.parent.parent.name,
+                arrondissements.parent.parent.name,
+                zonage.parent.parent.name == reference_date("SRC-002", "zonage"),
+            ),
         )
+
+
+MONTHS = ("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre",
+          "octobre", "novembre", "décembre")  # fmt: skip
+
+
+def month_label(month: str) -> str:
+    """`2026-10` → « d'octobre 2026 » ; `2026-11` → « de novembre 2026 »."""
+    name = MONTHS[int(month[5:7]) - 1]
+    return ("d'" if name[0] in "aeiouéâ" else "de ") + f"{name} {month[:4]}"
+
+
+def sirene_month(interim_dir: Path, date: str | None, raw_dir: Path) -> str:
+    """Mois de la paire Sirene qui a construit sirene_ml (mesures, sinon manifestes)."""
+    metrics = interim_dir / "metrics" / "sirene.json"
+    if metrics.exists():
+        month = json.loads(metrics.read_text(encoding="utf-8")).get("config", {}).get("mois")
+        if month:
+            return month
+    try:
+        return check_pairing(stock_path(date, raw_dir), geoloc_path(date, raw_dir), raw_dir)
+    except SireneError as exc:
+        raise DatabaseError(str(exc)) from exc
+
+
+def millesimes(stock_month: str, zonage_day: str, arrondissements_day: str,
+               reference_zonage: bool) -> dict[str, str]:  # fmt: skip
+    """Millésimes des tables construites depuis Sirene, le zonage et les arrondissements.
+
+    Le stock Sirene d'un mois décrit le répertoire au 1er de ce mois ; la version opposable du
+    zonage n'est affirmée que pour le zonage de référence.
+    """
+    stock = f"stock Sirene du {stock_month}-01"
+    zonage = f"zonage téléchargé le {zonage_day}"
+    return {
+        "etablissements": (
+            f"{stock} ; géolocalisation {month_label(stock_month)} ; communes au COG 2026"
+        ),
+        "etablissements_zones": f"{stock} × {zonage}",
+        "zonage": zonage
+        + (" (version opposable 200046977_PLUi_20260326)" if reference_zonage else ""),  # fmt: skip
+        "unites": (
+            "communes 2024 (référentiel adr_voie_lieu, 58 communes) ; arrondissements "
+            f"téléchargés le {arrondissements_day}"
+        ),
+    }
 
 
 def _quote(text: str) -> str:
@@ -143,12 +206,14 @@ def comment(con: duckdb.DuckDBPyConnection, entry: Table) -> None:
         con.execute(f'comment on column {entry.name}."{col.name}" is {_quote(col.description)}')
 
 
-def write_meta(con: duckdb.DuckDBPyConnection, raw_dir: Path, built_at: str) -> None:
+def write_meta(
+    con: duckdb.DuckDBPyConnection, raw_dir: Path, built_at: str, tables: tuple = TABLES
+) -> None:
     """Tables _catalogue et _sources."""
     con.execute("""create table _catalogue (nom varchar, description varchar, niveau varchar,
                    millesime varchar, sources varchar[], produite_par varchar,
                    avertissement varchar, lignes bigint, construite_le varchar)""")
-    for t in TABLES:
+    for t in tables:
         con.execute(
             "insert into _catalogue values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [t.name, t.description, t.niveau, t.millesime, list(t.sources), t.produite_par,
@@ -180,11 +245,13 @@ def build_database(out: Path, inputs: Inputs) -> dict:
     try:
         con.load_extension("spatial")
         load_tables(con, inputs)
-        for entry in TABLES:
+        tables = tuple(replace(t, millesime=inputs.millesimes.get(t.name, t.millesime))
+                       for t in TABLES)  # fmt: skip
+        for entry in tables:
             check_columns(con, entry)
             comment(con, entry)
         check_geographic_levels(con)
-        write_meta(con, inputs.raw_dir, datetime.now(UTC).isoformat(timespec="seconds"))
+        write_meta(con, inputs.raw_dir, datetime.now(UTC).isoformat(timespec="seconds"), tables)
         counts = dict(con.execute("select nom, lignes from _catalogue order by nom").fetchall())
         counts["_sources"] = _scalar(con, "select count(*) from _sources")
     except Exception:
@@ -210,6 +277,9 @@ def main(
         inputs = Inputs.default(date=date)
     except RawDataError as exc:
         typer.echo(f"ERREUR : {exc}", err=True)
+        sys.exit(1)
+    except DatabaseError as exc:
+        typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
         sys.exit(1)
     if out.exists() and not force:
         typer.echo(f"{out} existe : relancer avec --force.", err=True)

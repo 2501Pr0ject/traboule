@@ -9,7 +9,7 @@ import pytest
 
 from traboule.catalogue import TABLES
 from traboule.geo.crs import CRSError
-from traboule.ingestion.database import DatabaseError, Inputs, build_database
+from traboule.ingestion.database import DatabaseError, Inputs, build_database, millesimes
 
 SQUARE = [[0, 0], [100, 0], [100, 100], [0, 100], [0, 0]]
 
@@ -158,3 +158,38 @@ def test_zonage_in_wrong_crs_fails(inputs, tmp_path):
     with pytest.raises(CRSError):
         build_database(tmp_path / "base.duckdb", Inputs(**{**inputs.__dict__, "zonage": bad}))
     assert not (tmp_path / "base.duckdb").exists()
+
+
+def test_reference_millesimes_are_those_of_the_catalogue():
+    computed = millesimes("2026-10", "2026-10-28", "2026-11-01", reference_zonage=True)
+    static = {t.name: t.millesime for t in TABLES}
+    assert all(computed[name] == static[name] for name in computed)
+
+
+def test_rebuild_millesimes_follow_the_data_read():
+    m = millesimes("2026-11", "2026-11-22", "2026-11-01", reference_zonage=False)
+    assert m["etablissements"].startswith(
+        "stock Sirene du 2026-11-01 ; géolocalisation de novembre"
+    )
+    assert (
+        m["etablissements_zones"] == "stock Sirene du 2026-11-01 × zonage téléchargé le 2026-11-22"
+    )
+    assert m["zonage"] == "zonage téléchargé le 2026-11-22"  # version opposable non affirmée
+
+
+def test_catalogue_takes_the_millesimes_of_the_inputs(inputs, tmp_path):
+    out = tmp_path / "base.duckdb"
+    rebuilt = Inputs(
+        **{**inputs.__dict__, "millesimes": {"zonage": "zonage téléchargé le 2026-11-22"}}
+    )
+    build_database(out, rebuilt)
+    con = duckdb.connect(str(out), read_only=True)
+    assert con.execute("select millesime from _catalogue where nom = 'zonage'").fetchone()[0] == (
+        "zonage téléchargé le 2026-11-22"
+    )
+    assert (
+        "2026-11-22"
+        in con.execute(
+            "select comment from duckdb_tables() where table_name = 'zonage'"
+        ).fetchone()[0]
+    )
