@@ -9,6 +9,9 @@
 #                  par data.gouv est vérifié.
 #   kind: wfs   -> requête WFS GeoServer ; le nombre d'objets reçus est comparé au
 #                  numberMatched du serveur. `urls` est essayé dans l'ordre.
+#   retrieved_on -> dossier daté de la construction de référence (source, ou ressource) :
+#                  son manifeste est versionné ; la construction le lit s'il contient les
+#                  données, sinon le dossier daté le plus récent (traboule.ingestion.raw).
 
 metadata:
   version: "0.4"
@@ -32,6 +35,7 @@ sources:
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; mentions légales insee.fr)"
     update_frequency: monthly
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: stock_etablissement
@@ -63,6 +67,7 @@ sources:
     update_frequency: monthly
     pairing: "Couplé au stock SRC-001a du 2026-10-01 (seule paire en ligne ; la documentation v8 ne précise pas le stock source — voir registre)."
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: geolocalisation
@@ -93,6 +98,7 @@ sources:
     datagouv_dataset_id: "5e3aecb18b4c413b98daa42c"
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: zonage
@@ -115,6 +121,7 @@ sources:
     datagouv_dataset_id: "5e3aec728b4c4137ce5aa0bf"
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; catalogue uniquement, documents cibles non couverts)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: catalogue
@@ -134,6 +141,7 @@ sources:
     datagouv_dataset_id: "58c984b088ee386cdb1261f3"
     license: "Licence Ouverte 2.0 selon les mentions légales insee.fr ; la fiche data.gouv indique fr-lo (Licence Ouverte 1.0)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: cog_ensemble
@@ -153,6 +161,7 @@ sources:
     dataset_url: "https://www.insee.fr/fr/information/7671844"
     license: "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: table_appartenance
@@ -173,6 +182,7 @@ sources:
     dataset_url: "https://www.insee.fr/fr/information/7671867"
     license: "Licence Ouverte 2.0 (mentions légales insee.fr, sauf mention contraire)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: table_passage_2003_2026
@@ -204,9 +214,11 @@ sources:
       archive_url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/download/200046977_PLUi_20260326.zip"   # 3,1 Go — non téléchargée
     license: "Licence ouverte selon les CGU du GPU, qui pointent vers le texte Etalab de 2014 (v1) : version applicable ambiguë"
     status: investigated
+    retrieved_on: "2026-11-01"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: reglement_ecrit
+        retrieved_on: "2026-10-28"
         title: "200046977_reglement_20260326.pdf"
         kind: http
         url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_reglement_20260326.pdf"
@@ -215,6 +227,7 @@ sources:
         reference_date: "2026-03-26"
         limitations: "Règlement écrit de la version opposable publiée au GPU ; un seul PDF pour toutes les zones."
       - name: liste_pieces
+        retrieved_on: "2026-10-28"
         title: "Détails du document GPU (liste des 617 pièces écrites)"
         kind: http
         url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/details"
@@ -223,6 +236,7 @@ sources:
         reference_date: "2026-03-26"
       # Corpus pilote du Test 3 (ajouté le 2026-10-28, même document GPU)
       - name: cahier_communal_oullins
+        retrieved_on: "2026-10-28"
         title: "200046977_cahier_communal_SECT45_20260326.pdf"
         kind: http
         url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT45_20260326.pdf"
@@ -230,6 +244,7 @@ sources:
         published_at: "2026-04-23"
         limitations: "Cahier communal d'Oullins (secteur 45) ; procédure lue dans la pièce : « Mise en compatibilité n°10 – Approbation 2025 ». Contient les OAP de la commune (partie 4), dont l'OAP 7 « ZA de la Saulaie »."
       - name: cahier_communal_pierre_benite
+        retrieved_on: "2026-10-28"
         title: "200046977_cahier_communal_SECT46_20260326.pdf"
         kind: http
         url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_cahier_communal_SECT46_20260326.pdf"
@@ -237,6 +252,7 @@ sources:
         published_at: "2026-04-23"
         limitations: "Cahier communal de Pierre-Bénite (secteur 46), distinct de celui d'Oullins malgré la fusion de 2024 ; procédure lue dans la pièce : « Modification n°4 – Approbation 2024 »."
       - name: plan_de_secteurs
+        retrieved_on: "2026-10-28"
         title: "200046977_plan_de_secteurs_20260326.pdf"
         kind: http
         url: "https://www.geoportail-urbanisme.gouv.fr/api/document/4f3ddc27a9611b4bc94fa161443b8e86/files/200046977_plan_de_secteurs_20260326.pdf"
@@ -855,6 +871,7 @@ sources:
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     observed_update: "2026-08-04"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: sirene_metropole
@@ -874,6 +891,7 @@ sources:
     datagouv_dataset_id: "65cfe9aa969c7ab093a48414"
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv)"
     status: to_download
+    retrieved_on: "2026-10-28"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: communes
@@ -892,6 +910,7 @@ sources:
     datagouv_dataset_id: "66cf9fae3a5fe2a118a3180e"
     license: "Licence Ouverte 2.0 (lov2 sur data.gouv ; vérification sur data.grandlyon à faire)"
     status: to_download
+    retrieved_on: "2026-11-01"  # dossier daté de la construction de référence
     v1: true
     resources:
       - name: arrondissements

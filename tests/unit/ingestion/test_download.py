@@ -169,7 +169,8 @@ WFS = {
 
 def test_wfs_count_matches_number_matched(tmp_path: Path) -> None:
     with client_for(wfs_handler(3, 3)) as client:
-        (manifest,) = dl.download_source(client, make_source(WFS), tmp_path / "d")
+        ((manifest, _, status),) = dl.download_source(client, make_source(WFS), tmp_path / "d")
+    assert status == "téléchargée"
     assert manifest.crs == "urn:ogc:def:crs:EPSG::2154"
     with client_for(wfs_handler(2, 3)) as client, pytest.raises(dl.DownloadError, match="3"):
         dl.download_source(client, make_source(WFS), tmp_path / "e")
@@ -178,3 +179,76 @@ def test_wfs_count_matches_number_matched(tmp_path: Path) -> None:
 def test_wfs_hits_url_drops_output_format() -> None:
     url = dl.wfs_hits_url(WFS["urls"][0] + "&count=10")
     assert "resultType=hits" in url and "outputFormat" not in url and "count" not in url
+
+
+def clone_like(date_dir: Path, name: str = "ancienne") -> Path:
+    """Dossier de ressource réduit à son manifeste, comme dans un clone neuf."""
+    folder = date_dir / name
+    os.chmod(folder, 0o755)
+    for path in folder.iterdir():
+        os.chmod(path, 0o644)
+        if path.name != "manifest.json":
+            path.unlink()
+    return folder
+
+
+def test_manifest_only_folder_is_restored_when_identical(date_dir: Path) -> None:
+    folder = clone_like(date_dir)
+    manifest_before = (folder / "manifest.json").read_text()
+    with client_for(serve_payload) as client:
+        ((_, final, status),) = dl.download_source(
+            client, make_source(http_resource("ancienne")), date_dir, today="2026-11-22"
+        )
+    assert (final, status) == (folder, "identique à la référence")
+    assert (folder / "ancienne.pdf").read_bytes() == PAYLOAD
+    assert (folder / "manifest.json").read_text() == manifest_before  # manifeste versionné intact
+    assert not is_writable(folder)
+    assert not (date_dir.parent / "2026-11-22").exists()
+
+
+def test_changed_resource_goes_to_a_new_dated_folder(date_dir: Path) -> None:
+    folder = clone_like(date_dir)
+
+    def changed(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=b"version suivante")
+
+    with client_for(changed) as client:
+        ((manifest, final, status),) = dl.download_source(
+            client, make_source(http_resource("ancienne")), date_dir, today="2026-11-22"
+        )
+    assert status == "écart" and final == date_dir.parent / "2026-11-22" / "ancienne"
+    assert (final / "ancienne.pdf").read_bytes() == b"version suivante"
+    assert "Version différente de la référence du 2026-10-28" in manifest.limitations
+    assert manifest.published_at is None and manifest.reference_date is None
+    assert [p.name for p in folder.iterdir()] == ["manifest.json"]  # référence intacte
+    with client_for(changed) as client:  # relance le même jour : rien à refaire
+        ((_, again, status),) = dl.download_source(
+            client, make_source(http_resource("ancienne")), date_dir, today="2026-11-22"
+        )
+    assert (again, status) == (final, "écart")
+
+
+def test_updated_datagouv_resource_uses_the_current_url(date_dir: Path) -> None:
+    clone_like(date_dir)
+    new = b"stock du mois suivant"
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        if request.url.host == "www.data.gouv.fr":
+            current = {"id": "r1", "url": "https://exemple.test/courant.pdf",
+                       "checksum": {"type": "sha1", "value": hashlib.sha1(new).hexdigest()},
+                       "filesize": len(new), "last_modified": "2026-11-01T08:00:00"}  # fmt: skip
+            return httpx.Response(200, json={"resources": [current]})
+        if request.url.path == "/ancienne.pdf":
+            return httpx.Response(404)  # fichier de référence retiré par le producteur
+        return httpx.Response(200, content=new)
+
+    resource = http_resource("ancienne", datagouv={"dataset": "d1", "resource": "r1"})
+    with client_for(handler) as client:
+        ((manifest, final, status),) = dl.download_source(
+            client, make_source(resource), date_dir, today="2026-11-22"
+        )
+    assert status == "écart" and manifest.source_url == "https://exemple.test/courant.pdf"
+    assert str(manifest.published_at) == "2026-11-01"
+    assert (final / "courant.pdf").read_bytes() == new

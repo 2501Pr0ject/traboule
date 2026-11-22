@@ -2,8 +2,15 @@
 
 Conventions §3, règles 1 à 3. Chaque ressource d'une source (configs/sources.yaml) est
 téléchargée dans un dossier de travail renommé à la fin, puis passée en lecture seule
-(chmod -R a-w) ; une ressource existante n'est jamais réécrite ; le dossier daté reste
-inscriptible. Une URL `A_CONFIRMER` est refusée.
+(chmod -R a-w) ; une ressource dont les données existent n'est jamais réécrite ; le dossier
+daté reste inscriptible. Une URL `A_CONFIRMER` est refusée.
+
+Dossier qui ne contient que son manifeste (manifeste versionné, données absentes, cas d'un
+clone neuf) : l'immuabilité protège les données, pas le manifeste ; le téléchargement est
+autorisé. Si la ressource est encore disponible à l'identique (même sha256 que le manifeste),
+ses données rejoignent le dossier de référence, manifeste inchangé. Sinon, elle est
+téléchargée dans le dossier daté du jour avec son propre manifeste, et l'écart est signalé.
+Date par défaut : la date de référence de la ressource (`retrieved_on`), sinon le jour.
 
 Contrôles :
 - kind http + datagouv : sha1 et taille comparés à ceux publiés par l'API data.gouv ;
@@ -28,6 +35,7 @@ import typer
 
 from traboule.config import RAW_DIR, SOURCES_CONFIG, UNCONFIRMED_URL, load_sources
 from traboule.contracts.manifest import INGESTION_VERSION, Manifest
+from traboule.ingestion.raw import MANIFEST, data_files
 
 DATAGOUV_API = "https://www.data.gouv.fr/api/1"
 USER_AGENT = f"traboule-download/{INGESTION_VERSION}"
@@ -182,13 +190,39 @@ def as_date(value: Any) -> date | None:
     return date.fromisoformat(str(value)[:10])
 
 
-def _fetch_http(client: httpx.Client, resource: dict, dest_dir: Path) -> dict:
+def _pinned_is_reference(client: httpx.Client, url: str, reference: Manifest) -> bool:
+    """L'URL figée sert-elle encore un fichier de la taille du manifeste de référence ?"""
+    try:
+        head = client.head(url)
+    except httpx.HTTPError:
+        return False
+    length = head.headers.get("content-length")
+    return head.is_success and (length is None or int(length) == reference.file_size_bytes)
+
+
+def _fetch_http(
+    client: httpx.Client, resource: dict, dest_dir: Path, reference: Manifest | None = None
+) -> dict:
     url = resource_urls(resource)[0]
-    typer.echo(f"  {resource['name']} ← {url}")
-    size, sha256, sha1 = stream_to_file(client, url, dest_dir / file_name_for(resource, url))
-    out = {"url": url, "size": size, "sha256": sha256, "notes": [], "published_at": None}
+    dest = dest_dir / file_name_for(resource, url)
+    out = {"url": url, "notes": [], "published_at": None}
+    if reference and _pinned_is_reference(client, url, reference):
+        typer.echo(f"  {resource['name']} ← {url}")
+        size, sha256, _ = stream_to_file(client, url, dest)
+        if sha256 == reference.sha256:
+            typer.echo("    identique au manifeste de référence (sha256)")
+            return out | {"size": size, "sha256": sha256}
+        dest.unlink()
+    published = None
     if dg := resource.get("datagouv"):
+        # Ressource mise à jour à la source : version courante publiée par data.gouv.
         published = datagouv_resource(client, dg["dataset"], dg["resource"])
+        url = published.get("url") or url
+        dest = dest_dir / file_name_for(resource, url)
+    typer.echo(f"  {resource['name']} ← {url}")
+    size, sha256, sha1 = stream_to_file(client, url, dest)
+    out |= {"url": url, "size": size, "sha256": sha256}
+    if published is not None:
         if note := check_datagouv(published, size, sha1):
             out["notes"].append(note)
             typer.echo(f"    ATTENTION : {note}")
@@ -197,7 +231,9 @@ def _fetch_http(client: httpx.Client, resource: dict, dest_dir: Path) -> dict:
     return out
 
 
-def _fetch_wfs(client: httpx.Client, resource: dict, dest_dir: Path) -> dict:
+def _fetch_wfs(
+    client: httpx.Client, resource: dict, dest_dir: Path, reference: Manifest | None = None
+) -> dict:
     errors = []
     for url in resource_urls(resource):
         dest = dest_dir / file_name_for(resource, url)
@@ -219,25 +255,38 @@ def _fetch_wfs(client: httpx.Client, resource: dict, dest_dir: Path) -> dict:
     raise DownloadError("toutes les URLs WFS ont échoué :\n" + "\n".join(errors))
 
 
-def download_resource(
-    client: httpx.Client, source: dict, resource: dict, dest_dir: Path
-) -> Manifest:
-    """Télécharge une ressource dans dest_dir (créé) et y écrit son manifeste."""
+def fetch_resource(
+    client: httpx.Client, resource: dict, dest_dir: Path, reference: Manifest | None = None
+) -> dict:
+    """Télécharge les données d'une ressource dans dest_dir (créé), sans manifeste."""
     fetchers = {"http": _fetch_http, "wfs": _fetch_wfs}
     if resource["kind"] not in fetchers:
         raise DownloadError(f"kind inconnu : {resource['kind']}")
     dest_dir.mkdir(parents=True)
-    got = fetchers[resource["kind"]](client, resource, dest_dir)
+    return fetchers[resource["kind"]](client, resource, dest_dir, reference)
+
+
+def write_manifest(
+    source: dict, resource: dict, got: dict, dest_dir: Path, new_version: str = ""
+) -> Manifest:
+    """Manifeste d'une ressource téléchargée. `new_version` : écart avec la référence.
+
+    Une nouvelle version ne reprend ni le titre, ni les dates de la version de référence
+    décrites dans sources.yaml.
+    """
     notes = [resource["limitations"]] if resource.get("limitations") else []
+    if new_version:
+        notes.append(new_version)
     manifest = Manifest(
         source_id=source["id"],
-        source_title=resource.get("title") or source["title"],
+        source_title=source["title"] if new_version else resource.get("title") or source["title"],
         publisher=source["publisher"],
         source_url=got["url"],
         license=source["license"],
         retrieved_at=datetime.now(UTC),
-        published_at=as_date(resource.get("published_at")) or got.get("published_at"),
-        reference_date=as_date(resource.get("reference_date")),
+        published_at=(None if new_version else as_date(resource.get("published_at")))
+        or got.get("published_at"),
+        reference_date=None if new_version else as_date(resource.get("reference_date")),
         geographic_vintage=resource.get("geographic_vintage"),
         format=resource["format"],
         file_size_bytes=got["size"],
@@ -246,8 +295,16 @@ def download_resource(
         limitations=" ".join(notes + got["notes"]) or None,
         crs=got.get("crs") or resource.get("crs"),
     )
-    (dest_dir / "manifest.json").write_text(manifest.model_dump_json(indent=2) + "\n")
+    (dest_dir / MANIFEST).write_text(manifest.model_dump_json(indent=2) + "\n")
     return manifest
+
+
+def download_resource(
+    client: httpx.Client, source: dict, resource: dict, dest_dir: Path
+) -> Manifest:
+    """Télécharge une ressource dans dest_dir (créé) et y écrit son manifeste."""
+    got = fetch_resource(client, resource, dest_dir)
+    return write_manifest(source, resource, got, dest_dir)
 
 
 def make_read_only(path: Path) -> None:
@@ -257,32 +314,81 @@ def make_read_only(path: Path) -> None:
         p.chmod(p.stat().st_mode & ~write_bits)
 
 
+def reference_manifest(folder: Path) -> Manifest | None:
+    """Manifeste d'un dossier qui ne contient que lui (données absentes), sinon None."""
+    if folder.is_dir() and not data_files(folder) and (folder / MANIFEST).exists():
+        return Manifest.model_validate_json((folder / MANIFEST).read_text(encoding="utf-8"))
+    return None
+
+
 def download_source(
-    client: httpx.Client, source: dict, date_dir: Path, names: list[str] | None = None
-) -> list[Manifest]:
+    client: httpx.Client,
+    source: dict,
+    date_dir: Path,
+    names: list[str] | None = None,
+    today: str | None = None,
+) -> list[tuple[Manifest, Path, str]]:
     """Télécharge les ressources demandées dans date_dir, une par une, en lecture seule.
 
-    Refuse avant tout téléchargement si l'une des ressources existe déjà ou si une URL
-    n'est pas confirmée.
+    Refuse avant tout téléchargement si les données de l'une des ressources existent déjà
+    ou si une URL n'est pas confirmée. Renvoie (manifeste, dossier, statut) par ressource ;
+    statut : « téléchargée », « identique à la référence » ou « écart » (nouveau dossier).
     """
+    today = today or date.today().isoformat()
     resources = select_resources(source, names)
     for resource in resources:
         resource_urls(resource)
-    existing = [r["name"] for r in resources if (date_dir / r["name"]).exists()]
+    # Un dossier qui existe sans être réduit à son manifeste contient des données : intouchable.
+    existing = [
+        r["name"]
+        for r in resources
+        if (date_dir / r["name"]).exists() and reference_manifest(date_dir / r["name"]) is None
+    ]
     if existing:
         raise DownloadError(f"ressource(s) déjà présente(s) dans {date_dir} : {existing}")
     date_dir.mkdir(parents=True, exist_ok=True)
-    manifests = []
+    results = []
     for resource in resources:
-        work_dir = date_dir / f".{resource['name']}.partial"
+        name = resource["name"]
+        target = date_dir / name
+        reference = reference_manifest(target)
+        done = date_dir.parent / today / name
+        if reference is not None and data_files(done):
+            typer.echo(f"  {name} : écart déjà téléchargé dans {done}")
+            manifest = Manifest.model_validate_json((done / MANIFEST).read_text(encoding="utf-8"))
+            results.append((manifest, done, "écart"))
+            continue
+        work_dir = date_dir / f".{name}.partial"
         if work_dir.exists():
             shutil.rmtree(work_dir)  # reste d'un essai interrompu, jamais validé
-        manifests.append(download_resource(client, source, resource, work_dir))
-        final_dir = date_dir / resource["name"]
-        work_dir.rename(final_dir)
-        make_read_only(final_dir)
-        typer.echo(f"    ressource en lecture seule : {final_dir}")
-    return manifests
+        got = fetch_resource(client, resource, work_dir, reference)
+        if reference is None:
+            manifest = write_manifest(source, resource, got, work_dir)
+            work_dir.rename(target)
+            final, status = target, "téléchargée"
+        elif got["sha256"] == reference.sha256:
+            for path in data_files(work_dir):
+                path.rename(target / path.name)
+            shutil.rmtree(work_dir)
+            manifest, final, status = reference, target, "identique à la référence"
+        else:
+            final = date_dir.parent / today / name
+            if final.exists() or today == date_dir.name:
+                shutil.rmtree(work_dir)
+                raise DownloadError(f"{name} : écart avec la référence, et {final} existe déjà")
+            note = (
+                f"Version différente de la référence du {date_dir.name} (sha256 "
+                f"{reference.sha256[:8]} → {got['sha256'][:8]}) : ressource modifiée à la source."
+            )
+            manifest = write_manifest(source, resource, got, work_dir, new_version=note)
+            final.parent.mkdir(parents=True, exist_ok=True)
+            work_dir.rename(final)
+            status = "écart"
+            typer.echo(f"    ÉCART : {note} Téléchargée dans {final}")
+        make_read_only(final)
+        typer.echo(f"    ressource en lecture seule : {final}")
+        results.append((manifest, final, status))
+    return results
 
 
 app = typer.Typer(add_completion=False)
@@ -291,7 +397,10 @@ app = typer.Typer(add_completion=False)
 @app.command()
 def main(
     source_id: Annotated[str, typer.Argument(help="Identifiant de source, ex. SRC-002")],
-    retrieved_on: Annotated[str | None, typer.Option("--date", help="Dossier daté")] = None,
+    retrieved_on: Annotated[
+        str | None,
+        typer.Option("--date", help="Dossier daté (défaut : date de référence, sinon le jour)"),
+    ] = None,
     config: Annotated[Path, typer.Option(help="Fichier sources.yaml")] = SOURCES_CONFIG,
     raw_dir: Annotated[Path, typer.Option(help="Racine des données brutes")] = RAW_DIR,
     resource: Annotated[
@@ -299,16 +408,24 @@ def main(
     ] = None,
 ) -> None:
     """Télécharge les ressources d'une source (toutes, ou celles de --resource)."""
-    retrieved_on = retrieved_on or date.today().isoformat()
+    today = date.today().isoformat()
     try:
         source = find_source(load_sources(config), source_id)
-        date_dir = raw_dir / source_id / retrieved_on
-        typer.echo(f"{source_id} → {date_dir}")
+        groups: dict[str, list[str]] = {}
+        for r in select_resources(source, resource):
+            day = retrieved_on or r.get("retrieved_on") or source.get("retrieved_on") or today
+            groups.setdefault(day, []).append(r["name"])
+        results = []
         with httpx.Client(
             timeout=TIMEOUT, follow_redirects=True, headers={"User-Agent": USER_AGENT}
         ) as client:
-            download_source(client, source, date_dir, resource)
-        typer.echo("OK")
+            for day, names in groups.items():
+                typer.echo(f"{source_id} → {raw_dir / source_id / day}")
+                results += download_source(client, source, raw_dir / source_id / day, names, today)
+        gaps = [final for _, final, status in results if status == "écart"]
+        typer.echo(f"OK ({len(results)} ressource(s), {len(gaps)} écart(s) avec la référence)")
+        for final in gaps:
+            typer.echo(f"  écart : {final.relative_to(raw_dir)}")
     except (DownloadError, httpx.HTTPError) as exc:
         typer.echo(f"ERREUR {source_id} : {exc}", err=True)
         sys.exit(1)
