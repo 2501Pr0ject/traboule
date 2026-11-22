@@ -95,11 +95,45 @@ def pages(p: Passage) -> str:
     return f"p. {p.page_debut}" + (f"-{p.page_fin}" if p.page_fin != p.page_debut else "")
 
 
-def render(index: int, p: Passage) -> str:
-    head = (
-        f"[{index}] {document_title(p.doc_id, p.titre_piece)} — {' > '.join(p.chemin)} — {pages(p)}"
-    )
-    return f"{head} — {p.version_piece}\n{p.texte}"
+def blocks(passages: list[Passage]) -> list[str]:
+    """Passages numérotés sous leurs titres, chaque titre écrit une seule fois (arborescence).
+
+    Un passage n'emporte que les titres qui changent depuis le précédent : le contexte d'un
+    chapitre entier reste proche de la taille de son texte.
+    """
+    out, previous_doc, previous = [], None, []
+    for i, p in enumerate(passages, start=1):
+        lines = []
+        title = document_title(p.doc_id, p.titre_piece)
+        if title != previous_doc:
+            lines.append(f"# {title}")
+            previous_doc, previous = title, []
+        common = 0
+        while common < min(len(previous), len(p.chemin)) and previous[common] == p.chemin[common]:
+            common += 1
+        lines += [f"{'#' * min(level + 2, 6)} {p.chemin[level]}" for level in
+                  range(common, len(p.chemin))]  # fmt: skip
+        lines.append(f"[{i}] {p.texte}")
+        out.append("\n".join(lines))
+        previous = p.chemin
+    return out
+
+
+def context_tokens(passages: list[Passage], counter: TokenCounter) -> list[int]:
+    """Coût en tokens de chaque bloc du contexte (séparateurs compris)."""
+    return [counter.count(b) + 2 for b in blocks(passages)]
+
+
+def renumber(text: str, cited: list[int]) -> str:
+    """Numéros de passages du contexte cités dans le texte → numéros des citations affichées."""
+    mapping = {n: k for k, n in enumerate(cited, start=1)}
+
+    def replace(match: re.Match) -> str:
+        n = int(match.group(1) or match.group(2))
+        return f"[{mapping[n]}]" if n in mapping else ""
+
+    text = re.sub(r"\(?\bpassages? \[?(\d+)\]?\)?|\[(\d+)\]", replace, text)
+    return re.sub(r"\s+([.,)])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
 
 
 def citation(p: Passage) -> Citation:
@@ -123,14 +157,12 @@ def _abstain(motif: MotifAbstention, limit: str, notes: list[str]) -> Composante
 
 def fit(passages: list[Passage], counter: TokenCounter, budget: int) -> tuple[list[Passage], int]:
     """Plus long préfixe des passages qui tient dans le budget ; tokens utilisés."""
-    kept, used = [], 0
-    for i, p in enumerate(passages, start=1):
-        cost = counter.count(render(i, p)) + 2
+    used = 0
+    for n, cost in enumerate(context_tokens(passages, counter)):
         if used + cost > budget:
-            break
-        kept.append(p)
+            return passages[:n], used
         used += cost
-    return kept, used
+    return list(passages), used
 
 
 def draft(
@@ -150,7 +182,7 @@ def draft(
     budget = llm.config.input_budget(strategy) - counter.count(RULES) - counter.count(user) - MARGIN
     kept, used = fit(contexte.passages, counter, budget)
     if len(kept) < len(contexte.passages) and not contexte.trimmable:
-        total = sum(counter.count(render(i, p)) + 2 for i, p in enumerate(contexte.passages, 1))
+        total = sum(context_tokens(contexte.passages, counter))
         limit = (
             f"Contexte de {total} tokens au-delà du budget de {budget} tokens de la fenêtre "
             f"({getattr(llm.config.num_ctx, strategy)}) : le {strategy.upper()} ne s'applique pas."
@@ -163,10 +195,13 @@ def draft(
         f"{len(kept)} passages en contexte ({used} tokens)"
         + (f", {dropped} retirés faute de place" if dropped else "")
     )
-    system = RULES + "\n\nPassages :\n\n" + "\n\n".join(render(i, p) for i, p in enumerate(kept, 1))
+    system = RULES + "\n\nPassages :\n\n" + "\n\n".join(blocks(kept))
     result = llm.chat(strategy, system, user, SCHEMA)
     if result.prompt_tokens is not None:
-        notes.append(f"{result.prompt_tokens} tokens évalués par le modèle ({result.seconds} s)")
+        notes.append(
+            f"prompt de {result.prompt_tokens} tokens, lu en {result.prompt_seconds} s "
+            f"(réponse comprise : {result.seconds} s)"
+        )
     try:
         answer = Draft.model_validate_json(result.content)
     except ValidationError:
@@ -180,10 +215,11 @@ def draft(
     if not cited or any(i < 1 or i > len(kept) for i in cited):
         limit = f"Citations non vérifiées : passages {cited} pour {len(kept)} passages fournis."
         return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
+    text = renumber(answer.reponse, cited)
     return Composante(
         type="documentaire",
-        valeur=answer.reponse,
-        texte=answer.reponse,
+        valeur=text,
+        texte=text,
         citations=[citation(kept[i - 1]) for i in cited],
         limites=[MODEL_LIMIT],
         notes=notes,

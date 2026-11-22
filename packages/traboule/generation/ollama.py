@@ -20,6 +20,8 @@ class ChatResult:
     # Tokens du prompt évalués par le modèle : un préfixe gardé en cache n'y figure pas.
     prompt_tokens: int | None = None
     output_tokens: int | None = None
+    # Durée de lecture du prompt : courte quand le serveur réutilise un préfixe en cache.
+    prompt_seconds: float | None = None
     seconds: float | None = None
 
 
@@ -49,11 +51,12 @@ class OllamaClient:
             raise OllamaError(
                 f"Ollama ({self.config.url}, {self.config.model}) : {error}"
             ) from error
-        total = data.get("total_duration")
+        total, prompt = data.get("total_duration"), data.get("prompt_eval_duration")
         return ChatResult(
             content=content,
             prompt_tokens=data.get("prompt_eval_count"),
             output_tokens=data.get("eval_count"),
+            prompt_seconds=round(prompt / 1e9, 1) if prompt else None,
             seconds=round(total / 1e9, 1) if total else None,
         )
 

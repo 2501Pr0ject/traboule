@@ -8,7 +8,7 @@ import pytest
 from traboule.contracts.passage import Passage
 from traboule.generation.llm_config import load_llm_config
 from traboule.generation.ollama import ChatResult, OllamaClient, OllamaError
-from traboule.generation.redaction import Contexte, document_title, draft, render
+from traboule.generation.redaction import Contexte, blocks, document_title, draft, renumber
 
 CONFIG = load_llm_config()
 
@@ -82,7 +82,8 @@ def test_verified_answer_cites_document_page_and_version():
         602,
         "Modification n°4 - Approbation 2024",
     )
-    assert "[2] Règlement du PLU-H" in llm.calls[0]["system"]
+    assert "# Règlement du PLU-H" in llm.calls[0]["system"]
+    assert "[2] mot mot" in llm.calls[0]["system"]
     assert llm.calls[0]["user"] == "Hauteur des clôtures ?"
 
 
@@ -107,7 +108,7 @@ def test_trimmable_context_is_cut_to_the_budget():
     c = draft(llm, WordCounter(), "rag", "q", Contexte(big))
     assert not c.abstention
     assert "retirés faute de place" in " ".join(c.notes)
-    assert llm.calls[0]["system"].count("Règlement du PLU-H —") == 3
+    assert "[3] mot" in llm.calls[0]["system"] and "[4] mot" not in llm.calls[0]["system"]
 
 
 def test_untrimmable_context_over_budget_abstains_without_calling_the_model():
@@ -134,4 +135,21 @@ def test_titles_of_cahiers():
     assert document_title("200046977_cahier_communal_SECT22_20260326.pdf") == (
         "Cahier communal (secteur 22)"
     )
-    assert render(1, passage(1)).startswith("[1] Règlement du PLU-H — Partie II > Zone UEi1")
+
+
+def test_context_writes_each_heading_once():
+    first, second = blocks([passage(1), passage(2)])
+    assert first.splitlines() == [
+        "# Règlement du PLU-H",
+        "## Partie II",
+        "### Zone UEi1",
+        "#### Article 1",
+        "[1] " + " ".join(["mot"] * 10),
+    ]
+    assert second.splitlines()[0] == "#### Article 2" and second.splitlines()[1].startswith("[2] ")
+
+
+def test_passage_numbers_in_the_text_follow_the_displayed_citations():
+    text = "Non réglementé (passage [16]), sauf exceptions [17] ; voir [3]."
+    assert renumber(text, [16, 17]) == "Non réglementé [1], sauf exceptions [2] ; voir."
+    assert renumber("Selon le passage 4, 60 %.", [4]) == "Selon le [1], 60 %."
