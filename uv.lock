@@ -3643,6 +3643,10 @@ dependencies = [
 embeddings = [
     { name = "flagembedding" },
 ]
+generation = [
+    { name = "huggingface-hub" },
+    { name = "tokenizers" },
+]
 index = [
     { name = "qdrant-client" },
 ]
@@ -3665,6 +3669,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.1" },
     { name = "flagembedding", marker = "extra == 'embeddings'", specifier = ">=1.2" },
     { name = "httpx", specifier = ">=0.27" },
+    { name = "huggingface-hub", marker = "extra == 'generation'", specifier = ">=0.24" },
     { name = "polars", specifier = ">=1.0" },
     { name = "pyarrow", specifier = ">=16" },
     { name = "pydantic", specifier = ">=2.7" },
@@ -3672,9 +3677,10 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6" },
     { name = "qdrant-client", marker = "extra == 'index'", specifier = ">=1.12" },
     { name = "rich", specifier = ">=13" },
+    { name = "tokenizers", marker = "extra == 'generation'", specifier = ">=0.20" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["pdf", "embeddings", "index"]
+provides-extras = ["pdf", "embeddings", "index", "generation"]
 
 [package.metadata.requires-dev]
 dev = [

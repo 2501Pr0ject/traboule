@@ -17,6 +17,9 @@ dependencies = [
   "rich>=13",
 ]
 
+[project.scripts]
+traboule = "traboule.chaine.cli:app"
+
 [build-system]
 requires = ["uv_build>=0.8.0,<0.14"]
 build-backend = "uv_build"
@@ -29,6 +32,7 @@ module-root = "packages"
 pdf = ["pymupdf>=1.24", "docling>=2.0"]  # extraction du règlement et des cahiers (ADR-0008)
 embeddings = ["FlagEmbedding>=1.2"]  # BGE-M3 dense + sparse
 index = ["qdrant-client>=1.12"]  # index vectoriel Qdrant
+generation = ["tokenizers>=0.20", "huggingface-hub>=0.24"]  # comptage des tokens du modèle
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.22", "psutil>=5.9"]
