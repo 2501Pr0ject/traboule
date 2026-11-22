@@ -22,3 +22,13 @@ Décision du porteur (2026-11-22) : priorité au fonctionnel (`traboule ask` en 
 - **BSARD** et benchmark public français (tâches françaises de MTEB) : non lancés.
 - **Comparaison RAGnarok-AI des stratégies** RAG, CAG et KAG léger (ADR-0005, ADR-0014), avec les coûts : temps par question, pic mémoire réel, préparation et réutilisation du cache CAG.
 - **Mise à jour de `docs/cadrage-v1.md` §3.1** : y intégrer l'ADR-0014 (CAG et KAG léger), et retirer CAG et KAG des exclusions du §3.3.
+
+## Chaîne de réponse (constats du 2026-11-22)
+
+- **Zones AU** : pour AUEi1, les trois stratégies répondent par les règles de la zone U de référence (UEi1) sans rappeler le régime d'attente du chapitre AUs.co (gestion du bâti existant avant l'ouverture à l'urbanisation). Piste : verser la citation de `zones_reglement` (règle AU → U, page) au contexte comme passage structurel.
+- **CAG hors fenêtre** : avec le contexte en arborescence, 30 chapitres sur 33 tiennent ; UPr7 (20,0 k tokens), URm1 (19,5 k) et URm2 (19,4 k) dépassent le budget de 19,1 k (`num_ctx` 20 480 moins `num_predict` 1 024, consigne et question) : abstention. Options, à décider : `num_ctx` CAG à 21 504, ou `num_predict` réduit pour le CAG.
+- **Renvois dans le RAG** : les passages de la partie I cités par renvoi sont nommés par leur titre, pas chargés (comme pour le CAG) ; l'ADR-0014 prévoyait de les ajouter dans la limite du budget. Raison : préremplissage d'environ 110 tokens/s, soit plus de 2 minutes pour remplir la fenêtre.
+- **KAG** : rapprochement des intitulés par racine de 6 lettres, sans synonymes (« bâtiment » ne rejoint pas « construction ») ; repli sur les 6 premiers articles du chapitre pour une question générale.
+- **Analyse** : lexique fermé de 7 activités (au-delà, code NAF explicite demandé) ; activité non reconnue repérée par heuristique (mots qui suivent « établissements ») ; partie réglementaire d'une question mixte isolée sur « , et ».
+- **Formulation** : le minorant s'écrit sans séparateur de milliers (`Minorant.formulation`, « jusqu'à 7582 ») ; le modèle reprend parfois des numéros de passages dans son texte (renumérotés selon les citations affichées).
+- **Latence** (M2, 16 Go) : 15 à 60 s par question en RAG ou KAG ; 2 à 4 minutes pour la première question d'un chapitre en CAG, une dizaine de secondes ensuite (préfixe en cache). `ollama ps` : 6,3 Go à 16 384 tokens, 6,1 Go à 20 480, 100 % GPU.
