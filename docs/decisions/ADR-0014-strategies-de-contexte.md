@@ -52,3 +52,10 @@ Tokens du modèle de génération (`qwen3:8b`), comptés avec le tokenizer Qwen3
 
 ## Critère de réexamen
 Si, sur le jeu de référence validé, une stratégie est dominée par une autre sur toutes les métriques (qualité, abstention, coût), elle est retirée de la v1.
+
+## Amendement du 2026-11-22 : renvois en RAG et fenêtre du CAG
+
+Décisions du porteur (2026-11-22), après la première chaîne complète.
+
+- **Renvois en RAG : nommés par leur titre, pas chargés.** Les passages cités par renvoi depuis les passages trouvés (chapitres et articles de la partie I, OAP 0.1) ne sont plus ajoutés au contexte dans la limite du budget : la réponse les nomme par leur titre (« Renvois cités, non chargés »), comme le CAG. Raison : le coût de lecture du prompt, environ 110 tokens/s sur la machine de référence (M2, 16 Go). Remplir la fenêtre de 16 384 tokens prendrait plus de 2 minutes par question, contre 15 à 60 s avec les seuls passages trouvés.
+- **Fenêtre du CAG : 22 528 tokens** (au lieu de 20 480). Le contexte envoyé au modèle (titres écrits une seule fois, passages numérotés) dépasse d'environ 10 % le texte seul mesuré plus haut ; à 20 480 tokens, moins les 1 024 réservés à la réponse, UPr7 (20,0 k), URm1 (19,5 k) et URm2 (19,4 k) ne tenaient pas. À 22 528 tokens, les 33 chapitres de zone tiennent. Vérifié le 2026-11-22 : UPr7, URm1 et URm2 répondent en CAG ; `ollama ps` : 6,8 Go, 100 % GPU, contexte 22 528 ; lecture d'un chapitre de 19,5 à 20 k tokens en 206 à 261 s à la première question, préfixe réutilisé ensuite.

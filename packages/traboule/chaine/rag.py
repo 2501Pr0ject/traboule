@@ -2,7 +2,7 @@
 
 Les questions sont encodées par BGE-M3 sur CPU, pour laisser le GPU au modèle de génération
 (décision du porteur, 2026-11-22). Les renvois des passages trouvés (partie I du règlement,
-OAP 0.1) sont cités par leur titre, sans être chargés.
+OAP 0.1) sont cités par leur titre, sans être chargés (ADR-0014, amendement du 2026-11-22).
 """
 
 import logging
