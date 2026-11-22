@@ -68,3 +68,7 @@ class RagStrategy:
         notes = [f"RAG : {len(hits)} passages trouvés (recherche hybride dense + sparse{scope})"]
         notes += renvois_notes(hits, {p.passage_id for p in hits})
         return Contexte(hits, trimmable=True, notes=notes)
+
+    def close(self) -> None:
+        if hasattr(self.search, "close"):
+            self.search.close()

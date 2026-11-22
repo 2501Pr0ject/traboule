@@ -134,3 +134,13 @@ def test_rag_interleaves_one_search_per_chapter():
     assert search.calls == [["AUs.co"], ["UEi1"]]
     assert [p.passage_id for p in ctx.passages][:4] == ["p11", "p1", "p12", "p2"]
     assert len(ctx.passages) == 10
+
+
+def test_closing_the_chain_closes_the_search_client(con):
+    closed = []
+    search = FakeSearch([passage(1)])
+    search.close = lambda: closed.append(True)
+    c = chain(con, search)
+    c.ask("Quelle hauteur en zone UEi1 ?")
+    c.close()
+    assert closed == [True]
