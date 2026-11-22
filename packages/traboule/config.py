@@ -11,6 +11,7 @@ PROCESSED_DIR = ROOT / "data" / "processed"
 SOURCES_CONFIG = ROOT / "configs" / "sources.yaml"
 INDEX_CONFIG = ROOT / "configs" / "index.yaml"
 OAP_EXCEPTIONS = ROOT / "configs" / "oap_exceptions.yaml"
+LLM_CONFIG = ROOT / "configs" / "llm.yaml"
 
 # Indice de confiance de zone (ADR-0006) : seuils provisoires de distance au polygone
 # d'une autre zone, et rayon au-delà duquel la distance est notée « ≥ rayon ».

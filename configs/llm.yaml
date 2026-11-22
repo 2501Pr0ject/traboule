@@ -1,0 +1,22 @@
+# Modèle de génération (ADR-0014 ; décision du porteur, 2026-11-02).
+# Lu par traboule.generation.llm_config ; recopié dans chaque fichier de mesure.
+# Les clés reprennent les noms de l'API d'Ollama (/api/chat, /api/generate).
+
+url: http://localhost:11434
+model: qwen3:8b       # Q4_K_M, 5,2 Go ; fenêtre native 40 960 tokens dans Ollama
+tokenizer: Qwen/Qwen3-8B  # tokenizer Hugging Face du modèle : comptage des tokens avant envoi
+think: false          # mode réflexion de Qwen3 désactivé (activé par défaut dans le modèle)
+keep_alive: 30m       # durée de maintien du modèle, et du préfixe du CAG, en mémoire
+
+# Options communes à toutes les stratégies ; elles remplacent celles du Modelfile
+# (temperature 0.6 par défaut). Une option inconnue est refusée au chargement.
+options:
+  temperature: 0
+  seed: 20261102
+  num_predict: 1024   # plafond de la réponse : réservé dans le budget de chaque fenêtre
+
+# Fenêtre de contexte (num_ctx, en tokens) par stratégie de contexte.
+num_ctx:
+  rag: 16384
+  kag: 16384
+  cag: 20480          # chapitre de zone ≤ 18 035 tokens, sans les passages de la partie I

@@ -1,4 +1,4 @@
-"""Génération locale de réponses sourcées et abstention multi-signal (semaines 4–5, ADR-0010).
+"""Génération locale de réponses sourcées et abstention multi-signal (ADR-0010, ADR-0014).
 
-Aucune implémentation en semaine 1.
+Configuration du modèle : `llm_config` (lit `configs/llm.yaml`).
 """
