@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traboule</title>
+<link rel="icon" href="data:,">
+<style>
+:root {
+  --bg: #f6f5f1; --surface: #ffffff; --ink: #1d1f22; --muted: #5d636b; --line: #dedbd2;
+  --accent: #8a3b12; --accent-ink: #ffffff; --sql: #1f6f50; --doc: #2b5797; --warn: #9a6200;
+  --warn-bg: #fff4dc; --code: #f1efe9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --surface: #1e2125; --ink: #e8e6e1; --muted: #a2a7ad; --line: #34383e;
+    --accent: #e08a5a; --accent-ink: #15171a; --sql: #6cc59f; --doc: #8fb3ef; --warn: #f0b94a;
+    --warn-bg: #2d2615; --code: #26292e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+header h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.01em; }
+header p { margin: 4px 0 24px; color: var(--muted); }
+form { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+label.q { display: block; font-weight: 600; margin-bottom: 8px; }
+textarea { width: 100%; min-height: 84px; resize: vertical; padding: 10px 12px; font: inherit;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+textarea:focus, button:focus-visible, .chip:focus-visible, input:focus-visible + span {
+  outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  margin-top: 12px; }
+fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+legend { font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+.seg input { position: absolute; opacity: 0; }
+.seg span { display: inline-block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+  cursor: pointer; font-size: .92rem; }
+.seg input:checked + span { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button[type=submit] { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px;
+  padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+button[disabled] { opacity: .6; cursor: progress; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { font: inherit; font-size: .82rem; color: var(--muted); background: transparent;
+  border: 1px dashed var(--line); border-radius: 999px; padding: 3px 10px; cursor: pointer; text-align: left; }
+.chip:hover { color: var(--ink); border-style: solid; }
+#status { margin: 16px 2px; color: var(--muted); min-height: 1.5em; }
+#status.error { color: var(--warn); }
+.route { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; margin: 8px 0 12px; }
+.badge { font-weight: 700; font-size: .8rem; letter-spacing: .04em; padding: 2px 8px; border-radius: 6px;
+  background: var(--ink); color: var(--bg); }
+.route .why { color: var(--muted); font-size: .92rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--doc);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+.card.sql { border-left-color: var(--sql); }
+.card.abst { border-left-color: var(--warn); }
+.card h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  margin: 0 0 8px; }
+.abst-tag { display: inline-block; background: var(--warn-bg); color: var(--warn); font-weight: 600;
+  font-size: .85rem; border-radius: 6px; padding: 1px 8px; margin-bottom: 6px; }
+.answer { margin: 0 0 10px; white-space: pre-wrap; }
+.card h3 { font-size: .85rem; margin: 12px 0 4px; }
+ol, ul { margin: 0; padding-left: 20px; }
+li { margin: 3px 0; font-size: .92rem; }
+.cite-path { color: var(--muted); }
+.limit { color: var(--muted); font-size: .88rem; margin: 10px 0 0; }
+details { margin-top: 10px; font-size: .88rem; }
+summary { cursor: pointer; color: var(--muted); }
+pre { background: var(--code); border-radius: 6px; padding: 10px; overflow-x: auto; font-size: .8rem;
+  white-space: pre-wrap; word-break: break-word; }
+footer { margin-top: 32px; color: var(--muted); font-size: .82rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Traboule</h1>
+    <p>Établissements, zonage et règlement du PLU-H de la Métropole de Lyon : réponses sourcées, abstention explicite.</p>
+  </header>
+
+  <form id="ask">
+    <label class="q" for="question">Votre question</label>
+    <textarea id="question" name="question" required minlength="3" maxlength="600"
+      placeholder="Ex. : Combien d'établissements actifs sont situés en zone UEi1 à Vénissieux ?"></textarea>
+    <div class="row">
+      <fieldset>
+        <legend>Construction du contexte</legend>
+        <label class="seg" title="Recherche hybride dans l'index des passages"><input type="radio" name="strategie" value="rag" checked><span>RAG</span></label>
+        <label class="seg" title="Chapitre de zone ou OAP chargé en entier"><input type="radio" name="strategie" value="cag"><span>CAG</span></label>
+        <label class="seg" title="Parcours du graphe de la structure du règlement"><input type="radio" name="strategie" value="kag"><span>KAG léger</span></label>
+      </fieldset>
+      <button type="submit" id="submit">Demander</button>
+    </div>
+    <div class="chips" id="examples" aria-label="Exemples de questions"></div>
+  </form>
+
+  <div id="status" role="status" aria-live="polite"></div>
+  <section id="result" aria-live="polite"></section>
+
+  <footer>
+    Le règlement écrit fait foi. Un comptage par zone est une analyse de localisation, pas un constat réglementaire.
+    Modèle et index locaux.
+  </footer>
+</main>
+
+<script>
+const MOTIFS = {
+  zone_inexistante: "zone inexistante", document_non_ingere: "document non ingéré",
+  niveau_non_charge: "niveau géographique non chargé", hors_version: "hors des versions chargées",
+  diffusion_partielle: "diffusion partielle", autre_document: "régi par un autre document",
+  confiance_faible: "confiance de zone faible", preuve_insuffisante: "preuve insuffisante",
+  citation_non_verifiee: "citation non vérifiée",
+};
+const $ = (sel) => document.querySelector(sel);
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") node.className = value; else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) {
+    if (child == null || child === "") continue;
+    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return node;
+}
+
+function citation(c) {
+  const path = (c.chemin || []).slice(-3).join(" › ");
+  return el("li", {}, `${c.titre}, p. ${c.page} — `, el("span", { class: "cite-path" }, path),
+    ` — ${c.version_piece}`);
+}
+
+function card(c, strategie) {
+  const isSql = c.type === "structuree";
+  const title = isSql ? "Données (SQL)" : `Règlement écrit (${(strategie || "").toUpperCase()})`;
+  const node = el("article", { class: `card ${isSql ? "sql" : "doc"} ${c.abstention ? "abst" : ""}` },
+    el("h2", {}, title));
+  if (c.abstention) node.append(el("div", { class: "abst-tag" }, `Abstention — ${MOTIFS[c.motif] || c.motif}`));
+  node.append(el("p", { class: "answer" }, c.texte || JSON.stringify(c.valeur)));
+  if (c.citations.length) {
+    node.append(el("h3", {}, "Passages cités"), el("ol", {}, c.citations.map(citation)));
+  }
+  if (c.sources.length) {
+    node.append(el("h3", {}, "Sources des données"),
+      el("ul", {}, c.sources.map((s) => el("li", {}, `${s.table} — ${s.millesime} (${s.sources.join(", ")})`))));
+  }
+  if (!c.abstention) {
+    for (const limit of c.limites) node.append(el("p", { class: "limit" }, `Limite : ${limit}`));
+  }
+  if (c.notes.length) {
+    node.append(el("details", {}, el("summary", {}, "Construction du contexte"),
+      el("ul", {}, c.notes.map((n) => el("li", {}, n)))));
+  }
+  if (c.requete) {
+    node.append(el("details", {}, el("summary", {}, "Requête SQL exécutée"), el("pre", {}, c.requete)));
+  }
+  return node;
+}
+
+function render(r) {
+  const result = $("#result");
+  result.replaceChildren(
+    el("div", { class: "route" }, el("span", { class: "badge" }, r.route),
+      el("span", { class: "why" }, r.motif_route || "")),
+    ...r.composantes.map((c) => card(c, r.strategie)));
+}
+
+async function ask(event) {
+  event.preventDefault();
+  const question = $("#question").value.trim();
+  if (question.length < 3) return;
+  const strategie = new FormData($("#ask")).get("strategie");
+  const status = $("#status");
+  const button = $("#submit");
+  button.disabled = true;
+  status.className = "";
+  const start = Date.now();
+  const tick = () => { status.textContent = `Recherche et rédaction en cours… ${Math.round((Date.now() - start) / 1000)} s`; };
+  tick();
+  const timer = setInterval(tick, 1000);
+  try {
+    const response = await fetch("/api/ask", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, strategie }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail ? JSON.stringify(data.detail) : response.statusText);
+    render(data);
+    status.textContent = `Réponse en ${Math.round((Date.now() - start) / 1000)} s.`;
+  } catch (error) {
+    status.className = "error";
+    status.textContent = `Erreur : ${error.message}`;
+  } finally {
+    clearInterval(timer);
+    button.disabled = false;
+  }
+}
+
+async function examples() {
+  try {
+    const list = await (await fetch("/api/exemples")).json();
+    $("#examples").replaceChildren(...list.map((q) => {
+      const chip = el("button", { type: "button", class: "chip" }, q);
+      chip.addEventListener("click", () => { $("#question").value = q; $("#question").focus(); });
+      return chip;
+    }));
+  } catch { /* exemples facultatifs */ }
+}
+
+$("#ask").addEventListener("submit", ask);
+examples();
+</script>
+</body>
+</html>

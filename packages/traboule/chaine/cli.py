@@ -48,5 +48,22 @@ def ask(
         show(reponse)
 
 
+@app.command()
+def serve(
+    host: Annotated[str, typer.Option(help="Adresse d'écoute (locale par défaut)")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(help="Port")] = 8000,
+) -> None:
+    """Interface web minimale : une question, une stratégie, la réponse sourcée et sa route."""
+    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    import uvicorn
+
+    from traboule.chaine.repondre import build_chain
+    from traboule.chaine.web import create_app
+
+    typer.echo(f"Traboule : http://{host}:{port}")
+    uvicorn.run(create_app(build_chain), host=host, port=port, log_level="warning")
+
+
 if __name__ == "__main__":
     app()
