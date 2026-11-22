@@ -11,7 +11,9 @@ SRC-001b (ADR-0003, ADR-0006 ; conventions §1, §3).
 Usage : `uv run python -m traboule.ingestion.sirene [--force]`.
 """
 
+import json
 import sys
+from datetime import date as Date
 from pathlib import Path
 from typing import Annotated
 
@@ -19,7 +21,7 @@ import duckdb
 import typer
 
 from traboule.config import INTERIM_DIR, RAW_DIR
-from traboule.ingestion.raw import DATE_HELP, RawDataError, resource_file, used
+from traboule.ingestion.raw import DATE_HELP, MANIFEST, RawDataError, resource_file, used
 from traboule.measure import measured, write_metrics
 
 OUTPUT = "sirene_ml.parquet"
@@ -104,6 +106,40 @@ def build_sirene_ml(con: duckdb.DuckDBPyConnection, stock: Path, geoloc: Path, o
     return result
 
 
+def manifest_month(data_file: Path) -> str | None:
+    """Mois (AAAA-MM) d'un fichier Sirene : date de référence, sinon de publication."""
+    path = data_file.parent / MANIFEST
+    if not path.exists():
+        return None
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    day = manifest.get("reference_date") or manifest.get("published_at")
+    return str(day)[:7] if day else None
+
+
+def check_pairing(stock: Path, geoloc: Path, raw_dir: Path = RAW_DIR) -> str:
+    """Contrôle bloquant : stock (SRC-001a) et géolocalisation (SRC-001b) du même mois.
+
+    La géolocalisation d'un mois correspond au stock du 1er de ce mois (registre, SRC-001) ;
+    deux mois différents ne décrivent pas le même état du répertoire. Renvoie le mois.
+    """
+    months = {"SRC-001a": manifest_month(stock), "SRC-001b": manifest_month(geoloc)}
+    files = {"SRC-001a": used(stock, raw_dir), "SRC-001b": used(geoloc, raw_dir)}
+    if None in months.values():
+        unknown = [s for s, m in months.items() if m is None]
+        raise SireneError(f"mois inconnu pour {unknown} : manifeste absent ou sans date")
+    if months["SRC-001a"] == months["SRC-001b"]:
+        return months["SRC-001a"]
+    older = min(months, key=months.get)
+    raise SireneError(
+        f"stock SRC-001a de {months['SRC-001a']} ({files['SRC-001a']}) et géolocalisation "
+        f"SRC-001b de {months['SRC-001b']} ({files['SRC-001b']}) : mois différents, appariement "
+        f"impossible. Retélécharger la version courante de {older} : `uv run python -m "
+        f"traboule.ingestion.download {older} --date {Date.today().isoformat()}` (la "
+        "géolocalisation d'un mois paraît en fin de mois), ou lire une paire du même mois "
+        "avec --date."
+    )
+
+
 def stock_path(date: str | None = None, raw_dir: Path = RAW_DIR) -> Path:
     """Stock Sirene des établissements (SRC-001a), dossier daté résolu par `ingestion.raw`."""
     return resource_file("SRC-001a", "stock_etablissement", date, raw_dir, "*.parquet")
@@ -127,15 +163,13 @@ def main(
     """Filtre le stock Sirene sur la Métropole et le joint à la géolocalisation."""
     try:
         stock, geoloc = stock_path(date, raw_dir), geoloc_path(date, raw_dir)
+        month = check_pairing(stock, geoloc, raw_dir)
     except RawDataError as exc:
         typer.echo(f"ERREUR : {exc}", err=True)
         sys.exit(1)
-    if stock.parent.parent.name != geoloc.parent.parent.name:
-        typer.echo(
-            f"ATTENTION : stock ({used(stock, raw_dir)}) et géolocalisation "
-            f"({used(geoloc, raw_dir)}) de dossiers datés différents : appariement non garanti.",
-            err=True,
-        )
+    except SireneError as exc:
+        typer.echo(f"CONTRÔLE BLOQUANT : {exc}", err=True)
+        sys.exit(1)
     out = interim_dir / OUTPUT
     if out.exists() and not force:
         typer.echo(f"{out} existe : relancer avec --force.", err=True)
@@ -159,6 +193,7 @@ def main(
         {"steps": steps, **result},
         {
             "donnees_brutes": [used(stock, raw_dir), used(geoloc, raw_dir)],
+            "mois": month,
             "memory_limit": MEMORY_LIMIT,
         },  # fmt: skip
     )

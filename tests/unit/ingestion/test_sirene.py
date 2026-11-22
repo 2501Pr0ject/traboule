@@ -3,10 +3,12 @@
 SIRET fictifs : aucune donnée Sirene réelle (règle 9).
 """
 
+import json
+
 import duckdb
 import pytest
 
-from traboule.ingestion.sirene import SireneError, build_sirene_ml
+from traboule.ingestion.sirene import SireneError, build_sirene_ml, check_pairing
 
 STOCK_COLS = (
     "siret, siren, nic, etablissementSiege, statutDiffusionEtablissement, "
@@ -121,3 +123,46 @@ def test_unexpected_diffusion_status_fails_without_output(con, files, tmp_path):
     with pytest.raises(SireneError, match="statut"):
         build_sirene_ml(con, tmp_path / "bad.parquet", geoloc, out)
     assert not out.exists() and not list(tmp_path.glob("*.partial"))
+
+
+def sirene_file(raw, source, day, resource, **dates):
+    folder = raw / source / day / resource
+    folder.mkdir(parents=True)
+    (folder / "manifest.json").write_text(json.dumps({"published_at": None, **dates}))
+    data = folder / f"{resource}.parquet"
+    data.write_text("")
+    return data
+
+
+def test_stock_and_geolocation_of_the_same_month_are_paired(tmp_path):
+    stock = sirene_file(
+        tmp_path, "SRC-001a", "2026-10-28", "stock_etablissement", reference_date="2026-10-01"
+    )
+    geoloc = sirene_file(
+        tmp_path, "SRC-001b", "2026-10-28", "geolocalisation", published_at="2026-10-21"
+    )
+    assert check_pairing(stock, geoloc, tmp_path) == "2026-10"
+
+
+def test_stock_and_geolocation_of_different_months_are_refused(tmp_path):
+    stock = sirene_file(
+        tmp_path, "SRC-001a", "2026-10-28", "stock_etablissement", reference_date="2026-10-01"
+    )
+    geoloc = sirene_file(
+        tmp_path, "SRC-001b", "2026-11-22", "geolocalisation", published_at="2026-11-20"
+    )
+    with pytest.raises(SireneError, match="mois différents") as exc:
+        check_pairing(stock, geoloc, tmp_path)
+    message = str(exc.value)
+    assert "Retélécharger la version courante de SRC-001a" in message
+    assert "traboule.ingestion.download SRC-001a --date" in message
+    assert "SRC-001b/2026-11-22/geolocalisation" in message
+
+
+def test_pairing_needs_dated_manifests(tmp_path):
+    stock = sirene_file(tmp_path, "SRC-001a", "2026-10-28", "stock_etablissement")
+    geoloc = sirene_file(
+        tmp_path, "SRC-001b", "2026-10-28", "geolocalisation", published_at="2026-10-21"
+    )
+    with pytest.raises(SireneError, match="mois inconnu"):
+        check_pairing(stock, geoloc, tmp_path)
