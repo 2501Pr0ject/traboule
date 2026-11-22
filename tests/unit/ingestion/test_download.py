@@ -252,3 +252,23 @@ def test_updated_datagouv_resource_uses_the_current_url(date_dir: Path) -> None:
     assert status == "écart" and manifest.source_url == "https://exemple.test/courant.pdf"
     assert str(manifest.published_at) == "2026-11-01"
     assert (final / "courant.pdf").read_bytes() == new
+
+
+def test_same_size_but_different_content_goes_to_a_new_dated_folder(date_dir: Path) -> None:
+    folder = clone_like(date_dir)
+    same_size = bytes(reversed(PAYLOAD))
+    assert len(same_size) == len(PAYLOAD) and same_size != PAYLOAD
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        return httpx.Response(200, content=same_size)  # HEAD : même content-length
+
+    with client_for(handler) as client:
+        ((manifest, final, status),) = dl.download_source(
+            client, make_source(http_resource("ancienne")), date_dir, today="2026-11-22"
+        )
+    assert status == "écart" and final == date_dir.parent / "2026-11-22" / "ancienne"
+    assert manifest.sha256 == hashlib.sha256(same_size).hexdigest()
+    assert [p.name for p in folder.iterdir()] == ["manifest.json"]
+    assert calls.count("GET") == 1  # un seul téléchargement

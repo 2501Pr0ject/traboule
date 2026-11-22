@@ -206,15 +206,20 @@ def _fetch_http(
     url = resource_urls(resource)[0]
     dest = dest_dir / file_name_for(resource, url)
     out = {"url": url, "notes": [], "published_at": None}
+    dg = resource.get("datagouv")
     if reference and _pinned_is_reference(client, url, reference):
+        # La taille ne sert qu'à décider d'essayer l'URL figée : seul le sha256 complet décide.
         typer.echo(f"  {resource['name']} ← {url}")
         size, sha256, _ = stream_to_file(client, url, dest)
         if sha256 == reference.sha256:
             typer.echo("    identique au manifeste de référence (sha256)")
             return out | {"size": size, "sha256": sha256}
-        dest.unlink()
+        if not dg:
+            typer.echo("    même taille, sha256 différent du manifeste de référence")
+            return out | {"size": size, "sha256": sha256}
+        dest.unlink()  # version figée périmée : la version courante vient de data.gouv
     published = None
-    if dg := resource.get("datagouv"):
+    if dg:
         # Ressource mise à jour à la source : version courante publiée par data.gouv.
         published = datagouv_resource(client, dg["dataset"], dg["resource"])
         url = published.get("url") or url
