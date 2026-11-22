@@ -27,3 +27,13 @@ Décider l'abstention à partir de plusieurs signaux, combinés et mesurés en v
 
 ## Critère de réexamen
 Si un signal unique (par exemple le score du reranker) sépare les questions sans réponse avec une précision suffisante sur le jeu de référence.
+
+## Amendement du 2026-11-22 : contrôle du sujet et des valeurs des passages cités
+
+Décision du porteur (2026-11-22), après le constat d'une réponse fausse sur une citation réelle : en CAG, « Quel est le coefficient d'emprise au sol en zone URm1 ? » a reçu « au minimum 25 % » en citant l'article 3.2.1 « Le coefficient de pleine terre » (p. 330), alors que l'article 2.4.1 dit « L'emprise au sol des constructions n'est pas réglementée » (p. 325). Le passage cité existait et contenait « 25 % » : la vérification des citations (passage présent dans le contexte) ne suffisait pas.
+
+La **vérification à la génération** comprend désormais deux contrôles, chacun avec son motif :
+- **`sujet_hors_question`** (« passage cité hors du sujet demandé ») : quand la question porte sur un sujet d'une table fermée (`traboule.routing.sujets` : emprise au sol, pleine terre, hauteur, implantation par rapport aux voies, limites séparatives, stationnement, clôtures, destinations, extension), au moins un passage cité doit porter sur ce sujet d'après son chemin (intitulés d'articles du règlement, ex. « 2.4 - Emprise au sol des constructions ») ; pour un passage sans intitulé d'article (cahier, OAP), son texte en tient lieu. Une question à plusieurs sujets est satisfaite dès qu'un passage cité porte sur l'un d'eux.
+- **`valeur_non_retrouvee`** (« valeur non retrouvée dans les passages cités ») : chaque nombre de la réponse doit figurer dans un passage cité, après normalisation (espaces insécables, virgule décimale, zéros décimaux). Un nombre **suivi d'une unité** (m, %, m², niveaux…) doit figurer dans le **texte** d'un passage cité ; un nombre **sans unité** peut aussi figurer dans son chemin (numéro d'article) ou dans la version de la pièce. Sont exemptés les marqueurs de citation, les ordinaux, et les nombres sans unité repris de la question (ex. « NAF rév. 2 »).
+
+`citation_non_verifiee` reste le motif d'une citation absente, illisible ou hors du contexte fourni. Le contrôle des valeurs ne prouve pas qu'un nombre est attribué au bon objet : c'est le rôle du contrôle du sujet.
