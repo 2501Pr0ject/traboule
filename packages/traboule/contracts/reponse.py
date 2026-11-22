@@ -44,6 +44,16 @@ class Citation(BaseModel):
     passage_id: str | None = None
 
 
+class SourceDonnees(BaseModel):
+    """Table interrogée par une composante structurée, avec son millésime (conventions §6)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    table: str = Field(min_length=1)
+    millesime: str = Field(min_length=1)
+    sources: list[str] = Field(min_length=1, description="source_id du registre")
+
+
 class VentilationConfiance(BaseModel):
     """Ventilation d'un comptage spatial par niveau de confiance de zone (ADR-0006)."""
 
@@ -85,6 +95,12 @@ class Composante(BaseModel):
     minorant: Minorant | None = None
     citations: list[Citation] = Field(default_factory=list)
     limites: list[str] = Field(default_factory=list)
+    # Formulation lisible de la valeur (structurée : écrite par le code, jamais par le modèle).
+    texte: str | None = None
+    sources: list[SourceDonnees] = Field(default_factory=list)
+    requete: str | None = Field(default=None, description="SQL exécuté (gabarit paramétré)")
+    # Construction du contexte : stratégie, passages retenus, cache, parcours du graphe.
+    notes: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check(self) -> Self:
@@ -117,6 +133,9 @@ class Reponse(BaseModel):
     route: Route
     composantes: list[Composante] = Field(min_length=1)
     question_id: str | None = None
+    question: str | None = None
+    strategie: Literal["rag", "cag", "kag"] | None = None
+    motif_route: str | None = None
 
     @model_validator(mode="after")
     def _check(self) -> Self:

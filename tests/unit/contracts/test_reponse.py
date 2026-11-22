@@ -122,3 +122,24 @@ def test_route_matches_component_types(route, types):
 def test_abstain_route_requires_all_components_abstained():
     with pytest.raises(ValidationError, match="ABSTAIN"):
         Reponse(route="ABSTAIN", composantes=[comptage()])
+
+
+def test_structured_component_carries_its_sources_and_query():
+    from traboule.contracts.reponse import SourceDonnees
+
+    source = SourceDonnees(
+        table="etablissements", millesime="stock Sirene du 2026-10-01", sources=["SRC-001a"]
+    )
+    c = Composante(
+        type="structuree",
+        valeur=510,
+        texte="510 établissements actifs",
+        sources=[source],
+        requete="select count(*) from v_etablissements",
+    )
+    r = Reponse(route="SQL", composantes=[c], question="Combien ?", strategie="rag")
+    assert r.composantes[0].sources[0].sources == ["SRC-001a"]
+    with pytest.raises(ValidationError):
+        SourceDonnees(table="etablissements", millesime="2026", sources=[])
+    with pytest.raises(ValidationError):
+        Reponse(route="SQL", composantes=[c], strategie="graphrag")
