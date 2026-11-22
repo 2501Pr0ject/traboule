@@ -3,8 +3,9 @@
 Un établissement est sans position publique s'il n'a pas de coordonnées ou s'il est en
 statut `P` (`not position_publique` dans sirene_ml). Pour un comptage dans une zone, le
 minorant porte sur les unités géographiques dont l'intersection avec la zone dépasse
-`MIN_INTERSECTION_M2`, ce qui écarte les contacts de bordure ; il se formule « jusqu'à N
-établissements supplémentaires pourraient se trouver dans la zone ».
+`MIN_INTERSECTION_M2`, ce qui écarte les contacts de bordure ; il se formule « N
+établissements de <unités> n'ont pas de position publique et ne peuvent pas être placés :
+certains pourraient se trouver dans la zone » (ADR-0006, amendement du 2026-11-23).
 
 Unités : les communes (COG 2026), Lyon étant remplacée par ses 9 arrondissements quand
 leurs contours sont chargés (REF-ARRONDISSEMENTS-LYON). Un établissement de Lyon est alors
@@ -94,4 +95,5 @@ def zone_lower_bound(
     """Minorant d'un comptage dans `zone` : périmètre = unités qui intersectent la zone."""
     units = units_intersecting(con, zone)
     n = without_public_position(con, sirene_ml, units, activity_sql)
-    return Minorant(n=n, perimetre=f"{len(units)} unités géographiques qui intersectent {zone}")
+    return Minorant(n=n, perimetre=f"des {len(units)} unités géographiques qui intersectent {zone}",
+                    qui="établissements actifs")  # fmt: skip

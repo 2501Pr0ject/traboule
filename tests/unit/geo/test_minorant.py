@@ -73,8 +73,12 @@ def test_lyon_counts_by_arrondissement_or_by_commune(con, sirene):
 
 def test_zone_lower_bound_wording(con, sirene):
     m = zone_lower_bound(con, sirene, "UEi2")
-    assert (m.n, m.perimetre) == (3, "2 unités géographiques qui intersectent UEi2")
-    assert m.formulation.startswith("jusqu'à 3 établissements supplémentaires")
+    assert (m.n, m.perimetre) == (3, "des 2 unités géographiques qui intersectent UEi2")
+    assert m.formulation == (
+        "3 établissements actifs des 2 unités géographiques qui intersectent UEi2 n'ont pas de "
+        "position publique et ne peuvent pas être placés : certains pourraient se trouver dans "
+        "la zone."
+    )
 
 
 def test_load_units_replaces_lyon_by_its_arrondissements(spatial, tmp_path):

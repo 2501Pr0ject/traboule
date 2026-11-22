@@ -70,17 +70,55 @@ class VentilationConfiance(BaseModel):
         return self.haute + self.moyenne + self.faible
 
 
+def _singular(text: str) -> str:
+    """« établissements actifs relevant de … » → « établissement actif relevant de … »."""
+    words = text.split(" ")
+    for i, word in enumerate(words[:2]):
+        if word in ("établissements", "actifs", "fermés"):
+            words[i] = word[:-1]
+    return " ".join(words)
+
+
 class Minorant(BaseModel):
-    """Établissements de même périmètre sans position publique (conventions §3, règle 7)."""
+    """Établissements de même périmètre sans position publique (conventions §3, règle 7).
+
+    Ils ne peuvent pas être placés sur la carte : certains pourraient se trouver dans la zone.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     n: int = Field(ge=0)
-    perimetre: str = Field(min_length=1, description="ex. « communes qui intersectent UEi2 »")
+    perimetre: str = Field(
+        min_length=1,
+        description="unités nommées, avec leur préposition : « de Vénissieux (69259) », "
+        "« du 7e arrondissement de Lyon (69387) et de Saint-Fons (69199) »",
+    )
+    qui: str = Field(
+        default="établissements", min_length=1, description="ex. « établissements actifs »"
+    )
 
     @property
     def formulation(self) -> str:
-        return f"jusqu'à {self.n} établissements supplémentaires pourraient se trouver dans la zone"
+        """Phrase du minorant pour une zone (conventions §3, règle 7 ; ADR-0006, amendée)."""
+        return self.phrase("dans la zone")
+
+    def phrase(self, ou: str) -> str:
+        """Phrase du minorant ; `ou` : « dans la zone », « dans l'une de ces zones »."""
+        if self.n == 0:
+            return (
+                f"Aucun {_singular(self.qui)} {self.perimetre} n'est sans position publique : "
+                "tous ont pu être placés."
+            )
+        if self.n == 1:
+            return (
+                f"1 {_singular(self.qui)} {self.perimetre} n'a pas de position publique et ne peut "
+                f"pas être placé : il pourrait se trouver {ou}."
+            )
+        n = f"{self.n:,}".replace(",", "\u202f")
+        return (
+            f"{n} {self.qui} {self.perimetre} n'ont pas de position publique et ne peuvent pas "
+            f"être placés : certains pourraient se trouver {ou}."
+        )
 
 
 class Composante(BaseModel):

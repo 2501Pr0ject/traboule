@@ -189,6 +189,27 @@ def place_label(place: Place | None) -> str:
     return f"à {place.libelle} ({place.code})"
 
 
+def of_place(place: Place) -> str:
+    """« de Vénissieux (69259) », « d'Écully (69081) », « du 7e arrondissement de Lyon (69387) »."""
+    if place.niveau == "arrondissement_municipal":
+        n = int(place.code[-1])
+        return f"du {'1er' if n == 1 else f'{n}e'} arrondissement de Lyon ({place.code})"
+    if place.code == "69123":
+        return "de Lyon (69123, arrondissements compris)"
+    article = "d'" if place.libelle[:1] in "AEIOUYÉÈÊÂÎÔ" else "de "
+    return f"{article}{place.libelle} ({place.code})"
+
+
+def units_of(units: list[Place], named: int = 3) -> str:
+    """Unités du minorant, nommées jusqu'à `named` ; au-delà, leur nombre."""
+    if not units:
+        return "d'aucune unité géographique"
+    if len(units) > named:
+        return f"des {len(units)} communes ou arrondissements que touche la zone"
+    parts = [of_place(p) for p in units]
+    return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " et " + parts[-1]
+
+
 def places_label(places: tuple[Place, ...]) -> str:
     return " ; ".join(place_label(p) for p in places) if places else place_label(None)
 
@@ -308,14 +329,14 @@ class StructuredComponent:
                       where etat = ? and not position_publique and {pl_sql} and {act_sql}"""
             params = [analysis.etat, *pl_params, *act_params]
             n = query(self.con, sql, params)[0]["n"]
-            where = places_label(analysis.places)
+            units = list(analysis.places)
         else:
             marks = ", ".join("?" * len(codes))
             sql = f"""with g as (select geom from v_zonage where code in ({marks})),
                       u as (select u.code from v_unites u, g
                             where ST_Intersects(u.geom, g.geom) group by u.code
                             having sum(ST_Area(ST_Intersection(u.geom, g.geom))) > ?)
-                      select (select count(*) from u) as unites, count(*) as n
+                      select (select list(code order by code) from u) as unites, count(*) as n
                       from v_etablissements
                       where etat = ? and not position_publique
                         and (code_commune_cog2026 in (select code from u)
@@ -324,9 +345,10 @@ class StructuredComponent:
             params = [*codes, MIN_INTERSECTION_M2, analysis.etat, *act_params]
             row = query(self.con, sql, params)[0]
             n = row["n"]
-            where = f"dans les {row['unites']} communes ou arrondissements qui intersectent la zone"
-        perimetre = f"établissements {state}{activity} sans position publique {where}"
-        return Minorant(n=n, perimetre=perimetre), with_params(sql, params)
+            by_code = {p.code: p for p in self.lexicon.places.values()}
+            units = [by_code.get(c, Place(c, "commune", c)) for c in row["unites"] or []]
+        minorant = Minorant(n=n, perimetre=units_of(units), qui=f"établissements {state}{activity}")
+        return minorant, with_params(sql, params)
 
     def zone_count(self, analysis: Analysis, zone: str) -> Composante:
         codes = self.lexicon.zonage_codes(zone)
@@ -345,10 +367,10 @@ class StructuredComponent:
         state, activity = self._labels(analysis)
         covered = f" (codes {', '.join(codes)})" if codes != [zone] else ""
         where = f" {places_label(analysis.places)}" if analysis.places else ""
-        text = (f"{fmt(split.total)} établissements {state}{activity} géolocalisés en zone "
+        text = (f"{fmt(split.total)} établissements {state}{activity} sont géolocalisés en zone "
                 f"{zone}{covered}{where}. Confiance de zone : {fmt(split.haute)} haute, "
-                f"{fmt(split.moyenne)} moyenne, {fmt(split.faible)} faible. C'est un minorant : "
-                f"{minorant.formulation} ({minorant.perimetre}).")  # fmt: skip
+                f"{fmt(split.moyenne)} moyenne, {fmt(split.faible)} faible. "
+                f"{minorant.formulation}")  # fmt: skip
         return Composante(
             type="structuree", valeur=split.total, texte=text, comptage_spatial=True,
             ventilation_confiance=split, minorant=minorant, limites=[LOCATION_LIMIT],
@@ -378,8 +400,7 @@ class StructuredComponent:
         more = f", et {len(rows) - 12} autres zones" if len(rows) > 12 else ""
         text = (f"Répartition des {fmt(split.total)} établissements {state}{activity} "
                 f"géolocalisés {places_label(analysis.places)} par zone du PLU-H : {shown}{more}. "
-                f"{fmt(minorant.n)} n'ont pas de position publique : ils pourraient se "
-                f"trouver dans l'une de ces zones (minorant).")  # fmt: skip
+                f"{minorant.phrase("dans l'une de ces zones")}")  # fmt: skip
         value = [{"zone": r["zone"], "n": r["n"], "faible": r["faible"]} for r in rows]
         return Composante(
             type="structuree", valeur=value, texte=text, comptage_spatial=True,

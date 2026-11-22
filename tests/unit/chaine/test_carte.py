@@ -80,7 +80,11 @@ def test_map_html_has_no_establishment_coordinates_nor_siret(con):
     )
     assert "Confiance de zone</strong> : 8 haute, 0 moyenne, 0 faible" in page
     assert "carreaux de moins de 5 masqués (2 établissements)" in page
-    assert carte["minorant"].startswith("jusqu'à 1 établissements supplémentaires")
+    assert carte["minorant"] == (
+        "8 établissements sont géolocalisés dans la zone. 1 établissement actif de Vénissieux "
+        "(69259) n'a pas de position publique et ne peut pas être placé : il pourrait se trouver "
+        "dans la zone."
+    )
 
 
 def test_no_map_without_a_zone(con):

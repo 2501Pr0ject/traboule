@@ -87,10 +87,20 @@ def test_breakdown_totals_the_value():
 
 
 def test_lower_bound_wording():
-    m = Minorant(n=5, perimetre="communes qui intersectent UEi2")
+    m = Minorant(n=2211, perimetre="de Vénissieux (69259)", qui="établissements actifs")
     assert m.formulation == (
-        "jusqu'à 5 établissements supplémentaires pourraient se trouver dans la zone"
+        "2\u202f211 établissements actifs de Vénissieux (69259) n'ont pas de position publique "
+        "et ne peuvent pas être placés : certains pourraient se trouver dans la zone."
     )
+    assert "jusqu'à" not in m.formulation and "supplémentaires" not in m.formulation
+    one = Minorant(n=1, perimetre="de Saint-Fons (69199)", qui="établissements actifs")
+    assert one.formulation == (
+        "1 établissement actif de Saint-Fons (69199) n'a pas de position publique et ne peut pas "
+        "être placé : il pourrait se trouver dans la zone."
+    )
+    none = Minorant(n=0, perimetre="de Saint-Fons (69199)", qui="établissements fermés")
+    assert none.formulation.startswith("Aucun établissement fermé de Saint-Fons (69199)")
+    assert m.phrase("dans l'une de ces zones").endswith("dans l'une de ces zones.")
 
 
 def test_citation_requires_piece_version():

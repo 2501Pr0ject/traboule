@@ -34,3 +34,13 @@ Libellés de `qualite_xy` (documentation v8, p. 4) : `11` voie sûre, numéro tr
 
 ## Critère de réexamen
 Réexamen de la source principale d'après la mesure point / bâtiment de l'ADR-0007. (Un arbitrage sur les écarts de plus de 50 m fondé sur l'adresse serait biaisé vers le stock, dont les coordonnées dérivent de la BAN.) Adoption de l'ADR-0007.
+
+## Amendement du 2026-11-23 : formulation du minorant
+
+Décision du porteur (2026-11-23). La formule « jusqu'à N établissements supplémentaires pourraient se trouver dans la zone » laissait croire que N établissements de plus étaient dans la zone. Le minorant compte en réalité les établissements des unités qui touchent la zone (communes, ou arrondissements pour Lyon) qui n'ont pas de position publique : on ne sait pas où ils se trouvent, et seuls certains d'entre eux peuvent être dans la zone.
+
+Une réponse de comptage par zone, et le rappel sous la carte, disent désormais, dans cet ordre :
+- combien d'établissements sont **géolocalisés dans la zone** (avec la ventilation de confiance) ;
+- combien d'établissements de même périmètre (état, activité) **de l'unité concernée, nommée**, n'ont pas de position publique et ne peuvent pas être placés : « certains pourraient se trouver dans la zone ».
+
+Les unités sont nommées jusqu'à trois (« de Saint-Fons (69199) et du 7e arrondissement de Lyon (69387) ») ; au-delà, leur nombre est donné (« des 58 communes ou arrondissements que touche la zone »). Pour une répartition par zone, la phrase se termine par « dans l'une de ces zones ». Conventions §3, règle 7, mises à jour.

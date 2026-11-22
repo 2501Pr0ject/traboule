@@ -91,7 +91,14 @@ def test_zone_lower_bound_by_intersecting_units(con, lexicon):
     (c,) = build(con, lexicon, "Combien d'établissements actifs en zone UEi2 ?")
     assert c.valeur == 2
     # Vénissieux et Oullins-Pierre-Bénite intersectent UEi2 ; le 7e ne la touche pas.
-    assert c.minorant.n == 2 and "2 communes ou arrondissements" in c.minorant.perimetre
+    assert c.minorant.n == 2
+    assert c.minorant.perimetre == "d'Oullins-Pierre-Bénite (69149) et de Vénissieux (69259)"
+    assert "2 établissements actifs sont géolocalisés en zone UEi2" in c.texte
+    assert c.texte.endswith(
+        "n'ont pas de position publique et ne peuvent pas être placés : "
+        "certains pourraient se trouver dans la zone."
+    )
+    assert "jusqu'à" not in c.texte
 
 
 def test_activity_filter(con, lexicon):

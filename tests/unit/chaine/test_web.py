@@ -58,5 +58,6 @@ def test_map_only_when_the_answer_concerns_a_zone(con):
             json={"question": "Combien d'établissements actifs en zone UEi1 à Vénissieux ?"},
         ).json()
         assert zone["carte"]["html"].startswith("<!DOCTYPE html>")
-        assert zone["carte"]["minorant"].startswith("jusqu'à")
+        assert "sont géolocalisés dans la zone" in zone["carte"]["minorant"]
+        assert "certains pourraient se trouver dans la zone" in zone["carte"]["minorant"]
         assert "00000000000001" not in zone["carte"]["html"]

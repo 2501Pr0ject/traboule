@@ -21,7 +21,7 @@ from dataclasses import dataclass
 
 import duckdb
 
-from traboule.chaine.sql import CELL_M, activity_condition, place_condition, query
+from traboule.chaine.sql import CELL_M, activity_condition, fmt, place_condition, query
 from traboule.contracts.reponse import Composante, Reponse
 from traboule.routing.analyse import Analysis, Lexicon, Place
 
@@ -292,11 +292,14 @@ def build_map(
         ).add_to(m)
     m.fit_bounds(box)
     m.get_root().html.add_child(folium.Element(legend(spatial, shown, hidden)))
-    minorant = (
-        f"{spatial.minorant.formulation} ({spatial.minorant.perimetre})."
-        if spatial and spatial.minorant
-        else None
-    )
+    minorant = None
+    if spatial and spatial.minorant and spatial.ventilation_confiance:
+        total = spatial.ventilation_confiance.total
+        where = "dans la zone" if analysis.zones else "dans ces zones"
+        located = (f"{fmt(total)} établissements sont géolocalisés {where}." if total != 1
+                   else f"1 établissement est géolocalisé {where}.")  # fmt: skip
+        ou = "dans la zone" if analysis.zones else "dans l'une de ces zones"
+        minorant = f"{located} {spatial.minorant.phrase(ou)}"
     return {"html": guard(m.get_root().render()), "minorant": minorant}
 
 
