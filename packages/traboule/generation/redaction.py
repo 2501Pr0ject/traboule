@@ -7,10 +7,15 @@
   même contexte (préfixe réutilisable par le cache du serveur) ; la question vient après ;
 - le modèle rend un JSON (réponse, passages cités, suffisance) ; un passage cité hors du
   contexte, ou aucune citation, donne `CITATION_NON_VERIFIEE` ; `suffisant = false` donne
-  `PREUVE_INSUFFISANTE`.
+  `PREUVE_INSUFFISANTE` ;
+- contrôles contre les passages cités (`generation.verification`) : un passage au moins porte
+  sur le sujet demandé, et chaque nombre de la réponse figure dans un passage cité ; sinon
+  `CITATION_NON_VERIFIEE`, avec « passage cité hors du sujet demandé » ou « valeur non
+  retrouvée dans les passages cités ».
 """
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from pydantic import BaseModel, ValidationError
@@ -20,6 +25,8 @@ from traboule.contracts.reponse import Citation, Composante, MotifAbstention
 from traboule.generation.llm_config import Strategy
 from traboule.generation.ollama import OllamaClient
 from traboule.generation.tokens import TokenCounter
+from traboule.generation.verification import on_topic, unsupported_values
+from traboule.routing.sujets import Topic
 
 MARGIN = 64  # gabarit de conversation du modèle (balises de rôle, bloc de réflexion vide)
 RULES = """Tu es Traboule, assistant d'urbanisme sur la Métropole de Lyon. Tu réponds en \
@@ -174,6 +181,7 @@ def draft(
     question: str,
     contexte: Contexte,
     hybrid: bool = False,
+    topics: Sequence[Topic] = (),
 ) -> Composante:
     notes = list(contexte.notes)
     if contexte.refusal:
@@ -218,6 +226,20 @@ def draft(
         limit = f"Citations non vérifiées : passages {cited} pour {len(kept)} passages fournis."
         return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
     text = renumber(answer.reponse, cited)
+    sources = [kept[i - 1] for i in cited]
+    if not on_topic(topics, sources):
+        asked = ", ".join(t.name for t in topics)
+        titles = " ; ".join(p.chemin[-1] for p in sources)
+        limit = (
+            f"Passage cité hors du sujet demandé : la question porte sur {asked}, "
+            f"aucun passage cité n'en traite (cités : {titles})."
+        )
+        notes.append(f"Réponse du modèle écartée : {text}")
+        return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
+    if missing := unsupported_values(text, question, sources):
+        limit = f"Valeur non retrouvée dans les passages cités : {', '.join(missing)}."
+        notes.append(f"Réponse du modèle écartée : {text}")
+        return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
     return Composante(
         type="documentaire",
         valeur=text,

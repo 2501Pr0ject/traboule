@@ -17,14 +17,14 @@ from traboule.routing.analyse import Analysis
 def passage(i: int, zone: str = "UEi1", **extra) -> Passage:
     fields = {
         "passage_id": f"p{i}",
-        "texte": f"Texte du passage {i}.",
+        "texte": f"Texte du passage {i} : la hauteur est limitée à 2 m.",
         "doc_id": "200046977_reglement_20260326.pdf",
         "source_id": "SRC-005",
         "version_piece": "Modification n°4 - Approbation 2024",
         "version_gpu": "200046977_PLUi_20260326",
         "page_debut": 620 + i,
         "page_fin": 620 + i,
-        "chemin": ["Partie II", f"Zone {zone}", f"Article {i}"],
+        "chemin": ["Partie II", f"Zone {zone}", f"2.5 - Hauteur des constructions ({i})"],
         "extracteur": "pymupdf",
         "zone": zone,
         "zones_applicables": [zone],
@@ -111,7 +111,7 @@ def test_sql_question_does_not_load_the_strategy(con):
 
 def test_display_shows_route_values_and_citations(con):
     c = chain(con, FakeSearch([passage(1)]))
-    console = Console(record=True, width=120)
+    console = Console(record=True, width=200)
     show(
         c.ask("Combien d'établissements actifs en zone UEi1, et quelle règle s'y applique ?"),
         console,
@@ -144,3 +144,18 @@ def test_closing_the_chain_closes_the_search_client(con):
     c.ask("Quelle hauteur en zone UEi1 ?")
     c.close()
     assert closed == [True]
+
+
+def test_off_topic_citation_is_blocked_in_the_chain(con):
+    pleine_terre = passage(
+        1,
+        chemin=["Partie II", "Zone UEi1", "3.2.1 - Le coefficient de pleine terre"],
+        texte="Le coefficient de pleine terre est au minimum de 25%.",
+    )
+    c = chain(con, FakeSearch([pleine_terre]))
+    r = c.ask("Quel est le coefficient d'emprise au sol en zone UEi1 ?")
+    (doc,) = r.composantes
+    assert doc.abstention and doc.motif == "citation_non_verifiee"
+    assert doc.texte.startswith(
+        "Passage cité hors du sujet demandé : la question porte sur emprise au sol"
+    )

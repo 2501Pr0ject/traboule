@@ -16,7 +16,7 @@ CONFIG = load_llm_config()
 def passage(i: int, words: int = 10, **extra) -> Passage:
     fields = {
         "passage_id": f"p{i}",
-        "texte": " ".join(["mot"] * words),
+        "texte": " ".join(["mot"] * words) + " 2 mètres.",
         "doc_id": "200046977_reglement_20260326.pdf",
         "source_id": "SRC-005",
         "version_piece": "Modification n°4 - Approbation 2024",
@@ -144,7 +144,7 @@ def test_context_writes_each_heading_once():
         "## Partie II",
         "### Zone UEi1",
         "#### Article 1",
-        "[1] " + " ".join(["mot"] * 10),
+        "[1] " + " ".join(["mot"] * 10) + " 2 mètres.",
     ]
     assert second.splitlines()[0] == "#### Article 2" and second.splitlines()[1].startswith("[2] ")
 
@@ -160,3 +160,35 @@ def test_context_limits_are_shown_with_the_answer():
     ctx = Contexte([passage(1)], limits=["Contexte réduit à une vue d'ensemble."])
     c = draft(llm, WordCounter(), "kag", "q", ctx)
     assert c.limites[0] == "Contexte réduit à une vue d'ensemble." and len(c.limites) == 2
+
+
+def test_off_topic_and_unsupported_values_abstain():
+    from traboule.routing.sujets import BY_NAME
+
+    pleine_terre = passage(
+        1,
+        chemin=["Partie II", "Zone URm1", "3.2.1 - Le coefficient de pleine terre"],
+        texte="Au minimum de 25%.",
+    )
+    llm = FakeLlm({"reponse": "Au minimum 25 %.", "passages_cites": [1], "suffisant": True})
+    c = draft(
+        llm,
+        WordCounter(),
+        "cag",
+        "Emprise au sol en URm1 ?",
+        Contexte([pleine_terre]),
+        topics=[BY_NAME["emprise au sol"]],
+    )
+    assert c.abstention and c.motif == "citation_non_verifiee"
+    assert c.texte.startswith("Passage cité hors du sujet demandé")
+    assert any("Réponse du modèle écartée : Au minimum 25 %." in n for n in c.notes)
+    llm = FakeLlm({"reponse": "Au minimum 30 %.", "passages_cites": [1], "suffisant": True})
+    c = draft(
+        llm,
+        WordCounter(),
+        "cag",
+        "Pleine terre ?",
+        Contexte([pleine_terre]),
+        topics=[BY_NAME["pleine terre"]],
+    )
+    assert c.texte == "Valeur non retrouvée dans les passages cités : 30."

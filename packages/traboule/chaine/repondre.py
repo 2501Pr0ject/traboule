@@ -26,6 +26,7 @@ from traboule.generation.redaction import draft
 from traboule.generation.tokens import TokenCounter
 from traboule.routing.analyse import Lexicon, analyse
 from traboule.routing.routeur import route
+from traboule.routing.sujets import BY_NAME
 
 STRATEGIES: tuple[Strategy, ...] = ("rag", "cag", "kag")
 
@@ -68,8 +69,9 @@ class Chain:
                             extra = zones_from_distribution(c.valeur, question)
                 zones = reglement_zones(analysis, self.lexicon, extra)
                 contexte = self.strategy(strategy).build(analysis, zones)
+                topics = [BY_NAME[name] for name in analysis.topics]
                 components.append(draft(self.llm, self.counter, strategy, question, contexte,
-                                        hybrid=decision.structured))  # fmt: skip
+                                        hybrid=decision.structured, topics=topics))  # fmt: skip
         return Reponse(
             route=decision.route,
             composantes=components,

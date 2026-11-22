@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal
 
+from traboule.routing.sujets import detect
+
 Measure = Literal["count", "share", "distribution"]
 Niveau = Literal["commune", "arrondissement_municipal"]
 NafLevel = Literal["section", "division", "groupe", "classe", "sous_classe"]
@@ -247,6 +249,7 @@ class Analysis:
     safeguarded: bool = False
     oap: str | None = None
     keywords: tuple[str, ...] = field(default=())
+    topics: tuple[str, ...] = ()  # sujets réglementaires de la table fermée (`routing.sujets`)
 
 
 def _zones(question: str, lexicon: Lexicon) -> tuple[list[str], list[str]]:
@@ -367,4 +370,5 @@ def analyse(question: str, lexicon: Lexicon) -> Analysis:
         safeguarded=bool(SAFEGUARDED.search(text)) or "SECTSAUV" in zones,
         oap=oap,
         keywords=keywords,
+        topics=detect(text),
     )
