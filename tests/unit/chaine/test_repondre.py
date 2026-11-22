@@ -117,7 +117,11 @@ def test_display_shows_route_values_and_citations(con):
         console,
     )
     out = console.export_text()
-    assert "Route : HYBRID" in out and "Données (SQL)" in out and "Règlement (RAG)" in out
+    assert (
+        "Route : HYBRID · stratégie RAG" in out
+        and "Données (SQL)" in out
+        and "Règlement (RAG)" in out
+    )
     assert "Règlement du PLU-H, p. 621" in out and "Modification n°4 - Approbation 2024" in out
 
 

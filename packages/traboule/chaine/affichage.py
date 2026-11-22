@@ -47,6 +47,9 @@ def component_panel(c: Composante, strategy: str | None) -> Panel:
 
 def show(reponse: Reponse, console: Console | None = None) -> None:
     console = console or Console()
-    console.print(Text(f"Route : {reponse.route}", style="bold"), Text(f"— {reponse.motif_route}"))
+    strategy = f" · stratégie {reponse.strategie.upper()}" if reponse.strategie else ""
+    console.print(
+        Text(f"Route : {reponse.route}{strategy}", style="bold"), Text(f"— {reponse.motif_route}")
+    )
     for c in reponse.composantes:
         console.print(component_panel(c, reponse.strategie))

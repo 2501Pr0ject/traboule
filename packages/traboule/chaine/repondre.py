@@ -7,10 +7,17 @@ citations sont vérifiées. Les abstentions structurelles passent avant toute re
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from functools import cache
 
 import duckdb
 
-from traboule.chaine.contexte import ContextStrategy, reglement_zones, zones_from_distribution
+from traboule.chaine.contexte import (
+    ContextStrategy,
+    Corpus,
+    load_corpus,
+    reglement_zones,
+    zones_from_distribution,
+)
 from traboule.chaine.sql import StructuredComponent
 from traboule.contracts.reponse import Composante, Reponse
 from traboule.generation.llm_config import Strategy
@@ -81,6 +88,7 @@ class Chain:
 
 def build_chain() -> Chain:
     """Chaîne sur la base locale, l'index Qdrant et le serveur Ollama de `configs/llm.yaml`."""
+    from traboule.chaine.cag import CagStrategy
     from traboule.chaine.rag import QdrantSearch, RagStrategy
     from traboule.chaine.sql import connect, load_lexicon
     from traboule.generation.llm_config import load_llm_config
@@ -88,10 +96,19 @@ def build_chain() -> Chain:
 
     config = load_llm_config()
     con = connect()
+    counter = HfTokenCounter(config.tokenizer)
+
+    @cache
+    def corpus() -> Corpus:
+        return load_corpus()
+
     return Chain(
         con=con,
         lexicon=load_lexicon(con),
         llm=OllamaClient(config),
-        counter=HfTokenCounter(config.tokenizer),
-        factories={"rag": lambda: RagStrategy(QdrantSearch())},
+        counter=counter,
+        factories={
+            "rag": lambda: RagStrategy(QdrantSearch()),
+            "cag": lambda: CagStrategy(corpus(), counter, config.model, config.num_ctx.cag),
+        },
     )
