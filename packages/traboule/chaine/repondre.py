@@ -89,6 +89,7 @@ class Chain:
 def build_chain() -> Chain:
     """Chaîne sur la base locale, l'index Qdrant et le serveur Ollama de `configs/llm.yaml`."""
     from traboule.chaine.cag import CagStrategy
+    from traboule.chaine.kag import KagStrategy
     from traboule.chaine.rag import QdrantSearch, RagStrategy
     from traboule.chaine.sql import connect, load_lexicon
     from traboule.generation.llm_config import load_llm_config
@@ -110,5 +111,6 @@ def build_chain() -> Chain:
         factories={
             "rag": lambda: RagStrategy(QdrantSearch()),
             "cag": lambda: CagStrategy(corpus(), counter, config.model, config.num_ctx.cag),
+            "kag": lambda: KagStrategy(corpus()),
         },
     )
