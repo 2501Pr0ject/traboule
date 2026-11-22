@@ -27,6 +27,8 @@ class MotifAbstention(StrEnum):
     # Signaux de retrieval et vérification à la génération
     PREUVE_INSUFFISANTE = "preuve_insuffisante"
     CITATION_NON_VERIFIEE = "citation_non_verifiee"
+    SUJET_HORS_QUESTION = "sujet_hors_question"  # aucun passage cité sur le sujet demandé
+    VALEUR_NON_RETROUVEE = "valeur_non_retrouvee"  # nombre absent des passages cités
 
 
 class Citation(BaseModel):

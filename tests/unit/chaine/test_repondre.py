@@ -155,7 +155,7 @@ def test_off_topic_citation_is_blocked_in_the_chain(con):
     c = chain(con, FakeSearch([pleine_terre]))
     r = c.ask("Quel est le coefficient d'emprise au sol en zone UEi1 ?")
     (doc,) = r.composantes
-    assert doc.abstention and doc.motif == "citation_non_verifiee"
+    assert doc.abstention and doc.motif == "sujet_hors_question"
     assert doc.texte.startswith(
         "Passage cité hors du sujet demandé : la question porte sur emprise au sol"
     )

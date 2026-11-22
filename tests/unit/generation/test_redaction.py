@@ -179,7 +179,7 @@ def test_off_topic_and_unsupported_values_abstain():
         Contexte([pleine_terre]),
         topics=[BY_NAME["emprise au sol"]],
     )
-    assert c.abstention and c.motif == "citation_non_verifiee"
+    assert c.abstention and c.motif == "sujet_hors_question"
     assert c.texte.startswith("Passage cité hors du sujet demandé")
     assert any("Réponse du modèle écartée : Au minimum 25 %." in n for n in c.notes)
     llm = FakeLlm({"reponse": "Au minimum 30 %.", "passages_cites": [1], "suffisant": True})
@@ -191,4 +191,5 @@ def test_off_topic_and_unsupported_values_abstain():
         Contexte([pleine_terre]),
         topics=[BY_NAME["pleine terre"]],
     )
+    assert c.motif == "valeur_non_retrouvee"
     assert c.texte == "Valeur non retrouvée dans les passages cités : 30."

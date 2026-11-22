@@ -5,9 +5,10 @@
   chemin (intitulés du règlement) ; pour un passage sans intitulé d'article (cahier, OAP), le
   texte du passage en tient lieu.
 - **Valeurs chiffrées** : chaque nombre de la réponse doit figurer dans au moins un passage
-  cité (texte ; chemin pour un numéro d'article ; version de la pièce), après normalisation
-  des espaces (insécables compris), de la virgule décimale et des zéros décimaux. Sont
-  exemptés : les marqueurs de
+  cité, après normalisation des espaces (insécables compris), de la virgule décimale et des
+  zéros décimaux. Un nombre suivi d'une unité de mesure (m, %, m², niveaux…) doit figurer dans
+  le **texte** d'un passage cité ; un nombre sans unité peut aussi figurer dans son chemin
+  (numéro d'article) ou dans la version de la pièce. Sont exemptés : les marqueurs de
   citation (`[1]`), les ordinaux (`1er`, `2e`) et les nombres repris de la question sans unité
   de mesure (ex. « NAF rév. 2 », « division 47 ») ; un nombre de la question suivi d'une unité
   (« 12 m ») reste à prouver par les passages.
@@ -51,19 +52,17 @@ def numbers(text: str) -> list[tuple[str, bool]]:
     ]
 
 
-def _haystack(passages: Sequence[Passage]) -> set[str]:
-    values = set()
-    for p in passages:
-        for text in (p.texte, " ".join(p.chemin), p.version_piece):
-            values |= {n for n, _ in numbers(text)}
-    return values
-
-
 def unsupported_values(answer: str, question: str, cited: Sequence[Passage]) -> list[str]:
     """Nombres de la réponse absents des passages cités (exemptions : voir le module)."""
     exempt = {n for n, unit in numbers(question) if not unit}
-    known = _haystack(cited)
-    missing = [n for n, _ in numbers(answer) if n not in known and n not in exempt]
+    in_text = {n for p in cited for n, _ in numbers(p.texte)}
+    in_meta = {n for p in cited for t in (" ".join(p.chemin), p.version_piece)
+               for n, _ in numbers(t)}  # fmt: skip
+    missing = [
+        n
+        for n, unit in numbers(answer)
+        if n not in in_text and (unit or (n not in in_meta and n not in exempt))
+    ]
     return list(dict.fromkeys(missing))
 
 

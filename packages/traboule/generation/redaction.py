@@ -8,10 +8,11 @@
 - le modèle rend un JSON (réponse, passages cités, suffisance) ; un passage cité hors du
   contexte, ou aucune citation, donne `CITATION_NON_VERIFIEE` ; `suffisant = false` donne
   `PREUVE_INSUFFISANTE` ;
-- contrôles contre les passages cités (`generation.verification`) : un passage au moins porte
-  sur le sujet demandé, et chaque nombre de la réponse figure dans un passage cité ; sinon
-  `CITATION_NON_VERIFIEE`, avec « passage cité hors du sujet demandé » ou « valeur non
-  retrouvée dans les passages cités ».
+- contrôles contre les passages cités (`generation.verification`, ADR-0010 amendé le
+  2026-11-22) : un passage au moins porte sur le sujet demandé, sinon `SUJET_HORS_QUESTION`
+  (« passage cité hors du sujet demandé ») ; chaque nombre de la réponse figure dans un
+  passage cité, sinon `VALEUR_NON_RETROUVEE` (« valeur non retrouvée dans les passages
+  cités »).
 """
 
 import re
@@ -235,11 +236,11 @@ def draft(
             f"aucun passage cité n'en traite (cités : {titles})."
         )
         notes.append(f"Réponse du modèle écartée : {text}")
-        return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
+        return _abstain(MotifAbstention.SUJET_HORS_QUESTION, limit, notes)
     if missing := unsupported_values(text, question, sources):
         limit = f"Valeur non retrouvée dans les passages cités : {', '.join(missing)}."
         notes.append(f"Réponse du modèle écartée : {text}")
-        return _abstain(MotifAbstention.CITATION_NON_VERIFIEE, limit, notes)
+        return _abstain(MotifAbstention.VALEUR_NON_RETROUVEE, limit, notes)
     return Composante(
         type="documentaire",
         valeur=text,

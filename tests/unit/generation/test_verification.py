@@ -102,3 +102,17 @@ def test_values_must_be_found_in_the_cited_passages():
     assert unsupported_values("Oui, 12 m.", "La hauteur est-elle de 12 m ?", [PLEINE_TERRE]) == [
         "12"
     ]
+
+
+def test_value_with_unit_is_proved_by_the_text_only():
+    article = passage(
+        4,
+        chemin=["Partie II", "Zone UEi1", "2.4 - Emprise au sol des constructions"],
+        texte="L'emprise au sol des constructions n'est pas réglementée.",
+    )
+    # « 2,4 m » n'est pas validé par le chemin « 2.4 - Emprise au sol ».
+    assert unsupported_values("Un recul de 2,4 m.", "Emprise ?", [article]) == ["2.4"]
+    # Sans unité, un numéro d'article est retrouvé dans le chemin.
+    assert unsupported_values("Voir l'article 2.4.", "Emprise ?", [article]) == []
+    # Une unité dans la réponse exige le texte, même si la question cite le nombre sans unité.
+    assert unsupported_values("Une hauteur de 2 m.", "Article 2 ?", [article]) == ["2"]

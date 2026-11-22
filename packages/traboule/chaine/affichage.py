@@ -17,6 +17,8 @@ MOTIFS = {
     "confiance_faible": "confiance de zone faible",
     "preuve_insuffisante": "preuve insuffisante",
     "citation_non_verifiee": "citation non vérifiée",
+    "sujet_hors_question": "passage cité hors du sujet demandé",
+    "valeur_non_retrouvee": "valeur non retrouvée dans les passages cités",
 }
 
 
