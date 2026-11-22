@@ -10,7 +10,7 @@
   le filtre y parcourt les points, ce qui suffit à cette taille ; utiles avec un serveur) ;
 - mesures : durée de chaque étape, pic mémoire du processus, mémoire MPS, taille de l'index.
 
-Usage : `uv run python -m traboule.retrieval.index` ; recherche de démonstration :
+Usage : `uv run python -m traboule.retrieval.index build` ; recherche de démonstration :
 `uv run python -m traboule.retrieval.index demo "hauteur des constructions" --zone UCe3`.
 """
 
