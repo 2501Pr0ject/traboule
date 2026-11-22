@@ -34,6 +34,7 @@ from traboule.routing.routeur import Decision
 
 DATABASE = PROCESSED_DIR / "traboule.duckdb"
 MAX_ROWS = 500
+CELL_M = 200  # côté des carreaux du carroyage (m), vue v_etablissements_carreaux
 LOCATION_LIMIT = (
     "Analyse de localisation, pas un constat réglementaire : zone rattachée au point d'adresse "
     "géolocalisé (ADR-0006)."
@@ -51,13 +52,21 @@ VIEWS = {
                e.activitePrincipaleEtablissement as naf
         from etablissements_zones z join etablissements e using (siret)
         where z.diffusion = 'O'""",
+    # Carroyage : coin sud-ouest du carreau de CELL_M m seulement, jamais les coordonnées de
+    # l'établissement ; positions publiques seulement (statut P exclu, règle 10).
+    "v_etablissements_carreaux": f"""
+        select z.etat, z.code_commune_cog2026, z.code_arrondissement, z.zone, z.confiance,
+               e.activitePrincipaleEtablissement as naf,
+               floor(e.x / {CELL_M}) * {CELL_M} as cx, floor(e.y / {CELL_M}) * {CELL_M} as cy
+        from etablissements_zones z join etablissements e using (siret)
+        where z.diffusion = 'O' and e.position_publique""",
     "v_zonage": "select code, geom from zonage",
     "v_unites": "select code, niveau, geom from unites",
     "v_communes": "select code_commune as code, libelle from communes",
     "v_arrondissements": "select code_arrondissement as code, libelle from arrondissements",
     "v_zones_reglement": """
-        select code_zone, methode, chapitre, zone_u_reference, chapitre_u, abstention_motif,
-               version_piece
+        select code_zone, methode, chapitre, page_chapitre, zone_u_reference, chapitre_u,
+               abstention_motif, version_piece
         from zones_reglement""",
     "v_catalogue": "select nom, millesime, sources from _catalogue",
 }
@@ -65,6 +74,7 @@ VIEWS = {
 VIEW_TABLES = {
     "v_etablissements": "etablissements",
     "v_etablissements_zones": "etablissements_zones",
+    "v_etablissements_carreaux": "etablissements_zones",
     "v_zonage": "zonage",
     "v_unites": "unites",
 }
@@ -123,15 +133,20 @@ def check_query(con: duckdb.DuckDBPyConnection, sql: str) -> None:
         raise SqlGuardError(f"colonne interdite : {sorted(forbidden)}")
 
 
-def query(con: duckdb.DuckDBPyConnection, sql: str, params: list | None = None) -> list[dict]:
-    """Exécute une requête contrôlée ; refuse un résultat de plus de MAX_ROWS lignes."""
+def query(
+    con: duckdb.DuckDBPyConnection,
+    sql: str,
+    params: list | None = None,
+    max_rows: int = MAX_ROWS,
+) -> list[dict]:
+    """Exécute une requête contrôlée ; refuse un résultat de plus de `max_rows` lignes."""
     check_query(con, sql)
     logger.info("sql : %s | paramètres : %s", " ".join(sql.split()), params)
     cursor = con.execute(sql, params or [])
     names = [d[0] for d in cursor.description]
-    rows = cursor.fetchmany(MAX_ROWS + 1)
-    if len(rows) > MAX_ROWS:
-        raise SqlGuardError(f"plus de {MAX_ROWS} lignes")
+    rows = cursor.fetchmany(max_rows + 1)
+    if len(rows) > max_rows:
+        raise SqlGuardError(f"plus de {max_rows} lignes")
     return [dict(zip(names, row, strict=True)) for row in rows]
 
 

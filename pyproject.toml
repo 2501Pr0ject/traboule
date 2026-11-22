@@ -33,7 +33,7 @@ pdf = ["pymupdf>=1.24", "docling>=2.0"]  # extraction du règlement et des cahie
 embeddings = ["FlagEmbedding>=1.2"]  # BGE-M3 dense + sparse
 index = ["qdrant-client>=1.12"]  # index vectoriel Qdrant
 generation = ["tokenizers>=0.20", "huggingface-hub>=0.24"]  # comptage des tokens du modèle
-web = ["fastapi>=0.115", "uvicorn>=0.30"]  # interface web minimale
+web = ["fastapi>=0.115", "uvicorn>=0.30", "folium>=0.17"]  # interface web minimale et carte
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.22", "psutil>=5.9"]

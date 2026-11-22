@@ -45,3 +45,18 @@ def test_invalid_request_and_model_error(con):
         assert bad.status_code == 422
         r = client.post("/api/ask", json={"question": "Quelle hauteur en zone UEi1 ?"})
         assert r.status_code == 503 and "serveur arrêté" in r.json()["detail"]
+
+
+def test_map_only_when_the_answer_concerns_a_zone(con):
+    with TestClient(create_app(lambda: chain(con, FakeSearch([passage(1)])))) as client:
+        commune = client.post(
+            "/api/ask", json={"question": "Combien d'établissements actifs à Vénissieux ?"}
+        ).json()
+        assert commune["route"] == "SQL" and commune["carte"] is None
+        zone = client.post(
+            "/api/ask",
+            json={"question": "Combien d'établissements actifs en zone UEi1 à Vénissieux ?"},
+        ).json()
+        assert zone["carte"]["html"].startswith("<!DOCTYPE html>")
+        assert zone["carte"]["minorant"].startswith("jusqu'à")
+        assert "00000000000001" not in zone["carte"]["html"]

@@ -67,7 +67,9 @@ def create_app(chain_factory: Callable[[], Chain]) -> FastAPI:
                 reponse = chain().ask(request.question, request.strategie)
             except OllamaError as error:
                 raise HTTPException(503, f"Génération impossible : {error}") from error
+            carte = chain().map_for(request.question, reponse)
         data = reponse.model_dump(mode="json")
+        data["carte"] = carte
         for component in data["composantes"]:
             for citation in component["citations"]:
                 citation["titre"] = document_title(citation["doc_id"])

@@ -19,6 +19,7 @@ from traboule.chaine.contexte import (
     zones_from_distribution,
 )
 from traboule.chaine.sql import StructuredComponent
+from traboule.config import INTERIM_DIR
 from traboule.contracts.reponse import Composante, Reponse
 from traboule.generation.llm_config import Strategy
 from traboule.generation.ollama import OllamaClient
@@ -29,6 +30,7 @@ from traboule.routing.routeur import route
 from traboule.routing.sujets import BY_NAME
 
 STRATEGIES: tuple[Strategy, ...] = ("rag", "cag", "kag")
+LABELS = INTERIM_DIR / "extraction" / "reglement" / "passages.jsonl"  # libellés des zones
 
 
 @dataclass
@@ -39,6 +41,7 @@ class Chain:
     counter: TokenCounter
     factories: dict[str, Callable[[], ContextStrategy]]
     _strategies: dict[str, ContextStrategy] = field(default_factory=dict)
+    _labels: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         self.structured = StructuredComponent(self.con, self.lexicon)
@@ -78,6 +81,16 @@ class Chain:
             question=question,
             strategie=strategy,
             motif_route=decision.motif,
+        )
+
+    def map_for(self, question: str, reponse: Reponse) -> dict | None:
+        """Carte de la réponse (zones, lieu, carroyage) ; None si elle ne porte sur aucune zone."""
+        from traboule.chaine.carte import build_map, zone_labels
+
+        if self._labels is None:
+            self._labels = zone_labels(LABELS)
+        return build_map(
+            self.con, self.lexicon, analyse(question, self.lexicon), reponse, self._labels
         )
 
     def close(self) -> None:
