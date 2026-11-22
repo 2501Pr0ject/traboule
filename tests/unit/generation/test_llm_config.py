@@ -36,7 +36,7 @@ def test_repository_config_matches_the_owner_decision():
     assert config.options.seed == 20261102
     assert config.options.num_predict == 1024
     assert config.tokenizer == "Qwen/Qwen3-8B"
-    assert (config.num_ctx.rag, config.num_ctx.kag, config.num_ctx.cag) == (16384, 16384, 20480)
+    assert (config.num_ctx.rag, config.num_ctx.kag, config.num_ctx.cag) == (16384, 16384, 22528)
 
 
 def test_ollama_request_uses_the_window_of_each_strategy():
@@ -50,7 +50,7 @@ def test_ollama_request_uses_the_window_of_each_strategy():
         "num_predict": 1024,
         "num_ctx": 16384,
     }
-    assert cag["options"]["num_ctx"] == 20480
+    assert cag["options"]["num_ctx"] == 22528
     assert config.ollama_request("kag")["options"]["num_ctx"] == 16384
 
 
@@ -62,7 +62,7 @@ def test_valid_file_is_loaded(tmp_path):
 
 def test_input_budget_reserves_the_answer():
     config = load_llm_config()
-    assert config.input_budget("cag") == 20480 - 1024
+    assert config.input_budget("cag") == 22528 - 1024
     assert config.input_budget("rag") == 16384 - 1024
 
 

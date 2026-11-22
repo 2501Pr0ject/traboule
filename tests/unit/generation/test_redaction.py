@@ -58,7 +58,7 @@ def test_ollama_client_sends_the_configured_request():
     client = OllamaClient(CONFIG, transport=httpx.MockTransport(handler))
     result = client.chat("cag", "consigne", "question", {"type": "object"})
     assert seen["model"] == "qwen3:8b" and seen["think"] is False and seen["stream"] is False
-    assert seen["options"]["num_ctx"] == 20480 and seen["options"]["num_predict"] == 1024
+    assert seen["options"]["num_ctx"] == 22528 and seen["options"]["num_predict"] == 1024
     assert seen["messages"][0] == {"role": "system", "content": "consigne"}
     assert seen["format"] == {"type": "object"}
     assert (result.prompt_tokens, result.seconds) == (12, 2.0)

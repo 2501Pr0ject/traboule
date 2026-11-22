@@ -19,4 +19,4 @@ options:
 num_ctx:
   rag: 16384
   kag: 16384
-  cag: 20480          # chapitre de zone ≤ 18 035 tokens, sans les passages de la partie I
+  cag: 22528          # chapitre le plus long en contexte : 20,0 k tokens (UPr7), sans la partie I

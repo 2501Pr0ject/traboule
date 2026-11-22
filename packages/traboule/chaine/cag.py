@@ -4,7 +4,7 @@
   communes UPr comprises), dans l'ordre du document, **sans** les passages de la partie I :
   les renvois y sont cités par leur titre (décision du porteur, 2026-11-22) ; ou tous les
   passages d'une OAP citée par son numéro ;
-- non tronquable : un contexte au-delà du budget de la fenêtre (20 480 tokens moins la réponse)
+- non tronquable : un contexte au-delà du budget de la fenêtre (`num_ctx` du CAG moins la réponse)
   entraîne l'abstention, sans repli silencieux sur le RAG ; sans zone ni OAP, abstention ;
 - cache : la clé est l'empreinte du modèle, de la fenêtre, et des identifiants et textes des
   passages et de leur rendu ; elle change dès que la pièce, son texte ou le rendu change
