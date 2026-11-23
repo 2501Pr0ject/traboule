@@ -14,9 +14,9 @@
 
 ## 🇫🇷 Français
 
-![Exemple UEp : réponse HYBRID, carte de la zone et carroyage · UEp example: HYBRID answer, zone map and grid](docs/assets/interface-hybride.png)
+![Démonstration : question UEp dans l'interface web, réponse HYBRID puis carte · Demo: UEp question in the web interface, HYBRID answer then map](docs/assets/demo.gif)
 
-*L'interface web (`traboule serve`) sur une vraie question : le comptage des établissements de la zone UEp avec la ventilation de confiance, la règle du coefficient de pleine terre citée à la page, et la carte de la zone avec le carroyage des établissements.*
+*L'interface web (`traboule serve`) sur une vraie question : le comptage des établissements de la zone UEp avec la ventilation de confiance, la règle du coefficient de pleine terre citée à la page, puis la carte de la zone avec le carroyage des établissements et le rappel de ceux qui ne peuvent pas être placés. L'attente de la réponse est accélérée ×8, signalé à l'écran ; le temps affiché par l'interface (17 s, modèle déjà chargé) est le vrai.*
 
 ![Réponse bloquée : passage cité hors du sujet demandé · Blocked answer: cited passage off the requested subject](docs/assets/interface-abstention.png)
 
@@ -271,9 +271,9 @@ Abdelatif Touati — [GitHub](https://github.com/2501Pr0ject) · [Portfolio](htt
 
 ## 🇬🇧 English
 
-![Exemple UEp : réponse HYBRID, carte de la zone et carroyage · UEp example: HYBRID answer, zone map and grid](docs/assets/interface-hybride.png)
+![Démonstration : question UEp dans l'interface web, réponse HYBRID puis carte · Demo: UEp question in the web interface, HYBRID answer then map](docs/assets/demo.gif)
 
-*The web interface (`traboule serve`) on a real question: the count of businesses in zone UEp with the confidence breakdown, the rule on the green-space coefficient cited to the page, and the map of the zone with the grid of establishments.*
+*The web interface (`traboule serve`) on a real question: the count of businesses in zone UEp with the confidence breakdown, the rule on the green-space coefficient cited to the page, then the map of the zone with the grid of establishments and the reminder of those that cannot be placed. The wait for the answer is sped up ×8, shown on screen; the time displayed by the interface (17 s, model already loaded) is the real one.*
 
 ![Réponse bloquée : passage cité hors du sujet demandé · Blocked answer: cited passage off the requested subject](docs/assets/interface-abstention.png)
 
