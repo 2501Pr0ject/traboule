@@ -42,6 +42,7 @@ USER_AGENT = f"traboule-download/{INGESTION_VERSION}"
 CHUNK_SIZE = 1024 * 1024
 PROGRESS_EVERY = 200 * CHUNK_SIZE
 TIMEOUT = httpx.Timeout(30.0, read=300.0)
+RETRIES = 3  # essais d'un téléchargement interrompu par le réseau
 
 
 class DownloadError(RuntimeError):
@@ -78,7 +79,21 @@ def select_resources(source: dict, names: list[str] | None) -> list[dict]:
 
 
 def stream_to_file(client: httpx.Client, url: str, dest: Path) -> tuple[int, str, str]:
-    """Télécharge url dans dest en streaming. Renvoie (taille, sha256, sha1)."""
+    """Télécharge url dans dest en streaming, avec RETRIES essais en cas de coupure réseau.
+
+    Renvoie (taille, sha256, sha1) ; chaque essai repart du début du fichier.
+    """
+    for attempt in range(1, RETRIES + 1):
+        try:
+            return _stream(client, url, dest)
+        except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError) as exc:
+            if attempt == RETRIES:
+                raise
+            typer.echo(f"    coupure réseau ({exc}) : nouvel essai {attempt + 1}/{RETRIES}")
+    raise AssertionError("inatteignable")
+
+
+def _stream(client: httpx.Client, url: str, dest: Path) -> tuple[int, str, str]:
     sha256, sha1, size, next_report = hashlib.sha256(), hashlib.sha1(), 0, PROGRESS_EVERY
     with client.stream("GET", url) as response:
         response.raise_for_status()
@@ -335,27 +350,37 @@ def download_source(
 ) -> list[tuple[Manifest, Path, str]]:
     """Télécharge les ressources demandées dans date_dir, une par une, en lecture seule.
 
-    Refuse avant tout téléchargement si les données de l'une des ressources existent déjà
-    ou si une URL n'est pas confirmée. Renvoie (manifeste, dossier, statut) par ressource ;
-    statut : « téléchargée », « identique à la référence » ou « écart » (nouveau dossier).
+    Refuse avant tout téléchargement si une URL n'est pas confirmée. Une ressource dont les
+    données existent n'est jamais réécrite : elle est ignorée, et la commande peut être
+    relancée après une interruption. Renvoie (manifeste, dossier, statut) par ressource ;
+    statut : « téléchargée », « identique à la référence », « écart » (nouveau dossier) ou
+    « déjà présente ».
     """
     today = today or date.today().isoformat()
     resources = select_resources(source, names)
     for resource in resources:
         resource_urls(resource)
-    # Un dossier qui existe sans être réduit à son manifeste contient des données : intouchable.
-    existing = [
+    # Dossier sans données ni manifeste : état incohérent, à examiner avant tout téléchargement.
+    broken = [
         r["name"]
         for r in resources
-        if (date_dir / r["name"]).exists() and reference_manifest(date_dir / r["name"]) is None
+        if (date_dir / r["name"]).exists()
+        and not data_files(date_dir / r["name"])
+        and reference_manifest(date_dir / r["name"]) is None
     ]
-    if existing:
-        raise DownloadError(f"ressource(s) déjà présente(s) dans {date_dir} : {existing}")
+    if broken:
+        raise DownloadError(f"dossier(s) sans données ni manifeste dans {date_dir} : {broken}")
     date_dir.mkdir(parents=True, exist_ok=True)
     results = []
     for resource in resources:
         name = resource["name"]
         target = date_dir / name
+        if data_files(target):
+            # Données déjà présentes : jamais réécrites ; la commande peut être relancée.
+            typer.echo(f"  {name} : déjà présente dans {target}, non réécrite")
+            manifest = Manifest.model_validate_json((target / MANIFEST).read_text(encoding="utf-8"))
+            results.append((manifest, target, "déjà présente"))
+            continue
         reference = reference_manifest(target)
         done = date_dir.parent / today / name
         if reference is not None and data_files(done):

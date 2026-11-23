@@ -85,17 +85,40 @@ def test_new_resource_in_existing_date_dir_succeeds(date_dir: Path) -> None:
     assert not list(date_dir.glob(".*.partial"))
 
 
-def test_rewriting_existing_resource_fails(date_dir: Path) -> None:
+def test_existing_resource_is_never_rewritten_and_the_command_can_be_rerun(date_dir: Path) -> None:
     old = date_dir / "ancienne"
     before = {p.name: (p.stat().st_mtime_ns, p.read_bytes()) for p in old.iterdir()}
-    with (
-        client_for(serve_payload) as client,
-        pytest.raises(dl.DownloadError, match="déjà présente"),
-    ):
-        dl.download_source(client, make_source(http_resource("ancienne")), date_dir)
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return serve_payload(request)
+
+    with client_for(handler) as client:
+        ((_, final, status),) = dl.download_source(
+            client, make_source(http_resource("ancienne")), date_dir
+        )
+    assert (final, status) == (old, "déjà présente") and not calls
     after = {p.name: (p.stat().st_mtime_ns, p.read_bytes()) for p in old.iterdir()}
     assert after == before
     assert not is_writable(old)
+
+
+def test_network_interruption_is_retried(tmp_path: Path) -> None:
+    attempts = []
+
+    def flaky(request):
+        attempts.append(request)
+        if len(attempts) == 1:
+            raise httpx.ReadTimeout("The read operation timed out", request=request)
+        return serve_payload(request)
+
+    with client_for(flaky) as client:
+        ((manifest, _, status),) = dl.download_source(
+            client, make_source(http_resource("instable")), tmp_path / "d"
+        )
+    assert status == "téléchargée" and len(attempts) == 2
+    assert manifest.sha256 == hashlib.sha256(PAYLOAD).hexdigest()
 
 
 def test_unknown_resource_is_rejected(date_dir: Path) -> None:
