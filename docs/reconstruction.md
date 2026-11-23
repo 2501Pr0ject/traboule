@@ -2,7 +2,7 @@
 
 ## Première reconstruction, commande par commande — 2026-11-22
 
-Démarrage rapide complet joué dans un clone neuf (commit `53e492e`, puis `e18ffba` à partir de l'index et `66721cd` pour la base), sur la machine de référence : Apple M2, 16 Go. Les caches de uv (paquets Python), de Hugging Face (BGE-M3, modèles Docling, tokenizer Qwen3) et d'Ollama (`qwen3:8b`) étaient déjà présents : sur une machine neuve, le premier téléchargement des modèles (environ 14 Go) et des paquets s'ajoute aux durées ci-dessous et n'a pas été mesuré.
+Démarrage rapide complet joué dans un clone neuf (version qui exige un stock et une géolocalisation Sirene du même mois ; l'index a été construit après la correction de sa commande, sous-commande `build`, et la base après celle des millésimes, tirés des données réellement lues), sur la machine de référence : Apple M2, 16 Go. Les caches de uv (paquets Python), de Hugging Face (BGE-M3, modèles Docling, tokenizer Qwen3) et d'Ollama (`qwen3:8b`) étaient déjà présents : sur une machine neuve, le premier téléchargement des modèles (environ 14 Go) et des paquets s'ajoute aux durées ci-dessous et n'a pas été mesuré.
 
 ### Durées
 
@@ -31,7 +31,7 @@ Démarrage rapide complet joué dans un clone neuf (commit `53e492e`, puis `e18f
 | Question mixte, RAG, chargement des modèles compris | `uv run traboule ask …` | 49 s |
 | **Téléchargement et construction** | | **1 h 44 min** |
 
-Écart au protocole : la première tentative de l'index a échoué (`index` lancé sans la sous-commande `build`, telle que l'indiquait la documentation du module, corrigée par `e18ffba`) ; l'étape a été relancée seule.
+Écart au protocole : la première tentative de l'index a échoué (`index` lancé sans la sous-commande `build`, telle que l'indiquait la documentation du module, depuis corrigée) ; l'étape a été relancée seule.
 
 ### Pics de mémoire
 
@@ -72,11 +72,11 @@ Chaque écart a été téléchargé dans le dossier daté du 2026-11-22 avec son
 | Minorant, UEp | 7 582 | 7 722 |
 | Passages indexés (règlement + cahiers) | 7 254 (1 827 + 5 427) | 7 254 (1 827 + 5 427) |
 
-La réponse documentaire sur le coefficient de pleine terre en zone UEp est la même (mêmes passages cités, p. 674 et 675). Les réponses de la reconstruction citent le stock Sirene du 2026-11-01, la géolocalisation de novembre 2026 et le zonage du 2026-11-22 (millésimes tirés des données lues, `66721cd`).
+La réponse documentaire sur le coefficient de pleine terre en zone UEp est la même (mêmes passages cités, p. 674 et 675). Les réponses de la reconstruction citent le stock Sirene du 2026-11-01, la géolocalisation de novembre 2026 et le zonage du 2026-11-22 (millésimes tirés des données réellement lues, et non plus de la date de référence).
 
 ## Seconde reconstruction, par les cibles make — 2026-11-23
 
-Même machine, clone neuf (commit `282eb36`, puis `34e3946` pour la relance du téléchargement), mêmes caches de modèles et de paquets. Commandes du démarrage rapide : `make setup`, `ollama pull qwen3:8b`, `make download`, `make build`.
+Même machine, clone neuf (version qui ajoute les cibles `make download` et `make build`, mise à jour avant la relance du téléchargement par la correction décrite plus bas), mêmes caches de modèles et de paquets. Commandes du démarrage rapide : `make setup`, `ollama pull qwen3:8b`, `make download`, `make build`.
 
 ### Durées
 
@@ -95,7 +95,7 @@ Même machine, clone neuf (commit `282eb36`, puis `34e3946` pour la relance du t
 | — dont index (2 × 7 254 passages, BGE-M3) | 28 min 51 s |
 | Question SQL (`traboule ask`) | 1 s |
 
-La coupure réseau a conduit à rendre le téléchargement relançable (`34e3946`) : une ressource déjà présente est gardée, jamais réécrite, et une lecture interrompue est retentée deux fois.
+La coupure réseau a conduit à rendre le téléchargement relançable : une ressource déjà présente est gardée, jamais réécrite, et une lecture interrompue est retentée deux fois.
 
 Écart au protocole : la machine s'est mise en veille de 01:17 à 01:47 pendant la jointure (journal `pmset`), ce qui porte la durée écoulée de `make build` à 1 h 42 min ; la durée de calcul ci-dessus l'exclut. Lancer la construction avec `caffeinate -i` évite cette veille.
 
