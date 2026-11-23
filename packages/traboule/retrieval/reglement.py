@@ -28,7 +28,6 @@ Usage : `uv run python -m traboule.retrieval.reglement`.
 """
 
 import hashlib
-import json
 import re
 import sys
 import time
@@ -61,7 +60,14 @@ from traboule.retrieval.decoupage import (
     split_block,
     text_page_numbers,
 )
-from traboule.retrieval.extraction import clean_markdown, docling_converter, read_pages
+from traboule.retrieval.extraction import (
+    clean_markdown,
+    docling_converter,
+    read_cache,
+    read_pages,
+    source_sha256,
+    write_cache,
+)
 from traboule.retrieval.renvois import RenvoiError, link_partie_i
 
 OUT_DIR = INTERIM_DIR / "extraction" / "reglement"
@@ -410,16 +416,22 @@ def page_lines(pdf) -> dict[int, list[tuple[float, float, str]]]:
     return out
 
 
-def table_boxes(pdf, cache: Path) -> dict[int, list[tuple[float, float]]]:
-    """Pages où PyMuPDF détecte un tableau → (haut, bas) de chaque tableau ; mis en cache."""
-    if cache.exists():
-        return {int(k): [tuple(b) for b in v] for k, v in json.loads(cache.read_text()).items()}
+def table_boxes(
+    pdf, cache: Path, sha: str = "", force: bool = False
+) -> dict[int, list[tuple[float, float]]]:
+    """Pages où PyMuPDF détecte un tableau → (haut, bas) de chaque tableau.
+
+    Mis en cache avec l'empreinte du PDF : repris seulement pour le même PDF, et sans --force.
+    """
+    cached = None if force else read_cache(cache, sha)
+    if cached is not None:
+        return {int(k): [tuple(b) for b in v] for k, v in cached.items()}
     boxes = {}
     for number, page in enumerate(pdf, start=1):
         found = page.find_tables().tables
         if found:
             boxes[number] = sorted((t.bbox[1], t.bbox[3]) for t in found)
-    cache.write_text(json.dumps(boxes))
+    write_cache(cache, sha, boxes)
     return boxes
 
 
@@ -606,24 +618,22 @@ def attachment(p: Passage) -> str:
     return "partie II hors zone"
 
 
-def extract(path: Path, converter) -> tuple[list[Passage], dict]:
+def extract(path: Path, converter, force: bool = False) -> tuple[list[Passage], dict]:
     import pymupdf
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.perf_counter()
+    sha = source_sha256(path)
     toc, pages = read_pages(path)
     with pymupdf.open(path) as pdf:
         positioned = page_lines(pdf)
-        boxes = table_boxes(pdf, OUT_DIR / "tableaux_pymupdf.json")
+        boxes = table_boxes(pdf, OUT_DIR / "tableaux_pymupdf.json", sha, force)
     nav = navigation_pages(toc, len(pages))
     context = toc_context(toc, len(pages))
     versions = page_versions({n: p.texte_pymupdf for n, p in pages.items()})
     cache_path = OUT_DIR / "tableaux_docling.json"
-    cache = (
-        {int(k): v for k, v in json.loads(cache_path.read_text()).items()}
-        if (cache_path.exists())
-        else {}
-    )
+    cached = None if force else read_cache(cache_path, sha)
+    cache = {int(k): v for k, v in (cached or {}).items()}
     content, docling_lines, modes = {}, {}, {}
     for number, page in pages.items():
         if number in nav or page.graphique:
@@ -632,7 +642,7 @@ def extract(path: Path, converter) -> tuple[list[Passage], dict]:
         if number in boxes:
             if number not in cache:
                 cache[number] = docling_tables(converter, path, number)
-                cache_path.write_text(json.dumps(cache, ensure_ascii=False))
+                write_cache(cache_path, sha, cache)
             merged, docling_lines[number], modes[number] = merge_tables(
                 lines, boxes[number], cache[number]
             )
@@ -700,11 +710,14 @@ app = typer.Typer(add_completion=False)
 @app.command()
 def main(
     date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
+    force: Annotated[
+        bool, typer.Option(help="Réextraire les tableaux sans reprendre le cache du PDF")
+    ] = False,
 ) -> None:
     """Extrait les parties I et II du règlement (un seul processus) et écrit les mesures."""
     try:
         path = reglement_path(date)
-        passages, quality = extract(path, docling_converter())
+        passages, quality = extract(path, docling_converter(), force)
     except RawDataError as exc:
         typer.echo(f"ERREUR : {exc}", err=True)
         sys.exit(1)

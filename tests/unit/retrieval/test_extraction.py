@@ -60,3 +60,26 @@ def test_docling_text_is_cleaned_and_graphic_pages_skipped(tmp_path):
     ex.apply_docling(pages, ex.docling_markdown(FakeConverter(), path, len(pages)))
     assert (pages[1].lignes, pages[1].doublons_retires) == (["Ligne 1"], 1)
     assert pages[2].lignes == []
+
+
+def test_source_fingerprint_comes_from_the_manifest_or_the_file(tmp_path):
+    import hashlib
+    import json
+
+    pdf = tmp_path / "piece.pdf"
+    pdf.write_bytes(b"%PDF contenu")
+    assert ex.source_sha256(pdf) == hashlib.sha256(b"%PDF contenu").hexdigest()
+    (tmp_path / "manifest.json").write_text(json.dumps({"sha256": "abc"}))
+    assert ex.source_sha256(pdf) == "abc"
+
+
+def test_extraction_cache_is_reused_only_for_the_same_pdf(tmp_path):
+    import json
+
+    cache = tmp_path / "docling_pages.json"
+    assert ex.read_cache(cache, "aaa") is None
+    ex.write_cache(cache, "aaa", {"3": "texte"})
+    assert ex.read_cache(cache, "aaa") == {"3": "texte"}
+    assert ex.read_cache(cache, "bbb") is None  # PDF modifié à la source : réextraction
+    cache.write_text(json.dumps({"3": "texte"}))  # ancien format, sans empreinte
+    assert ex.read_cache(cache, "aaa") is None

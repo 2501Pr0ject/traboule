@@ -208,3 +208,27 @@ def test_index_of_defined_terms_maps_printed_to_pdf_pages():
     assert rg.index_term_pages(
         [(2, "CHAPITRE 6", 107), (2, "INDEX ", 114), (1, "Partie II", 117)], 803
     ) == [114, 115, 116]
+
+
+class _Found:
+    def __init__(self, tables):
+        self.tables = tables
+
+
+class _Table:
+    bbox = (0, 10.0, 0, 20.0)
+
+
+class _Page:
+    def find_tables(self):
+        return _Found([_Table()])
+
+
+def test_table_boxes_cache_is_skipped_with_force_or_for_another_pdf(tmp_path):
+    cache = tmp_path / "tableaux_pymupdf.json"
+    rg.write_cache(cache, "aaa", {"1": [[1.0, 2.0]]})
+    assert rg.table_boxes([_Page()], cache, "aaa") == {1: [(1.0, 2.0)]}
+    assert rg.table_boxes([_Page()], cache, "aaa", force=True) == {1: [(10.0, 20.0)]}
+    rg.write_cache(cache, "aaa", {"1": [[1.0, 2.0]]})
+    assert rg.table_boxes([_Page()], cache, "bbb") == {1: [(10.0, 20.0)]}
+    assert rg.read_cache(cache, "bbb") == {"1": [[10.0, 20.0]]}

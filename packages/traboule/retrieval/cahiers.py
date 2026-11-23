@@ -54,8 +54,11 @@ from traboule.retrieval.extraction import (
     apply_docling,
     docling_converter,
     docling_markdown,
+    read_cache,
     read_pages,
     repair_ligatures,
+    source_sha256,
+    write_cache,
 )
 from traboule.retrieval.index_config import (
     IndexConfigError,
@@ -461,6 +464,7 @@ def extract(
     exceptions: dict[tuple[str, str], str] | None = None,
     shared: dict[str, PieceIdentique] | None = None,
     date: str | None = None,
+    force: bool = False,
 ) -> dict:
     """Extrait un cahier : passages écrits dans OUT_DIR/<ressource>/, mesures renvoyées."""
     pdf = next(resource_folder(resource, raw_dir, date).glob("*.pdf"))
@@ -469,15 +473,17 @@ def extract(
     t0 = time.perf_counter()
     toc, pages = read_pages(pdf)
     t_pymupdf = time.perf_counter() - t0
-    cache = out / "docling_pages.json"
-    if cache.exists():
-        markdown = {int(k): v for k, v in json.loads(cache.read_text()).items()}
+    # Cache Docling repris seulement s'il vient de ce PDF (même empreinte) et sans --force.
+    cache, sha = out / "docling_pages.json", source_sha256(pdf)
+    cached = None if force else read_cache(cache, sha)
+    if cached is not None:
+        markdown = {int(k): v for k, v in cached.items()}
         t_docling = None
     else:
         t1 = time.perf_counter()
         markdown = docling_markdown(converter, pdf, len(pages))
         t_docling = time.perf_counter() - t1
-        cache.write_text(json.dumps(markdown, ensure_ascii=False))
+        write_cache(cache, sha, markdown)
     apply_docling(pages, markdown)
     group = (shared or {}).get(resource)
     commune = shared_payload(group) if group else commune_of(pdf.name, sectors, communes)
@@ -529,6 +535,9 @@ def main(
         typer.Option(help="Ressource SRC-005 à extraire (défaut : tous les cahiers)"),
     ] = None,
     date: Annotated[str | None, typer.Option("--date", help=DATE_HELP)] = None,
+    force: Annotated[
+        bool, typer.Option(help="Réextraire avec Docling sans reprendre le cache des PDF")
+    ] = False,
 ) -> None:
     """Extrait les cahiers demandés (un seul processus) et écrit les mesures."""
     ressource = ressource or all_cahiers()
@@ -548,7 +557,7 @@ def main(
         for name in ressource:
             typer.echo(f"  {name} …")
             results[name] = extract(
-                name, converter, communes, sectors, RAW_DIR, exceptions, shared, date
+                name, converter, communes, sectors, RAW_DIR, exceptions, shared, date, force
             )
         for group in groups:
             if all(r in results for r in group.exemplaires):

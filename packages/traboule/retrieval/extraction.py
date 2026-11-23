@@ -9,7 +9,9 @@
   (doublons de Docling), balisage Markdown retiré. Chaque correction est comptée.
 """
 
+import hashlib
 import html
+import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -126,3 +128,34 @@ def apply_docling(pages: dict[int, Page], markdown: dict[int, str]) -> None:
         page.lignes, page.doublons_retires, page.ligatures_reparees = clean_markdown(
             markdown.get(number, "")
         )
+
+
+def source_sha256(pdf: Path) -> str:
+    """Empreinte du PDF source : celle de son manifeste, sinon calculée sur le fichier."""
+    manifest = pdf.parent / "manifest.json"
+    if manifest.exists():
+        sha = json.loads(manifest.read_text(encoding="utf-8")).get("sha256")
+        if sha:
+            return sha
+    digest = hashlib.sha256()
+    with pdf.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def read_cache(path: Path, sha: str) -> dict | None:
+    """Cache d'extraction d'un PDF ; None s'il manque, s'il vient d'un autre PDF (empreinte
+    différente) ou s'il est d'un format antérieur sans empreinte."""
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or data.get("sha256") != sha or "donnees" not in data:
+        return None
+    return data["donnees"]
+
+
+def write_cache(path: Path, sha: str, data: dict) -> None:
+    """Écrit un cache d'extraction avec l'empreinte du PDF dont il vient."""
+    path.write_text(json.dumps({"sha256": sha, "donnees": data}, ensure_ascii=False),
+                    encoding="utf-8")  # fmt: skip
