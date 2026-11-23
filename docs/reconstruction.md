@@ -1,8 +1,10 @@
-# Reconstruction depuis un clone neuf — 2026-11-22
+# Reconstructions depuis un clone neuf
+
+## Première reconstruction, commande par commande — 2026-11-22
 
 Démarrage rapide complet joué dans un clone neuf (commit `53e492e`, puis `e18ffba` à partir de l'index et `66721cd` pour la base), sur la machine de référence : Apple M2, 16 Go. Les caches de uv (paquets Python), de Hugging Face (BGE-M3, modèles Docling, tokenizer Qwen3) et d'Ollama (`qwen3:8b`) étaient déjà présents : sur une machine neuve, le premier téléchargement des modèles (environ 14 Go) et des paquets s'ajoute aux durées ci-dessous et n'a pas été mesuré.
 
-## Durées
+### Durées
 
 | Étape | Commande | Durée |
 |---|---|---:|
@@ -31,19 +33,19 @@ Démarrage rapide complet joué dans un clone neuf (commit `53e492e`, puis `e18f
 
 Écart au protocole : la première tentative de l'index a échoué (`index` lancé sans la sous-commande `build`, telle que l'indiquait la documentation du module, corrigée par `e18ffba`) ; l'étape a été relancée seule.
 
-## Pics de mémoire
+### Pics de mémoire
 
 Sirene 4,4 Go ; cahiers 3,4 Go ; index 4,1 Go, plus 2,2 Go de mémoire du processeur graphique ; règlement 1,5 Go ; jointure 1,2 Go ; base 0,5 Go (mesures de `data/interim/metrics/`, champ du pic de chaque étape).
 
-## Espace disque
+### Espace disque
 
 Données brutes 4,2 Go ; données intermédiaires 0,1 Go ; base et index 0,3 Go ; environnement Python 1,8 Go. Caches hors du clone (mesurés sur la machine de référence) : BGE-M3 8,5 Go (dépôt Hugging Face complet, ONNX compris), `qwen3:8b` 5,2 Go.
 
-## Mémoire à l'usage (base de référence, 2026-11-22)
+### Mémoire à l'usage (base de référence, 2026-11-22)
 
 `traboule ask` en RAG : pic de 2,9 Go pour le processus (BGE-M3 sur processeur) ; en CAG : 0,3 Go (BGE-M3 non chargé). Serveur Ollama (`ollama ps`) : 6,3 Go avec une fenêtre de 16 384 tokens, 6,8 Go avec 22 528 tokens, 100 % sur le processeur graphique.
 
-## Ressources : identiques ou en écart avec la référence
+### Ressources : identiques ou en écart avec la référence
 
 | Source | Résultat |
 |---|---|
@@ -58,7 +60,7 @@ Données brutes 4,2 Go ; données intermédiaires 0,1 Go ; base et index 0,3 Go 
 
 Chaque écart a été téléchargé dans le dossier daté du 2026-11-22 avec son propre manifeste ; les dossiers de référence ont gardé leur seul manifeste. Le contrôle d'appariement Sirene a accepté la paire stock et géolocalisation de novembre 2026 ; la correspondance zones → règlement est restée à jour avec le zonage du 2026-11-22.
 
-## Chiffres : référence et reconstruction
+### Chiffres : référence et reconstruction
 
 | Mesure | Référence (stock du 2026-10-01) | Reconstruction (stock du 2026-11-01) |
 |---|---:|---:|
@@ -71,3 +73,42 @@ Chaque écart a été téléchargé dans le dossier daté du 2026-11-22 avec son
 | Passages indexés (règlement + cahiers) | 7 254 (1 827 + 5 427) | 7 254 (1 827 + 5 427) |
 
 La réponse documentaire sur le coefficient de pleine terre en zone UEp est la même (mêmes passages cités, p. 674 et 675). Les réponses de la reconstruction citent le stock Sirene du 2026-11-01, la géolocalisation de novembre 2026 et le zonage du 2026-11-22 (millésimes tirés des données lues, `66721cd`).
+
+## Seconde reconstruction, par les cibles make — 2026-11-23
+
+Même machine, clone neuf (commit `282eb36`, puis `34e3946` pour la relance du téléchargement), mêmes caches de modèles et de paquets. Commandes du démarrage rapide : `make setup`, `ollama pull qwen3:8b`, `make download`, `make build`.
+
+### Durées
+
+| Étape | Durée |
+|---|---:|
+| `make setup` (cache uv) | 1 s |
+| `ollama pull qwen3:8b` (déjà présent) | 1 s |
+| `make download`, première tentative : stock Sirene téléchargé, puis géolocalisation arrêtée par une coupure réseau (`The read operation timed out`) | 11 min |
+| `make download`, relance (ressources déjà présentes gardées ; une coupure retentée automatiquement) | 4 min 36 s |
+| `make build`, durée de calcul | 1 h 14 min |
+| — dont référentiel, Sirene, contrôle zones → règlement et base | 15 s |
+| — dont jointure spatiale (calcul mesuré : 288 s) | 4 min 48 s |
+| — dont règlement | 2 min 38 s |
+| — dont cahiers (76, Docling) | 36 min 46 s |
+| — dont ligatures et renvois | 18 s |
+| — dont index (2 × 7 254 passages, BGE-M3) | 28 min 51 s |
+| Question SQL (`traboule ask`) | 1 s |
+
+La coupure réseau a conduit à rendre le téléchargement relançable (`34e3946`) : une ressource déjà présente est gardée, jamais réécrite, et une lecture interrompue est retentée deux fois.
+
+Écart au protocole : la machine s'est mise en veille de 01:17 à 01:47 pendant la jointure (journal `pmset`), ce qui porte la durée écoulée de `make build` à 1 h 42 min ; la durée de calcul ci-dessus l'exclut. Lancer la construction avec `caffeinate -i` évite cette veille.
+
+Rien d'autre ne tournait pendant la construction, hors la suite de tests (environ 30 s, pendant les cahiers) ; le serveur web et Ollama ont été démarrés après la fin.
+
+### Pics de mémoire
+
+Sirene 4,8 Go ; index 4,3 Go, plus 2,2 Go de mémoire du processeur graphique ; cahiers 3,7 Go ; jointure 1,2 Go ; base 0,6 Go.
+
+### Ressources et chiffres
+
+Mêmes écarts que le 2026-11-22 (stock et géolocalisation Sirene de novembre 2026, zonage, liste des pièces et contours communaux téléchargés le jour même), mêmes ressources identiques à la référence. Chiffres identiques à ceux de la reconstruction du 2026-11-22 : 1 145 427 établissements, 959 966 positions publiques rattachées au zonage, 1 487 actifs en zone UEi1 à Vénissieux (1 075, 216, 196), minorant 2 274, 7 254 passages indexés (1 827 + 5 427).
+
+### Réponse CAG, cache froid et cache chaud
+
+Sur la base de référence, après la construction : question « Quel est le coefficient d'emprise au sol en zone URm1 ? » en CAG, 231 s à la première question (lecture du chapitre), 6 s à la suivante, même réponse bloquée (passage cité hors du sujet demandé). `ollama ps` : 6,8 Go, 100 % sur le processeur graphique, fenêtre de 22 528 tokens.
