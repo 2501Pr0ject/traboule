@@ -14,13 +14,17 @@
 
 ## 🇫🇷 Français
 
-![Interface web de Traboule : question mixte sur la zone UEp, route HYBRID, comptage et règle citée](docs/assets/interface-hybride.png)
+![Exemple UEp : réponse HYBRID, carte de la zone et carroyage · UEp example: HYBRID answer, zone map and grid](docs/assets/interface-hybride.png)
 
-*L'interface web (`traboule serve`) sur une vraie question : le comptage des établissements de la zone UEp, avec la ventilation de confiance et le minorant, puis la règle du coefficient de pleine terre, citée à la page.*
+*L'interface web (`traboule serve`) sur une vraie question : le comptage des établissements de la zone UEp avec la ventilation de confiance, la règle du coefficient de pleine terre citée à la page, et la carte de la zone avec le carroyage des établissements.*
 
-![Réponse bloquée : passage cité hors du sujet demandé](docs/assets/interface-abstention.png)
+![Réponse bloquée : passage cité hors du sujet demandé · Blocked answer: cited passage off the requested subject](docs/assets/interface-abstention.png)
 
-*Une réponse bloquée : pour une question sur l'emprise au sol en zone URm1, le modèle citait l'article sur la pleine terre.*
+*Une réponse bloquée, en CAG : pour une question sur l'emprise au sol en zone URm1, le modèle citait l'article sur la pleine terre. La carte montre la zone visée. En CAG, la première question sur une zone prend jusqu'à 5 min, le temps de lire son chapitre (3 min 51 s pour URm1) ; les suivantes sur la même zone, quelques secondes (6 s pour cette capture).*
+
+![Carte sur mobile, exemple UEp · Map on mobile, UEp example](docs/assets/interface-mobile.png)
+
+*La carte sur mobile : légende repliée, et rappel des établissements qui ne peuvent pas être placés.*
 
 ### Ce que fait Traboule
 
@@ -36,14 +40,15 @@ Chaque réponse cite ses sources. Quand les données ne suffisent pas, Traboule 
 ### Ce qui le distingue
 
 - **La chaîne établissement → zone → règle écrite.** Une même réponse compte les établissements d'une zone du PLU-H et cite la règle du chapitre de cette zone.
-- **Un indice de confiance de zone et un minorant.** Chaque établissement placé dans une zone reçoit une confiance (haute, moyenne ou faible) selon sa distance à une autre zone ([ADR-0006](docs/decisions/ADR-0006-source-coordonnees-indice-confiance.md) ; un ADR, *architecture decision record*, consigne une décision dans [`docs/decisions/`](docs/decisions/)). Les établissements sans position publique ne sont pas ignorés : ils forment un minorant (« jusqu'à N établissements supplémentaires pourraient se trouver dans la zone »).
+- **Un indice de confiance de zone et un minorant.** Chaque établissement placé dans une zone reçoit une confiance (haute, moyenne ou faible) selon sa distance à une autre zone ([ADR-0006](docs/decisions/ADR-0006-source-coordonnees-indice-confiance.md) ; un ADR, *architecture decision record*, consigne une décision dans [`docs/decisions/`](docs/decisions/)). Les établissements sans position publique ne sont pas ignorés : la réponse dit combien, dans la commune ou l'arrondissement concerné, ne peuvent pas être placés, et que certains pourraient se trouver dans la zone.
+- **Une carte sous la réponse.** Les zones citées, le contour du lieu et, pour un comptage, un carroyage de 200 m : jamais un point d'établissement.
 - **Des citations à la page, avec la version de la pièce.** Chaque passage cité donne son document, sa page et la procédure qui l'a fixé, par exemple « Modification n°4 - Approbation 2024 ».
 - **Le blocage des réponses que le passage cité ne soutient pas.** Une réponse est écartée si aucun passage cité ne porte sur le sujet demandé, ou si un nombre de la réponse ne figure pas dans les passages cités.
 - **Tout tourne sur un ordinateur portable** (Apple M2, 16 Go), sans API distante à l'exécution : le modèle de langage qwen3:8b est servi par Ollama, l'index vectoriel Qdrant est embarqué, les données sont dans une base DuckDB.
 
 ### Démonstration
 
-Sorties réelles de `traboule ask` dans le terminal, sur la base de référence (stock Sirene du 2026-10-01) ; raccourcies, `…` marque une coupure. Une reconstruction aujourd'hui donne d'autres chiffres (voir le démarrage rapide).
+Sorties réelles de `traboule ask` dans le terminal, sur la base de référence (stock Sirene du 2026-10-01) ; raccourcies, `…` marque une coupure. Une reconstruction aujourd'hui donne d'autres chiffres (voir le démarrage rapide). En ligne de commande : `uv run traboule ask "…"`, avec `--strategie rag|cag|kag` et `--json` pour l'objet `Reponse` brut.
 
 **Une question mixte (route HYBRID : données et règle écrite).**
 
@@ -52,10 +57,10 @@ $ uv run traboule ask "Combien d'établissements actifs sont situés en zone UEp
 Route : HYBRID · stratégie RAG — comptage demandé (zone UEp) → SQL ; règle écrite demandée →
 recherche documentaire
 ╭─ Données (SQL) ──────────────────────────────────────────────────────────────────────────────────╮
-│ 101 établissements actifs géolocalisés en zone UEp. Confiance de zone : 39 haute, 49 moyenne, 13 │
-│ faible. C'est un minorant : jusqu'à 7582 établissements supplémentaires pourraient se trouver    │
-│ dans la zone (établissements actifs sans position publique dans les 2 communes ou                │
-│ arrondissements qui intersectent la zone).                                                       │
+│ 101 établissements actifs sont géolocalisés en zone UEp. Confiance de zone : 39 haute, 49        │
+│ moyenne, 13 faible. 7 582 établissements actifs de Saint-Fons (69199) et du 7e arrondissement de │
+│ Lyon (69387) n'ont pas de position publique et ne peuvent pas être placés : certains pourraient  │
+│ se trouver dans la zone.                                                                         │
 │ Source : etablissements_zones — stock Sirene du 2026-10-01 × zonage téléchargé le 2026-10-28     │
 │ (SRC-001a, SRC-001b, SRC-002)                                                                    │
 │ …                                                                                                │
@@ -101,78 +106,27 @@ Route : RAG · stratégie CAG — règle écrite demandée → recherche documen
 **Prérequis**
 
 - macOS, testé sur Apple M2 avec 16 Go de mémoire ; Linux n'a pas été testé.
-- Python 3.12 et [uv](https://docs.astral.sh/uv/).
-- [Ollama](https://ollama.com) avec le modèle `qwen3:8b` (5,2 Go).
+- Python 3.12, [uv](https://docs.astral.sh/uv/) et [Ollama](https://ollama.com).
+- Le dépôt cloné : `git clone https://github.com/2501Pr0ject/traboule.git && cd traboule`.
 - Environ 20 Go de disque : données brutes 4,2 Go, données intermédiaires 0,1 Go, base et index 0,3 Go, modèle qwen3:8b 5,2 Go, modèle d'encodage BGE-M3 en cache 8,5 Go, environnement Python 1,8 Go.
-- 16 Go de mémoire suffisent. À l'usage, le serveur Ollama occupe 6,3 Go avec une fenêtre de 16 384 tokens (RAG, KAG) et 6,8 Go avec 22 528 tokens (CAG) ; le processus `traboule ask` culmine à 2,9 Go en RAG. Pendant la construction, les pics mesurés sont de 4,4 Go (Sirene) et de 4,1 Go, plus 2,2 Go de mémoire graphique (index).
+- 16 Go de mémoire suffisent. À l'usage, le serveur Ollama occupe 6,3 Go avec une fenêtre de 16 384 tokens (RAG, KAG) et 6,8 Go avec 22 528 tokens (CAG) ; le processus `traboule ask` culmine à 2,9 Go en RAG. Pendant la construction, les pics mesurés atteignent 4,8 Go (Sirene) et 4,3 Go, plus 2,2 Go de mémoire graphique (index).
 
-**1. Installer**
-
-```bash
-git clone https://github.com/2501Pr0ject/traboule.git
-cd traboule
-make setup              # uv sync --all-extras
-make test               # sans les données, les tests qui en ont besoin sont ignorés
-ollama pull qwen3:8b
-```
-
-**2. Télécharger les données** (4,2 Go)
+**Installer, construire, lancer**
 
 ```bash
-for source in SRC-001a SRC-001b SRC-002 SRC-004a SRC-004b SRC-004c SRC-005 \
-              REF-COMMUNES-ML-2024 REF-ARRONDISSEMENTS-LYON; do
-  uv run python -m traboule.ingestion.download "$source"
-done
-```
-
-Dans un clone, chaque dossier daté de référence (`data/raw/<source>/<date>/<ressource>/`) ne contient que son manifeste versionné. Une ressource encore disponible à l'identique (même empreinte sha256) y retrouve ses données ; une ressource modifiée à la source est téléchargée dans un dossier daté du jour, avec son propre manifeste, et l'écart est signalé. La construction lit le dossier de référence s'il contient les données, sinon le plus récent ; l'option `--date` en impose un. Le stock et la géolocalisation Sirene doivent être du même mois : sinon, la construction s'arrête et indique quoi retélécharger.
-
-**3. Construire**
-
-```bash
-uv run python -m traboule.geo.referentiel
-uv run python -m traboule.ingestion.sirene
-uv run python -m traboule.geo.jointure
-uv run python -m traboule.geo.zones_reglement --check
-uv run python -m traboule.ingestion.database
-uv run python -m traboule.retrieval.reglement
-uv run python -m traboule.retrieval.cahiers
-uv run python -m traboule.retrieval.ligatures
-uv run python -m traboule.retrieval.renvois
-uv run python -m traboule.retrieval.index build
-```
-
-Durées mesurées le 2026-11-22 dans un clone neuf, sur Apple M2 ([compte rendu](docs/reconstruction.md)) :
-
-| Étape | Durée |
-|---|---:|
-| `make setup` (cache de uv déjà rempli) | 2 s |
-| `make test` | 17 s |
-| Téléchargement des 9 sources | 7 min 18 s |
-| Référentiel, Sirene, base, contrôle zones → règlement | 12 s au total |
-| Jointure spatiale | 4 min 43 s |
-| Règlement | 2 min 32 s |
-| Cahiers communaux (76, avec Docling) | 41 min 49 s |
-| Ligatures et renvois | 18 s |
-| Index (BGE-M3) | 47 min 35 s |
-| Première question mixte, en RAG, chargement des modèles compris | 49 s |
-| **Téléchargement et construction** | **1 h 44 min** |
-
-Les caches de uv, de Hugging Face et d'Ollama étaient déjà remplis. Sur une machine neuve, le premier téléchargement des modèles, environ 14 Go (BGE-M3 8,5 Go, qwen3:8b 5,2 Go, modèles de Docling), et celui des paquets Python s'ajoutent à cette durée ; ils n'ont pas été mesurés.
-
-> [!NOTE]
-> **Une reconstruction aujourd'hui donne d'autres chiffres que les exemples de ce README.** Les sources ne sont pas archivées : le stock Sirene est mensuel, le fichier de géolocalisation ne reste en ligne qu'un mois, et le zonage est servi tel qu'il est le jour du téléchargement. La reconstruction du 2026-11-22 a lu le stock de novembre 2026 : la zone UEi1 à Vénissieux y compte 1 487 établissements actifs au lieu de 1 479. Les réponses citent alors la version réellement lue (« stock Sirene du 2026-11-01 »).
-
-**4. Interroger**
-
-```bash
-uv run traboule ask "Quelle est la hauteur maximale des clôtures sur limite séparative en zone UEi1 ?"
-uv run traboule ask "Quel est le coefficient d'emprise au sol en zone UEi1 ?" --strategie cag
-uv run traboule ask "Combien d'établissements actifs compte la commune d'Oullins-Pierre-Bénite ?" --json
+make setup              # environnement Python (uv sync --all-extras)
+ollama pull qwen3:8b    # modèle de langage, 5,2 Go
+make download           # 9 sources, 4,2 Go
+make build              # données, base et index
 uv run traboule serve   # interface web sur http://127.0.0.1:8000
 ```
 
-`--strategie` vaut `rag` (par défaut), `cag` ou `kag` ; `--json` affiche l'objet `Reponse` brut. Toutes ces commandes ont été lancées : celles des étapes 1 à 3 et deux questions dans le clone neuf, les exemples de l'étape 4 et `traboule serve` sur la base de référence.
+`make download` place chaque source dans `data/raw/` : une ressource encore identique à la version de référence (même empreinte sha256) rejoint son dossier daté ; une ressource modifiée à la source va dans un dossier daté du jour, et l'écart est signalé ; relancée après une interruption, la commande garde les ressources déjà présentes et télécharge les autres. `make build` enchaîne les dix étapes de la construction, du référentiel géographique à l'index, et s'arrête à la première erreur. Sur une construction déjà faite, il s'arrête dès la première étape (sorties existantes) ; `make build FORCE=1` reconstruit tout, extraction des PDF comprise. Lancés seuls, le règlement et les cahiers réécrivent leurs passages en reprenant l'extraction en cache d'un PDF inchangé (même empreinte sha256) ; les ligatures, les renvois et l'index sont toujours refaits. Le stock et la géolocalisation Sirene doivent être du même mois : sinon, la construction s'arrête et indique quoi retélécharger.
+
+**Durées mesurées** dans un clone neuf, sur la machine de référence, modèles et paquets déjà en cache : `make download` a pris 7 min 18 s, puis 15 min 36 s lors d'une seconde reconstruction marquée par une coupure réseau (la relance a gardé les ressources déjà téléchargées) ; la construction, 1 h 37 min, puis 1 h 14 min de calcul avec `make build`, dont 37 à 42 min pour les 76 cahiers (Docling) et 29 à 48 min pour l'index. La première question en RAG a pris 49 s, chargement du modèle compris. Le premier téléchargement des modèles (environ 14 Go) s'ajoute à ces durées et n'a pas été mesuré. Une mise en veille suspend la construction : sur macOS, la lancer avec `caffeinate -i make build`. Détail par étape : [docs/reconstruction.md](docs/reconstruction.md).
+
+> [!NOTE]
+> **Une reconstruction aujourd'hui donne d'autres chiffres que les exemples de ce README.** Les sources ne sont pas archivées : le stock Sirene est mensuel, le fichier de géolocalisation ne reste en ligne qu'un mois, et le zonage est servi tel qu'il est le jour du téléchargement. La reconstruction du 2026-11-22 a lu le stock de novembre 2026 : la zone UEi1 à Vénissieux y compte 1 487 établissements actifs au lieu de 1 479. Les réponses citent alors la version réellement lue (« stock Sirene du 2026-11-01 »).
 
 ### Fonctionnement
 
@@ -232,6 +186,7 @@ Le dépôt ne publie **aucune donnée brute** : `data/` ne contient que des mani
 
 - **Aucune ligne individuelle d'établissement n'est exposée.** Les vues interrogeables ne portent ni SIRET (identifiant d'établissement) ni coordonnées, et les gabarits ne renvoient que des agrégats. Un établissement en diffusion partielle (statut P) n'a aucune position dans Traboule.
 - **DuckDB en lecture seule, avec liste blanche.** L'accès aux fichiers est coupé ; chaque requête est contrôlée sur son arbre syntaxique : une seule instruction SELECT, sur les vues autorisées, sans colonne `siret`. Le modèle n'écrit jamais de SQL : les paramètres viennent de l'analyse et sont liés.
+- **Carte : agrégats seulement.** Le carroyage de 200 m est calculé dans DuckDB sur une vue qui ne porte que le coin du carreau ; les carreaux de moins de 5 établissements sont masqués ; aucune position d'établissement ni aucun SIRET n'atteint la page.
 - **Citations avec document, page et version de la pièce.** Une citation absente du contexte fourni entraîne l'abstention.
 - **Contrôles du sujet et des valeurs** ([ADR-0010](docs/decisions/ADR-0010-abstention-multi-signal.md)) : abstention `sujet_hors_question` si aucun passage cité ne porte sur le sujet demandé, `valeur_non_retrouvee` si un nombre de la réponse n'est pas dans les passages cités.
 - **Abstentions structurelles**, avant toute recherche : zone absente du zonage (avec les codes proches), secteur sauvegardé du Vieux-Lyon (régi par le PSMV, plan de sauvegarde et de mise en valeur, non ingéré), STECAL (secteurs de taille et de capacité d'accueil limitées, régis par la partie III du règlement, non ingérée), date hors des versions chargées, activité non reconnue.
@@ -239,8 +194,8 @@ Le dépôt ne publie **aucune donnée brute** : `data/` ne contient que des mani
 
 ### État du projet et évaluation
 
-- **Ce qui fonctionne** : `traboule ask` avec les trois stratégies et `traboule serve`, sur le stock Sirene du 1er octobre 2026 et le PLU-H en vigueur (Modification n°4, approbation 2024) ; la reconstruction complète des données depuis un clone neuf ([compte rendu](docs/reconstruction.md)). Les routes des questions de démonstration sont vérifiées par les tests.
-- **Ce qui a été mesuré pendant le spike** (étude de faisabilité) : verdict « GO avec réserves » ; la recherche avec BGE-M3 a trouvé le bon passage pour 16 questions sur 20, mais pour 6 sur 9 seulement parmi celles qui visent l'article d'une zone, sans filtre. Voir le [rapport du spike](spikes/reports/rapport-spike.md).
+- **Ce qui fonctionne** : `traboule ask` avec les trois stratégies et `traboule serve`, avec sa carte, sur le stock Sirene du 1er octobre 2026 et le PLU-H en vigueur (Modification n°4, approbation 2024) ; la reconstruction complète des données depuis un clone neuf ([compte rendu](docs/reconstruction.md)). Les routes des questions de démonstration sont vérifiées par les tests.
+- **Spike** (étude de faisabilité) : [verdict et mesures](docs/spike/verdict.md).
 - **Ce qui n'est pas encore évalué** : le jeu de référence compte 15 questions en brouillon, en cours de validation ; les mesures de recherche, le benchmark public BSARD et la comparaison des stratégies avec RAGnarok-AI sont prévus.
 
 ### Limites connues
@@ -281,6 +236,8 @@ data/                     manifestes versionnés ; les données restent locales,
 make test            # pytest
 make lint            # ruff check et ruff format --check
 make validate-gold   # format du jeu de référence
+make download        # sources de la construction, dans data/raw
+make build           # construction ; make build FORCE=1 pour tout reconstruire
 ```
 
 Les règles techniques (données, coordonnées, garde-fous SQL, règles de réponse, code, Git) sont dans les [conventions](docs/conventions.md). Les décisions structurantes sont consignées dans les [ADR](docs/decisions/).
@@ -289,12 +246,12 @@ Les règles techniques (données, coordonnées, garde-fous SQL, règles de répo
 
 Tirée du [backlog](docs/backlog.md) et du [cadrage](docs/cadrage-v1.md) :
 
-1. Valider le jeu de référence et l'étendre vers environ 150 questions.
-2. Mesurer la recherche, lancer le benchmark BSARD et comparer les trois stratégies avec RAGnarok-AI.
-3. Ajouter le reclassement des passages trouvés (*reranking*), prévu par le cadrage.
+1. Vidéo de démonstration.
+2. Valider le jeu de référence et l'étendre vers environ 150 questions.
+3. Mesurer la recherche (benchmark BSARD, reclassement des passages trouvés, prévu par le cadrage) et comparer les trois stratégies avec RAGnarok-AI.
 4. Traiter les zones à urbaniser et les questions à plusieurs sujets.
 5. Rattacher l'établissement au bâtiment ou à la parcelle, après mesure ([ADR-0007](docs/decisions/ADR-0007-rattachement-batiment-parcelle.md), proposé pour la v1.1).
-6. Publier le rapport de résultats et une vidéo de démonstration.
+6. Publier le rapport de résultats.
 
 ### Licence
 
@@ -314,13 +271,17 @@ Abdelatif Touati — [GitHub](https://github.com/2501Pr0ject) · [Portfolio](htt
 
 ## 🇬🇧 English
 
-![Traboule web interface: mixed question about zone UEp, HYBRID route, count and cited rule](docs/assets/interface-hybride.png)
+![Exemple UEp : réponse HYBRID, carte de la zone et carroyage · UEp example: HYBRID answer, zone map and grid](docs/assets/interface-hybride.png)
 
-*The web interface (`traboule serve`) on a real question: the count of businesses in zone UEp, with the confidence breakdown and the lower bound, then the rule on the green-space coefficient, cited to the page.*
+*The web interface (`traboule serve`) on a real question: the count of businesses in zone UEp with the confidence breakdown, the rule on the green-space coefficient cited to the page, and the map of the zone with the grid of establishments.*
 
-![Blocked answer: cited passage off the requested subject](docs/assets/interface-abstention.png)
+![Réponse bloquée : passage cité hors du sujet demandé · Blocked answer: cited passage off the requested subject](docs/assets/interface-abstention.png)
 
-*A blocked answer: for a question on ground coverage in zone URm1, the model cited the article on green space.*
+*A blocked answer, in CAG: for a question on ground coverage in zone URm1, the model cited the article on green space. The map shows the zone in question. In CAG, the first question on a zone takes up to 5 min, the time to read its chapter (3 min 51 s for URm1); the following ones on the same zone, a few seconds (6 s for this capture).*
+
+![Carte sur mobile, exemple UEp · Map on mobile, UEp example](docs/assets/interface-mobile.png)
+
+*The map on mobile: folded legend, and reminder of the establishments that cannot be placed.*
 
 ### What Traboule does
 
@@ -336,14 +297,15 @@ Every answer cites its sources. When the data is not enough, Traboule abstains a
 ### What sets it apart
 
 - **The establishment → zone → written rule chain.** A single answer counts the establishments in a PLU-H zone and cites the rule from that zone's chapter.
-- **A zone confidence index and a lower bound.** Each establishment placed in a zone gets a confidence level (high, medium or low) based on its distance to another zone ([ADR-0006](docs/decisions/ADR-0006-source-coordonnees-indice-confiance.md); an ADR, *architecture decision record*, records a decision in [`docs/decisions/`](docs/decisions/)). Establishments without a public position are not ignored: they form a lower bound (“up to N more establishments could be in the zone”).
+- **A zone confidence index and a lower bound.** Each establishment placed in a zone gets a confidence level (high, medium or low) based on its distance to another zone ([ADR-0006](docs/decisions/ADR-0006-source-coordonnees-indice-confiance.md); an ADR, *architecture decision record*, records a decision in [`docs/decisions/`](docs/decisions/)). Establishments without a public position are not ignored: the answer says how many, in the municipality or district concerned, cannot be placed, and that some of them could be in the zone.
+- **A map below the answer.** The zones cited, the outline of the place and, for a count, a 200 m grid: never an establishment's point.
 - **Page-level citations, with the version of the document.** Each cited passage gives its document, its page and the procedure that set it, for example “Modification n°4 - Approbation 2024”.
 - **Answers that the cited passage does not support are blocked.** An answer is discarded if no cited passage is about the requested subject, or if a number in the answer does not appear in the cited passages.
 - **Everything runs on a laptop** (Apple M2, 16 GB), with no remote API at runtime: the qwen3:8b language model is served by Ollama, the Qdrant vector index is embedded, the data sits in a DuckDB database.
 
 ### Demo
 
-Actual output of `traboule ask` in the terminal, on the reference build (Sirene stock of 2026-10-01); shortened, `…` marks a cut. The interface answers in French. A rebuild today gives different figures (see the quick start).
+Actual output of `traboule ask` in the terminal, on the reference build (Sirene stock of 2026-10-01); shortened, `…` marks a cut. The interface answers in French. A rebuild today gives different figures (see the quick start). On the command line: `uv run traboule ask "…"`, with `--strategie rag|cag|kag` and `--json` for the raw `Reponse` object.
 
 **A mixed question (HYBRID route: data and written rule).**
 
@@ -352,10 +314,10 @@ $ uv run traboule ask "Combien d'établissements actifs sont situés en zone UEp
 Route : HYBRID · stratégie RAG — comptage demandé (zone UEp) → SQL ; règle écrite demandée →
 recherche documentaire
 ╭─ Données (SQL) ──────────────────────────────────────────────────────────────────────────────────╮
-│ 101 établissements actifs géolocalisés en zone UEp. Confiance de zone : 39 haute, 49 moyenne, 13 │
-│ faible. C'est un minorant : jusqu'à 7582 établissements supplémentaires pourraient se trouver    │
-│ dans la zone (établissements actifs sans position publique dans les 2 communes ou                │
-│ arrondissements qui intersectent la zone).                                                       │
+│ 101 établissements actifs sont géolocalisés en zone UEp. Confiance de zone : 39 haute, 49        │
+│ moyenne, 13 faible. 7 582 établissements actifs de Saint-Fons (69199) et du 7e arrondissement de │
+│ Lyon (69387) n'ont pas de position publique et ne peuvent pas être placés : certains pourraient  │
+│ se trouver dans la zone.                                                                         │
 │ Source : etablissements_zones — stock Sirene du 2026-10-01 × zonage téléchargé le 2026-10-28     │
 │ (SRC-001a, SRC-001b, SRC-002)                                                                    │
 │ …                                                                                                │
@@ -401,78 +363,27 @@ Route : RAG · stratégie CAG — règle écrite demandée → recherche documen
 **Requirements**
 
 - macOS, tested on Apple M2 with 16 GB of memory; Linux has not been tested.
-- Python 3.12 and [uv](https://docs.astral.sh/uv/).
-- [Ollama](https://ollama.com) with the `qwen3:8b` model (5.2 GB).
+- Python 3.12, [uv](https://docs.astral.sh/uv/) and [Ollama](https://ollama.com).
+- The cloned repository: `git clone https://github.com/2501Pr0ject/traboule.git && cd traboule`.
 - About 20 GB of disk: raw data 4.2 GB, intermediate data 0.1 GB, database and index 0.3 GB, qwen3:8b model 5.2 GB, BGE-M3 embedding model in cache 8.5 GB, Python environment 1.8 GB.
-- 16 GB of memory is enough. In use, the Ollama server takes 6.3 GB with a 16,384-token window (RAG, KAG) and 6.8 GB with 22,528 tokens (CAG); the `traboule ask` process peaks at 2.9 GB in RAG. While building, the measured peaks are 4.4 GB (Sirene) and 4.1 GB, plus 2.2 GB of graphics memory (index).
+- 16 GB of memory is enough. In use, the Ollama server takes 6.3 GB with a 16,384-token window (RAG, KAG) and 6.8 GB with 22,528 tokens (CAG); the `traboule ask` process peaks at 2.9 GB in RAG. While building, the measured peaks reach 4.8 GB (Sirene) and 4.3 GB, plus 2.2 GB of graphics memory (index).
 
-**1. Install**
-
-```bash
-git clone https://github.com/2501Pr0ject/traboule.git
-cd traboule
-make setup              # uv sync --all-extras
-make test               # without the data, the tests that need it are skipped
-ollama pull qwen3:8b
-```
-
-**2. Download the data** (4.2 GB)
+**Install, build, run**
 
 ```bash
-for source in SRC-001a SRC-001b SRC-002 SRC-004a SRC-004b SRC-004c SRC-005 \
-              REF-COMMUNES-ML-2024 REF-ARRONDISSEMENTS-LYON; do
-  uv run python -m traboule.ingestion.download "$source"
-done
-```
-
-In a clone, each reference dated folder (`data/raw/<source>/<date>/<resource>/`) only holds its versioned manifest. A resource still available unchanged (same sha256 fingerprint) gets its data back there; a resource modified at the source is downloaded into a folder dated today, with its own manifest, and the difference is reported. The build reads the reference folder if it holds the data, otherwise the most recent one; the `--date` option forces one. The Sirene stock and geolocation must be from the same month: otherwise, the build stops and says what to download again.
-
-**3. Build**
-
-```bash
-uv run python -m traboule.geo.referentiel
-uv run python -m traboule.ingestion.sirene
-uv run python -m traboule.geo.jointure
-uv run python -m traboule.geo.zones_reglement --check
-uv run python -m traboule.ingestion.database
-uv run python -m traboule.retrieval.reglement
-uv run python -m traboule.retrieval.cahiers
-uv run python -m traboule.retrieval.ligatures
-uv run python -m traboule.retrieval.renvois
-uv run python -m traboule.retrieval.index build
-```
-
-Durations measured on 2026-11-22 in a fresh clone, on Apple M2 ([report](docs/reconstruction.md), in French):
-
-| Step | Duration |
-|---|---:|
-| `make setup` (uv cache already filled) | 2 s |
-| `make test` | 17 s |
-| Download of the 9 sources | 7 min 18 s |
-| Geographic reference, Sirene, database, zones → regulation check | 12 s in total |
-| Spatial join | 4 min 43 s |
-| Regulation | 2 min 32 s |
-| Municipal booklets (76, with Docling) | 41 min 49 s |
-| Ligatures and cross-references | 18 s |
-| Index (BGE-M3) | 47 min 35 s |
-| First mixed question, in RAG, model loading included | 49 s |
-| **Download and build** | **1 h 44 min** |
-
-The uv, Hugging Face and Ollama caches were already filled. On a new machine, the first download of the models, about 14 GB (BGE-M3 8.5 GB, qwen3:8b 5.2 GB, Docling models), and that of the Python packages add to this duration; they were not measured.
-
-> [!NOTE]
-> **A rebuild today gives different figures from the examples in this README.** The sources are not archived: the Sirene stock is monthly, the geolocation file stays online for one month only, and the zoning is served as it is on the day of the download. The rebuild of 2026-11-22 read the November 2026 stock: zone UEi1 in Vénissieux has 1,487 active establishments instead of 1,479. The answers then cite the version actually read (“stock Sirene du 2026-11-01”).
-
-**4. Ask**
-
-```bash
-uv run traboule ask "Quelle est la hauteur maximale des clôtures sur limite séparative en zone UEi1 ?"
-uv run traboule ask "Quel est le coefficient d'emprise au sol en zone UEi1 ?" --strategie cag
-uv run traboule ask "Combien d'établissements actifs compte la commune d'Oullins-Pierre-Bénite ?" --json
+make setup              # Python environment (uv sync --all-extras)
+ollama pull qwen3:8b    # language model, 5.2 GB
+make download           # 9 sources, 4.2 GB
+make build              # data, database and index
 uv run traboule serve   # web interface at http://127.0.0.1:8000
 ```
 
-`--strategie` is `rag` (default), `cag` or `kag`; `--json` prints the raw `Reponse` object. All these commands were run: those of steps 1 to 3 and two questions in the fresh clone, the step 4 examples and `traboule serve` on the reference build.
+`make download` puts each source in `data/raw/`: a resource still identical to the reference version (same sha256 fingerprint) goes back to its dated folder; a resource modified at the source goes into a folder dated today, and the difference is reported; run again after an interruption, the command keeps the resources already present and downloads the others. `make build` runs the ten build steps, from the geographic reference to the index, and stops at the first error. On an existing build, it stops at the first step (outputs already exist); `make build FORCE=1` rebuilds everything, PDF extraction included. Run on their own, the regulation and booklet steps rewrite their passages, reusing the cached extraction of an unchanged PDF (same sha256 fingerprint); ligatures, cross-references and the index are always redone. The Sirene stock and geolocation must be from the same month: otherwise, the build stops and says what to download again.
+
+**Measured durations** in a fresh clone, on the reference machine, with models and packages already cached: `make download` took 7 min 18 s, then 15 min 36 s during a second rebuild hit by a network interruption (the rerun kept the resources already downloaded); the build took 1 h 37 min, then 1 h 14 min of computing with `make build`, including 37 to 42 min for the 76 booklets (Docling) and 29 to 48 min for the index. The first RAG question took 49 s, model loading included. The first download of the models (about 14 GB) comes on top of these durations and has not been measured. Sleep mode suspends the build: on macOS, run it with `caffeinate -i make build`. Step-by-step details: [docs/reconstruction.md](docs/reconstruction.md).
+
+> [!NOTE]
+> **A rebuild today gives different figures from the examples in this README.** The sources are not archived: the Sirene stock is monthly, the geolocation file stays online for one month only, and the zoning is served as it is on the day of the download. The rebuild of 2026-11-22 read the November 2026 stock: zone UEi1 in Vénissieux has 1,487 active establishments instead of 1,479. The answers then cite the version actually read (“stock Sirene du 2026-11-01”).
 
 ### How it works
 
@@ -532,6 +443,7 @@ The repository publishes **no raw data**: `data/` only holds manifests (address,
 
 - **No individual establishment row is exposed.** The queryable views carry neither SIRET (establishment identifier) nor coordinates, and the templates only return aggregates. An establishment under partial dissemination (status P) has no position in Traboule.
 - **Read-only DuckDB, with a whitelist.** File access is cut off; each query is checked on its syntax tree: a single SELECT statement, on the allowed views, with no `siret` column. The model never writes SQL: parameters come from the analysis and are bound.
+- **Map: aggregates only.** The 200 m grid is computed in DuckDB on a view that only carries the corner of the cell; cells with fewer than 5 establishments are hidden; no establishment position and no SIRET reach the page.
 - **Citations with document, page and version of the document.** A citation missing from the provided context leads to abstention.
 - **Subject and value checks** ([ADR-0010](docs/decisions/ADR-0010-abstention-multi-signal.md)): abstention `sujet_hors_question` if no cited passage is about the requested subject, `valeur_non_retrouvee` if a number in the answer is not in the cited passages.
 - **Structural abstentions**, before any search: zone missing from the zoning (with the nearby codes), the Vieux-Lyon safeguarded sector (governed by the PSMV, *plan de sauvegarde et de mise en valeur*, not ingested), STECAL (*secteurs de taille et de capacité d'accueil limitées*, small special-purpose sectors governed by part III of the regulation, not ingested), date outside the loaded versions, unrecognised activity.
@@ -539,8 +451,8 @@ The repository publishes **no raw data**: `data/` only holds manifests (address,
 
 ### Project status and evaluation
 
-- **What works**: `traboule ask` with the three strategies and `traboule serve`, on the Sirene stock of 1 October 2026 and the PLU-H in force (Modification n°4, approved in 2024); the full data rebuild from a fresh clone ([report](docs/reconstruction.md)). The routes of the demo questions are checked by the tests.
-- **What was measured during the spike** (feasibility study): verdict “GO with reservations”; search with BGE-M3 found the right passage for 16 questions out of 20, but for only 6 out of 9 among those targeting a zone's article, without a filter. See the [spike report](spikes/reports/rapport-spike.md).
+- **What works**: `traboule ask` with the three strategies and `traboule serve`, with its map, on the Sirene stock of 1 October 2026 and the PLU-H in force (Modification n°4, approved in 2024); the full data rebuild from a fresh clone ([report](docs/reconstruction.md)). The routes of the demo questions are checked by the tests.
+- **Spike** (feasibility study): [verdict and measurements](docs/spike/verdict.md) (in French).
 - **What is not yet evaluated**: the reference set has 15 draft questions, being validated; search measurements, the public BSARD benchmark and the comparison of strategies with RAGnarok-AI are planned.
 
 ### Known limitations
@@ -581,6 +493,8 @@ data/                     versioned manifests; the data stays local, out of Git
 make test            # pytest
 make lint            # ruff check and ruff format --check
 make validate-gold   # reference-set format
+make download        # build sources, into data/raw
+make build           # build; make build FORCE=1 to rebuild everything
 ```
 
 The technical rules (data, coordinates, SQL safeguards, answer rules, code, Git) are in the [conventions](docs/conventions.md). Structural decisions are recorded in the [ADRs](docs/decisions/).
@@ -589,12 +503,12 @@ The technical rules (data, coordinates, SQL safeguards, answer rules, code, Git)
 
 From the [backlog](docs/backlog.md) and the [scope document](docs/cadrage-v1.md):
 
-1. Validate the reference set and extend it towards about 150 questions.
-2. Measure search, run the BSARD benchmark and compare the three strategies with RAGnarok-AI.
-3. Add reranking of the retrieved passages, planned in the scope document.
+1. Demo video.
+2. Validate the reference set and extend it towards about 150 questions.
+3. Measure search (BSARD benchmark, reranking of the retrieved passages, planned in the scope document) and compare the three strategies with RAGnarok-AI.
 4. Handle zones to be urbanised and questions with several subjects.
 5. Match each establishment to its building or land parcel, after measurement ([ADR-0007](docs/decisions/ADR-0007-rattachement-batiment-parcelle.md), proposed for v1.1).
-6. Publish the results report and a demo video.
+6. Publish the results report.
 
 ### Licence
 
